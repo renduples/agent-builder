@@ -216,6 +216,13 @@ Roadmap and docs live on agentic-plugin.com. Core sections:
 - [Migration Path](https://agentic-plugin.com/roadmap/migration-path/)
 - [Discussion Points](https://agentic-plugin.com/roadmap/discussion-points/)
 
+Quick links:
+- [Agents Marketplace](https://agentic-plugin.com/agents/)
+- [Ask Agent](https://agentic-plugin.com/agent-chat/)
+- [Discussions](https://agentic-plugin.com/discussions/)
+- [Submit Agent](https://agentic-plugin.com/submit-agent/)
+- [Login](https://agentic-plugin.com/login/)
+
 ---
 
 ## 🤝 Contributing
@@ -251,14 +258,17 @@ Optional (for full functionality):
 
 ## 🎓 Learn By Doing
 
-Start with these tutorials:
+Start with these quick wins:
 
 1. **Use a pre-built agent** (5 min) – Enable one of the 10 included agents
 2. **Customize an agent** (15 min) – Modify an existing agent slightly
 3. **Build your own agent** (45 min) – Create a simple custom agent
 4. **Publish your agent** (10 min) – Submit to marketplace and start earning
 
-All tutorials at [agentic-plugin.com/tutorials](https://agentic-plugin.com/tutorials)
+Reference guides:
+- [Roadmap Overview](https://agentic-plugin.com/roadmap/)
+- [Use Cases](https://agentic-plugin.com/roadmap/use-cases/)
+- [Security & Guardrails](https://agentic-plugin.com/roadmap/security-guardrails/)
 
 ---
 

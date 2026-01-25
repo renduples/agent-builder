@@ -2,7 +2,7 @@
 /**
  * xAI Grok API Client
  *
- * @package Agentic_WordPress
+ * @package Agentic_Plugin
  */
 
 declare(strict_types=1);
@@ -11,6 +11,8 @@ namespace Agentic\Core;
 
 /**
  * xAI Grok API client for agent interactions
+ *
+ * Handles non-streaming chat completions via the xAI-compatible OpenAI API.
  */
 class OpenAI_Client {
 

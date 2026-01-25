@@ -17,10 +17,26 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 
 if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_settings_nonce' ) ) {
+    $repo_path_input = sanitize_text_field( $_POST['agentic_repo_path'] ?? ABSPATH );
+    $repo_path_real  = realpath( $repo_path_input );
+    $is_repo_valid   = false;
+
+    if ( $repo_path_real && is_dir( $repo_path_real ) ) {
+        $root = trailingslashit( realpath( ABSPATH ) );
+        $repo = trailingslashit( $repo_path_real );
+        if ( str_starts_with( $repo, $root ) && is_readable( $repo ) && is_writable( $repo ) ) {
+            $is_repo_valid = true;
+        }
+    }
+
     // Core settings
     update_option( 'agentic_xai_api_key', sanitize_text_field( $_POST['agentic_xai_api_key'] ?? '' ) );
     update_option( 'agentic_model', sanitize_text_field( $_POST['agentic_model'] ?? 'grok-3' ) );
-    update_option( 'agentic_repo_path', sanitize_text_field( $_POST['agentic_repo_path'] ?? ABSPATH ) );
+    if ( $is_repo_valid ) {
+        update_option( 'agentic_repo_path', $repo_path_real );
+    } else {
+        echo '<div class="notice notice-error"><p>' . esc_html__( 'Invalid repository path. It must be an existing, writable directory inside your WordPress install.', 'agentic-core' ) . '</p></div>';
+    }
     update_option( 'agentic_agent_mode', sanitize_text_field( $_POST['agentic_agent_mode'] ?? 'supervised' ) );
     
     // Cache settings

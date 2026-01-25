@@ -547,6 +547,10 @@ class Marketplace_Client {
         $body = wp_remote_retrieve_body( $response );
         $data = json_decode( $body, true );
 
+        if ( $data === null || ! is_array( $data ) ) {
+            return new \WP_Error( 'api_error', __( 'Invalid API response format', 'agentic-core' ) );
+        }
+
         if ( $code >= 400 ) {
             return new \WP_Error(
                 'api_error',

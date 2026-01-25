@@ -17,6 +17,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Abstract base class for all Agentic agents
+ *
+ * Implementations must provide identifiers, descriptions, and optionally tools
+ * to be used by the agent controller.
  */
 abstract class Agent_Base {
 

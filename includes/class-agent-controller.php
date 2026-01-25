@@ -4,7 +4,7 @@
  *
  * Handles conversations with any registered agent using their system prompt and tools.
  *
- * @package Agentic_WordPress
+ * @package Agentic_Plugin
  */
 
 declare(strict_types=1);

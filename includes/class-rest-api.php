@@ -273,8 +273,18 @@ class REST_API {
         $params = json_decode( $approval['params'], true );
 
         if ( $approval['action'] === 'code_change' && ! empty( $params['path'] ) ) {
-            $repo_path = get_option( 'agentic_repo_path', ABSPATH );
-            $full_path = $repo_path . '/' . $params['path'];
+            $repo_path      = realpath( get_option( 'agentic_repo_path', ABSPATH ) );
+            $target_subpath = ltrim( str_replace( '..', '', $params['path'] ), '/\\' );
+
+            if ( ! $repo_path || ! is_dir( $repo_path ) ) {
+                return;
+            }
+
+            $full_path = realpath( $repo_path . '/' . $target_subpath );
+
+            if ( ! $full_path || ! str_starts_with( $full_path, trailingslashit( $repo_path ) ) ) {
+                return;
+            }
 
             if ( ! empty( $params['content'] ) && is_writable( dirname( $full_path ) ) ) {
                 file_put_contents( $full_path, $params['content'] );

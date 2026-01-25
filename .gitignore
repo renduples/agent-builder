@@ -1,4 +1,92 @@
-.DS_Store
+# WordPress
+/wp-admin/
+/wp-content/
+/wp-includes/
+/wp-*.php
+/xmlrpc.php
+/.htaccess
+
+# WordPress single site / multisite
+/wp-config.php
+/wp-content/backup-*
+/wp-content/backups/
+/wp-content/cache/
+/wp-content/upgrade/
+/wp-content/uploads/
+
+# Logs
 *.log
+/wp-content/debug.log
+.nohup
+
+# Database
+*.sql
+*.sql.gz
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.project
+.classpath
+.c9/
+*.sublime-workspace
+*.sublime-project
+.phpstorm.meta.php
+_trace_*.php
+_ide_helper.php
+.php-cs-fixer.cache
+
+# Node & Package managers
 node_modules/
+npm-debug.log
+yarn-error.log
+yarn-lock.json
+package-lock.json
+pnpm-lock.yaml
+composer.lock
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# OS files
+.AppleDouble
+.LSOverride
+*.default
+ehthumbs.db
+
+# Build artifacts
+dist/
+build/
+coverage/
+*.zip
+!plugin.zip
+
+# Testing
+tests/coverage/
+.phpunit.result.cache
+phpunit.xml
+jest.config.js
+
+# Misc
 vendor/
+.github/workflows/secrets/
+.versionrc
+.nvmrc
+.ruby-version
+
+# Private project plans (ignored)
+/private/

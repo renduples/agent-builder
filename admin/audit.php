@@ -11,6 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Agentic\Core\Audit_Log;
 
+if ( ! current_user_can( 'manage_options' ) ) {
+    wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-core' ) );
+}
+
+
 $audit = new Audit_Log();
 
 // Filter parameters

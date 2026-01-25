@@ -14,6 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Handle actions
+
+if ( ! current_user_can( 'manage_options' ) ) {
+    wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-core' ) );
+}
+
 $action  = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
 $slug    = isset( $_GET['agent'] ) ? sanitize_text_field( $_GET['agent'] ) : '';
 $message = '';

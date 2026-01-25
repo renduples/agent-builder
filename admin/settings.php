@@ -10,6 +10,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Handle form submission
+
+if ( ! current_user_can( 'manage_options' ) ) {
+    wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-core' ) );
+}
+
 if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_settings_nonce' ) ) {
     // Core settings
     update_option( 'agentic_xai_api_key', sanitize_text_field( $_POST['agentic_xai_api_key'] ?? '' ) );

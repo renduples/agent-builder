@@ -9,9 +9,9 @@
 
 ---
 
-## 🚀 What Is Agentic?
+## 🚀 What is Agentic Plugin?
 
-Agentic Plugin transforms WordPress into an AI-native platform. Build autonomous AI agents that handle repetitive tasks, create content, manage commerce, and more.
+The Agentic Plugin transforms WordPress into an AI-native platform. Build autonomous AI agents that handle repetitive tasks, create content, manage commerce, and more.
 
 **This is the gold rush moment for WordPress developers.**
 
@@ -301,4 +301,4 @@ This is an **independent community project** — not affiliated with or endorsed
 
 **Made with ❤️ by the Agentic community**
 
-[🌍 Website](https://agentic-plugin.com) • [📖 Docs](https://agentic-plugin.com/docs) • [💬 GitHub](https://github.com/renduples/agentic-plugin) • [🐦 Twitter](https://twitter.com/agenticplugin)
+[🌍 Website](https://agentic-plugin.com) • [📖 Docs](https://agentic-plugin.com/roadmap/) • [💬 GitHub](https://github.com/renduples/agentic-plugin) • [🐦 Twitter](https://twitter.com/agenticplugin)

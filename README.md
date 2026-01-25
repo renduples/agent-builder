@@ -201,13 +201,20 @@ Real examples from our pre-built agents:
 
 ## 📚 Documentation
 
-Full docs at [agentic-plugin.com](https://agentic-plugin.com)
+Roadmap and docs live on agentic-plugin.com. Core sections:
 
-- [Build Agents Guide](https://agentic-plugin.com/build-agents/)
-- [API Reference](https://agentic-plugin.com/docs/api/)
-- [Agent Submission](https://agentic-plugin.com/submit-agent/)
-- [Developer Dashboard](https://agentic-plugin.com/developer-dashboard/)
-- [Security Model](https://agentic-plugin.com/docs/security/)
+- [Roadmap Overview](https://agentic-plugin.com/roadmap/)
+- [Executive Summary](https://agentic-plugin.com/roadmap/executive-summary/)
+- [Core Architecture](https://agentic-plugin.com/roadmap/core-architecture/)
+- [Backend Capabilities](https://agentic-plugin.com/roadmap/backend-capabilities/)
+- [Frontend Capabilities](https://agentic-plugin.com/roadmap/frontend-capabilities/)
+- [Plugin Architecture](https://agentic-plugin.com/roadmap/plugin-architecture/)
+- [Security & Guardrails](https://agentic-plugin.com/roadmap/security-guardrails/)
+- [Data Flow Architecture](https://agentic-plugin.com/roadmap/data-flow/)
+- [REST API Specification](https://agentic-plugin.com/roadmap/rest-api/)
+- [Use Cases](https://agentic-plugin.com/roadmap/use-cases/)
+- [Migration Path](https://agentic-plugin.com/roadmap/migration-path/)
+- [Discussion Points](https://agentic-plugin.com/roadmap/discussion-points/)
 
 ---
 

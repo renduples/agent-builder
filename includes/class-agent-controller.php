@@ -16,287 +16,309 @@ namespace Agentic\Core;
  */
 class Agent_Controller {
 
-    /**
-     * OpenAI client
-     *
-     * @var OpenAI_Client
-     */
-    private OpenAI_Client $openai;
+	/**
+	 * OpenAI client
+	 *
+	 * @var OpenAI_Client
+	 */
+	private OpenAI_Client $openai;
 
-    /**
-     * Core agent tools
-     *
-     * @var Agent_Tools
-     */
-    private Agent_Tools $core_tools;
+	/**
+	 * Core agent tools
+	 *
+	 * @var Agent_Tools
+	 */
+	private Agent_Tools $core_tools;
 
-    /**
-     * Audit log
-     *
-     * @var Audit_Log
-     */
-    private Audit_Log $audit;
+	/**
+	 * Audit log
+	 *
+	 * @var Audit_Log
+	 */
+	private Audit_Log $audit;
 
-    /**
-     * Current agent being used
-     *
-     * @var \Agentic\Agent_Base|null
-     */
-    private ?\Agentic\Agent_Base $current_agent = null;
+	/**
+	 * Current agent being used
+	 *
+	 * @var \Agentic\Agent_Base|null
+	 */
+	private ?\Agentic\Agent_Base $current_agent = null;
 
-    /**
-     * Maximum tool iterations per request
-     */
-    private const MAX_ITERATIONS = 10;
+	/**
+	 * Maximum tool iterations per request
+	 */
+	private const MAX_ITERATIONS = 10;
 
-    /**
-     * Constructor
-     */
-    public function __construct() {
-        $this->openai     = new OpenAI_Client();
-        $this->core_tools = new Agent_Tools();
-        $this->audit      = new Audit_Log();
-    }
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		$this->openai     = new OpenAI_Client();
+		$this->core_tools = new Agent_Tools();
+		$this->audit      = new Audit_Log();
+	}
 
-    /**
-     * Set the current agent for conversation
-     *
-     * @param string $agent_id Agent identifier.
-     * @return bool Whether agent was set successfully.
-     */
-    public function set_agent( string $agent_id ): bool {
-        $registry = \Agentic_Agent_Registry::get_instance();
-        $agent = $registry->get_agent_instance( $agent_id );
+	/**
+	 * Set the current agent for conversation
+	 *
+	 * @param string $agent_id Agent identifier.
+	 * @return bool Whether agent was set successfully.
+	 */
+	public function set_agent( string $agent_id ): bool {
+		$registry = \Agentic_Agent_Registry::get_instance();
+		$agent    = $registry->get_agent_instance( $agent_id );
 
-        if ( ! $agent ) {
-            return false;
-        }
+		if ( ! $agent ) {
+			return false;
+		}
 
-        if ( ! $agent->current_user_can_access() ) {
-            return false;
-        }
+		if ( ! $agent->current_user_can_access() ) {
+			return false;
+		}
 
-        $this->current_agent = $agent;
-        return true;
-    }
+		$this->current_agent = $agent;
+		return true;
+	}
 
-    /**
-     * Get the current agent
-     *
-     * @return \Agentic\Agent_Base|null Current agent or null.
-     */
-    public function get_agent(): ?\Agentic\Agent_Base {
-        return $this->current_agent;
-    }
+	/**
+	 * Get the current agent
+	 *
+	 * @return \Agentic\Agent_Base|null Current agent or null.
+	 */
+	public function get_agent(): ?\Agentic\Agent_Base {
+		return $this->current_agent;
+	}
 
-    /**
-     * Get tools for the current agent
-     *
-     * Combines agent-specific tools with core tools.
-     *
-     * @return array Tool definitions.
-     */
-    private function get_tools_for_agent(): array {
-        $tools = [];
+	/**
+	 * Get tools for the current agent
+	 *
+	 * Combines agent-specific tools with core tools.
+	 *
+	 * @return array Tool definitions.
+	 */
+	private function get_tools_for_agent(): array {
+		$tools = array();
 
-        // Add agent-specific tools first
-        if ( $this->current_agent ) {
-            $tools = $this->current_agent->get_tools();
-        }
+		// Add agent-specific tools first
+		if ( $this->current_agent ) {
+			$tools = $this->current_agent->get_tools();
+		}
 
-        // Agent can optionally use core tools (read-only ones)
-        // For now, agents define their own tools
+		// Agent can optionally use core tools (read-only ones)
+		// For now, agents define their own tools
 
-        return $tools;
-    }
+		return $tools;
+	}
 
-    /**
-     * Execute a tool call
-     *
-     * First checks if agent handles the tool, then falls back to core tools.
-     *
-     * @param string $tool_name Tool name.
-     * @param array  $arguments Tool arguments.
-     * @return array Tool result.
-     */
-    private function execute_tool( string $tool_name, array $arguments ): array {
-        $agent_id = $this->current_agent ? $this->current_agent->get_id() : 'unknown';
+	/**
+	 * Execute a tool call
+	 *
+	 * First checks if agent handles the tool, then falls back to core tools.
+	 *
+	 * @param string $tool_name Tool name.
+	 * @param array  $arguments Tool arguments.
+	 * @return array Tool result.
+	 */
+	private function execute_tool( string $tool_name, array $arguments ): array {
+		$agent_id = $this->current_agent ? $this->current_agent->get_id() : 'unknown';
 
-        $this->audit->log( $agent_id, 'tool_call', $tool_name, $arguments );
+		$this->audit->log( $agent_id, 'tool_call', $tool_name, $arguments );
 
-        // First, let the agent try to handle it
-        if ( $this->current_agent ) {
-            $result = $this->current_agent->execute_tool( $tool_name, $arguments );
+		// First, let the agent try to handle it
+		if ( $this->current_agent ) {
+			$result = $this->current_agent->execute_tool( $tool_name, $arguments );
 
-            if ( $result !== null ) {
-                return $result;
-            }
-        }
+			if ( $result !== null ) {
+				return $result;
+			}
+		}
 
-        // Fall back to core tools
-        $result = $this->core_tools->execute( $tool_name, $arguments, $agent_id );
+		// Fall back to core tools
+		$result = $this->core_tools->execute( $tool_name, $arguments, $agent_id );
 
-        if ( is_wp_error( $result ) ) {
-            return [ 'error' => $result->get_error_message() ];
-        }
+		if ( is_wp_error( $result ) ) {
+			return array( 'error' => $result->get_error_message() );
+		}
 
-        return $result;
-    }
+		return $result;
+	}
 
-    /**
-     * Process a chat message
-     *
-     * @param string $message    User message.
-     * @param array  $history    Conversation history.
-     * @param int    $user_id    User ID.
-     * @param string $session_id Session identifier.
-     * @param string $agent_id   Agent ID (optional, uses current agent if not set).
-     * @return array Response data.
-     */
-    public function chat( string $message, array $history = [], int $user_id = 0, string $session_id = '', string $agent_id = '' ): array {
-        // Set agent if specified
-        if ( $agent_id && ( ! $this->current_agent || $this->current_agent->get_id() !== $agent_id ) ) {
-            if ( ! $this->set_agent( $agent_id ) ) {
-                return [
-                    'response'  => "Agent '{$agent_id}' is not available or you don't have access to it.",
-                    'error'     => true,
-                    'agent_id'  => $agent_id,
-                ];
-            }
-        }
+	/**
+	 * Process a chat message
+	 *
+	 * @param string $message    User message.
+	 * @param array  $history    Conversation history.
+	 * @param int    $user_id    User ID.
+	 * @param string $session_id Session identifier.
+	 * @param string $agent_id   Agent ID (optional, uses current agent if not set).
+	 * @return array Response data.
+	 */
+	public function chat( string $message, array $history = array(), int $user_id = 0, string $session_id = '', string $agent_id = '' ): array {
+		// Set agent if specified
+		if ( $agent_id && ( ! $this->current_agent || $this->current_agent->get_id() !== $agent_id ) ) {
+			if ( ! $this->set_agent( $agent_id ) ) {
+				return array(
+					'response' => "Agent '{$agent_id}' is not available or you don't have access to it.",
+					'error'    => true,
+					'agent_id' => $agent_id,
+				);
+			}
+		}
 
-        if ( ! $this->current_agent ) {
-            return [
-                'response'  => 'No agent selected. Please select an agent to chat with.',
-                'error'     => true,
-                'agent_id'  => '',
-            ];
-        }
+		if ( ! $this->current_agent ) {
+			return array(
+				'response' => 'No agent selected. Please select an agent to chat with.',
+				'error'    => true,
+				'agent_id' => '',
+			);
+		}
 
-        if ( ! $this->openai->is_configured() ) {
-            return [
-                'response'  => 'The AI service is not configured. Please ask an administrator to set up the API key in Settings > Agentic.',
-                'error'     => true,
-                'agent_id'  => $this->current_agent->get_id(),
-            ];
-        }
+		if ( ! $this->openai->is_configured() ) {
+			return array(
+				'response' => 'The AI service is not configured. Please ask an administrator to set up the API key in Settings > Agentic.',
+				'error'    => true,
+				'agent_id' => $this->current_agent->get_id(),
+			);
+		}
 
-        $current_agent_id = $this->current_agent->get_id();
+		$current_agent_id = $this->current_agent->get_id();
 
-        // Build messages array with agent's system prompt
-        $messages = [
-            [ 'role' => 'system', 'content' => $this->current_agent->get_system_prompt() ],
-        ];
+		// Build messages array with agent's system prompt
+		$messages = array(
+			array(
+				'role'    => 'system',
+				'content' => $this->current_agent->get_system_prompt(),
+			),
+		);
 
-        // Add history
-        foreach ( $history as $entry ) {
-            $messages[] = [
-                'role'    => $entry['role'],
-                'content' => $entry['content'],
-            ];
-        }
+		// Add history
+		foreach ( $history as $entry ) {
+			$messages[] = array(
+				'role'    => $entry['role'],
+				'content' => $entry['content'],
+			);
+		}
 
-        // Add current message
-        $messages[] = [ 'role' => 'user', 'content' => $message ];
+		// Add current message
+		$messages[] = array(
+			'role'    => 'user',
+			'content' => $message,
+		);
 
-        // Get tools for this agent
-        $tools = $this->get_tools_for_agent();
+		// Get tools for this agent
+		$tools = $this->get_tools_for_agent();
 
-        // Log the conversation start
-        $this->audit->log( $current_agent_id, 'chat_start', 'conversation', [
-            'session_id' => $session_id,
-            'user_id'    => $user_id,
-            'message'    => substr( $message, 0, 200 ),
-        ] );
+		// Log the conversation start
+		$this->audit->log(
+			$current_agent_id,
+			'chat_start',
+			'conversation',
+			array(
+				'session_id' => $session_id,
+				'user_id'    => $user_id,
+				'message'    => substr( $message, 0, 200 ),
+			)
+		);
 
-        // Process with potential tool calls
-        $response       = null;
-        $total_tokens   = 0;
-        $iterations     = 0;
-        $tool_results   = [];
-        $usage          = [ 'prompt_tokens' => 0, 'completion_tokens' => 0 ];
+		// Process with potential tool calls
+		$response     = null;
+		$total_tokens = 0;
+		$iterations   = 0;
+		$tool_results = array();
+		$usage        = array(
+			'prompt_tokens'     => 0,
+			'completion_tokens' => 0,
+		);
 
-        while ( $iterations < self::MAX_ITERATIONS ) {
-            $iterations++;
+		while ( $iterations < self::MAX_ITERATIONS ) {
+			++$iterations;
 
-            // Pass empty tools array if no tools defined
-            $result = $this->openai->chat( $messages, $tools ?: null );
+			// Pass empty tools array if no tools defined
+			$result = $this->openai->chat( $messages, $tools ?: null );
 
-            if ( is_wp_error( $result ) ) {
-                return [
-                    'response'  => 'Error communicating with AI: ' . $result->get_error_message(),
-                    'error'     => true,
-                    'agent_id'  => $current_agent_id,
-                ];
-            }
+			if ( is_wp_error( $result ) ) {
+				return array(
+					'response' => 'Error communicating with AI: ' . $result->get_error_message(),
+					'error'    => true,
+					'agent_id' => $current_agent_id,
+				);
+			}
 
-            $usage = $this->openai->get_usage( $result );
-            $total_tokens += $usage['total_tokens'];
+			$usage         = $this->openai->get_usage( $result );
+			$total_tokens += $usage['total_tokens'];
 
-            $choice = $result['choices'][0] ?? null;
-            if ( ! $choice ) {
-                return [
-                    'response'  => 'Invalid response from AI.',
-                    'error'     => true,
-                    'agent_id'  => $current_agent_id,
-                ];
-            }
+			$choice = $result['choices'][0] ?? null;
+			if ( ! $choice ) {
+				return array(
+					'response' => 'Invalid response from AI.',
+					'error'    => true,
+					'agent_id' => $current_agent_id,
+				);
+			}
 
-            $assistant_message = $choice['message'];
-            $messages[] = $assistant_message;
+			$assistant_message = $choice['message'];
+			$messages[]        = $assistant_message;
 
-            // Check if we have tool calls
-            if ( ! empty( $assistant_message['tool_calls'] ) ) {
-                foreach ( $assistant_message['tool_calls'] as $tool_call ) {
-                    $function_name = $tool_call['function']['name'];
-                    $arguments     = json_decode( $tool_call['function']['arguments'], true ) ?? [];
+			// Check if we have tool calls
+			if ( ! empty( $assistant_message['tool_calls'] ) ) {
+				foreach ( $assistant_message['tool_calls'] as $tool_call ) {
+					$function_name = $tool_call['function']['name'];
+					$arguments     = json_decode( $tool_call['function']['arguments'], true ) ?? array();
 
-                    // Execute the tool
-                    $tool_result = $this->execute_tool( $function_name, $arguments );
+					// Execute the tool
+					$tool_result = $this->execute_tool( $function_name, $arguments );
 
-                    // Add tool result to messages
-                    $messages[] = [
-                        'role'         => 'tool',
-                        'tool_call_id' => $tool_call['id'],
-                        'content'      => wp_json_encode( $tool_result ),
-                    ];
+					// Add tool result to messages
+					$messages[] = array(
+						'role'         => 'tool',
+						'tool_call_id' => $tool_call['id'],
+						'content'      => wp_json_encode( $tool_result ),
+					);
 
-                    $tool_results[] = [
-                        'tool'   => $function_name,
-                        'result' => $tool_result,
-                    ];
-                }
-            } else {
-                // No more tool calls, we have our final response
-                $response = $assistant_message['content'];
-                break;
-            }
-        }
+					$tool_results[] = array(
+						'tool'   => $function_name,
+						'result' => $tool_result,
+					);
+				}
+			} else {
+				// No more tool calls, we have our final response
+				$response = $assistant_message['content'];
+				break;
+			}
+		}
 
-        if ( $response === null ) {
-            $response = 'I reached the maximum number of tool iterations. Please try a simpler request.';
-        }
+		if ( $response === null ) {
+			$response = 'I reached the maximum number of tool iterations. Please try a simpler request.';
+		}
 
-        // Estimate cost (Grok 3 pricing: $3/1M input, $15/1M output)
-        $estimated_cost = ( $usage['prompt_tokens'] * 0.000003 ) + ( $usage['completion_tokens'] * 0.000015 );
+		// Estimate cost (Grok 3 pricing: $3/1M input, $15/1M output)
+		$estimated_cost = ( $usage['prompt_tokens'] * 0.000003 ) + ( $usage['completion_tokens'] * 0.000015 );
 
-        // Log completion
-        $this->audit->log( $current_agent_id, 'chat_complete', 'conversation', [
-            'session_id'   => $session_id,
-            'iterations'   => $iterations,
-            'tools_used'   => array_column( $tool_results, 'tool' ),
-        ], '', $total_tokens, $estimated_cost );
+		// Log completion
+		$this->audit->log(
+			$current_agent_id,
+			'chat_complete',
+			'conversation',
+			array(
+				'session_id' => $session_id,
+				'iterations' => $iterations,
+				'tools_used' => array_column( $tool_results, 'tool' ),
+			),
+			'',
+			$total_tokens,
+			$estimated_cost
+		);
 
-        return [
-            'response'     => $response,
-            'agent_id'     => $current_agent_id,
-            'agent_name'   => $this->current_agent->get_name(),
-            'agent_icon'   => $this->current_agent->get_icon(),
-            'session_id'   => $session_id,
-            'tokens_used'  => $total_tokens,
-            'cost'         => round( $estimated_cost, 6 ),
-            'tools_used'   => array_column( $tool_results, 'tool' ),
-            'iterations'   => $iterations,
-        ];
-    }
+		return array(
+			'response'    => $response,
+			'agent_id'    => $current_agent_id,
+			'agent_name'  => $this->current_agent->get_name(),
+			'agent_icon'  => $this->current_agent->get_icon(),
+			'session_id'  => $session_id,
+			'tokens_used' => $total_tokens,
+			'cost'        => round( $estimated_cost, 6 ),
+			'tools_used'  => array_column( $tool_results, 'tool' ),
+			'iterations'  => $iterations,
+		);
+	}
 }

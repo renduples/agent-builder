@@ -12,7 +12,7 @@
 namespace Agentic;
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 /**
@@ -20,356 +20,368 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Shortcodes {
 
-    /**
-     * Registered shortcode styles loaded flag.
-     *
-     * @var bool
-     */
-    private static bool $assets_enqueued = false;
+	/**
+	 * Registered shortcode styles loaded flag.
+	 *
+	 * @var bool
+	 */
+	private static bool $assets_enqueued = false;
 
-    /**
-     * Initialize shortcodes.
-     */
-    public function __construct() {
-        add_shortcode( 'agentic_chat', [ $this, 'render_chat' ] );
-        add_shortcode( 'agentic_ask', [ $this, 'render_ask' ] );
-        
-        // Register frontend assets
-        add_action( 'wp_enqueue_scripts', [ $this, 'register_assets' ] );
-    }
+	/**
+	 * Initialize shortcodes.
+	 */
+	public function __construct() {
+		add_shortcode( 'agentic_chat', array( $this, 'render_chat' ) );
+		add_shortcode( 'agentic_ask', array( $this, 'render_ask' ) );
 
-    /**
-     * Register frontend assets (but don't enqueue until needed).
-     */
-    public function register_assets(): void {
-        wp_register_style(
-            'agentic-chat-frontend',
-            AGENTIC_CORE_PLUGIN_URL . 'assets/css/chat-frontend.css',
-            [],
-            AGENTIC_CORE_VERSION
-        );
+		// Register frontend assets.
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+	}
 
-        wp_register_script(
-            'agentic-chat-frontend',
-            AGENTIC_CORE_PLUGIN_URL . 'assets/js/chat.js',
-            [],
-            AGENTIC_CORE_VERSION,
-            true
-        );
-    }
+	/**
+	 * Register frontend assets (but don't enqueue until needed).
+	 */
+	public function register_assets(): void {
+		wp_register_style(
+			'agentic-chat-frontend',
+			AGENTIC_CORE_PLUGIN_URL . 'assets/css/chat-frontend.css',
+			array(),
+			AGENTIC_CORE_VERSION
+		);
 
-    /**
-     * Enqueue assets when shortcode is used.
-     */
-    private function enqueue_assets(): void {
-        if ( self::$assets_enqueued ) {
-            return;
-        }
+		wp_register_script(
+			'agentic-chat-frontend',
+			AGENTIC_CORE_PLUGIN_URL . 'assets/js/chat.js',
+			array(),
+			AGENTIC_CORE_VERSION,
+			true
+		);
+	}
 
-        wp_enqueue_style( 'agentic-chat-frontend' );
-        wp_enqueue_script( 'agentic-chat-frontend' );
+	/**
+	 * Enqueue assets when shortcode is used.
+	 */
+	private function enqueue_assets(): void {
+		if ( self::$assets_enqueued ) {
+			return;
+		}
 
-        wp_localize_script( 'agentic-chat-frontend', 'agenticChat', [
-            'restUrl' => esc_url_raw( rest_url( 'agentic/v1/' ) ),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
-        ]);
+		wp_enqueue_style( 'agentic-chat-frontend' );
+		wp_enqueue_script( 'agentic-chat-frontend' );
 
-        self::$assets_enqueued = true;
-    }
+		wp_localize_script(
+			'agentic-chat-frontend',
+			'agenticChat',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'agentic/v1/' ) ),
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
+			)
+		);
 
-    /**
-     * Render chat shortcode.
-     *
-     * Usage:
-     * [agentic_chat]
-     * [agentic_chat agent="security-monitor"]
-     * [agentic_chat agent="product-describer" style="popup"]
-     * [agentic_chat agent="seo-analyzer" height="400px"]
-     *
-     * @param array $atts Shortcode attributes.
-     * @return string HTML output.
-     */
-    public function render_chat( $atts ): string {
-        // Check if user can access
-        if ( ! $this->can_access_frontend_chat() ) {
-            return $this->render_login_prompt();
-        }
+		self::$assets_enqueued = true;
+	}
 
-        $atts = shortcode_atts( [
-            'agent'       => '',           // Agent slug (empty = first available)
-            'style'       => 'inline',     // inline, popup, sidebar
-            'height'      => '500px',      // Chat container height
-            'placeholder' => 'Type your message...',
-            'show_header' => 'true',       // Show agent name/icon
-            'context'     => '',           // Optional context (e.g., product_id:123)
-        ], $atts, 'agentic_chat' );
+	/**
+	 * Render chat shortcode.
+	 *
+	 * Usage:
+	 * [agentic_chat]
+	 * [agentic_chat agent="security-monitor"]
+	 * [agentic_chat agent="product-describer" style="popup"]
+	 * [agentic_chat agent="seo-analyzer" height="400px"]
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string HTML output.
+	 */
+	public function render_chat( $atts ): string {
+		// Check if user can access.
+		if ( ! $this->can_access_frontend_chat() ) {
+			return $this->render_login_prompt();
+		}
 
-        // Enqueue assets
-        $this->enqueue_assets();
+		$atts = shortcode_atts(
+			array(
+				'agent'       => '',           // Agent slug (empty = first available).
+				'style'       => 'inline',     // inline, popup, sidebar.
+				'height'      => '500px',      // Chat container height.
+				'placeholder' => 'Type your message...',
+				'show_header' => 'true',       // Show agent name/icon.
+				'context'     => '',           // Optional context (e.g., product_id:123).
+			),
+			$atts,
+			'agentic_chat'
+		);
 
-        // Get the agent
-        $registry = \Agentic_Agent_Registry::get_instance();
-        $agents = $registry->get_accessible_instances();
+		// Enqueue assets.
+		$this->enqueue_assets();
 
-        if ( empty( $agents ) ) {
-            return '<p class="agentic-error">No agents available.</p>';
-        }
+		// Get the agent.
+		$registry = \Agentic_Agent_Registry::get_instance();
+		$agents   = $registry->get_accessible_instances();
 
-        // Find requested agent or use first available
-        $agent = null;
-        $agent_id = '';
+		if ( empty( $agents ) ) {
+			return '<p class="agentic-error">No agents available.</p>';
+		}
 
-        if ( ! empty( $atts['agent'] ) && isset( $agents[ $atts['agent'] ] ) ) {
-            $agent = $agents[ $atts['agent'] ];
-            $agent_id = $atts['agent'];
-        } else {
-            $agent = reset( $agents );
-            $agent_id = $agent->get_id();
-        }
+		// Find requested agent or use first available.
+		$agent    = null;
+		$agent_id = '';
 
-        // Build unique container ID for multiple shortcodes on same page
-        $container_id = 'agentic-chat-' . wp_unique_id();
+		if ( ! empty( $atts['agent'] ) && isset( $agents[ $atts['agent'] ] ) ) {
+			$agent    = $agents[ $atts['agent'] ];
+			$agent_id = $atts['agent'];
+		} else {
+			$agent    = reset( $agents );
+			$agent_id = $agent->get_id();
+		}
 
-        // Get styling
-        $style_class = 'agentic-chat-' . sanitize_html_class( $atts['style'] );
-        $height = sanitize_text_field( $atts['height'] );
-        $show_header = filter_var( $atts['show_header'], FILTER_VALIDATE_BOOLEAN );
+		// Build unique container ID for multiple shortcodes on same page.
+		$container_id = 'agentic-chat-' . wp_unique_id();
 
-        ob_start();
-        ?>
-        <div id="<?php echo esc_attr( $container_id ); ?>" 
-             class="agentic-chat-container agentic-chat-frontend <?php echo esc_attr( $style_class ); ?>"
-             data-agent-id="<?php echo esc_attr( $agent_id ); ?>"
-             data-context="<?php echo esc_attr( $atts['context'] ); ?>"
-             style="--agentic-chat-height: <?php echo esc_attr( $height ); ?>">
-            
-            <?php if ( $show_header ) : ?>
-            <div class="agentic-chat-header">
-                <div class="agentic-agent-info">
-                    <span class="agentic-agent-avatar"><?php echo esc_html( $agent->get_icon() ); ?></span>
-                    <div class="agentic-agent-details">
-                        <h4 id="agentic-agent-name"><?php echo esc_html( $agent->get_name() ); ?></h4>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
+		// Get styling.
+		$style_class = 'agentic-chat-' . sanitize_html_class( $atts['style'] );
+		$height      = sanitize_text_field( $atts['height'] );
+		$show_header = filter_var( $atts['show_header'], FILTER_VALIDATE_BOOLEAN );
 
-            <div id="agentic-messages" class="agentic-chat-messages">
-                <div class="agentic-message agentic-message-agent">
-                    <div class="agentic-message-content">
-                        <?php echo wp_kses_post( $agent->get_welcome_message() ); ?>
-                    </div>
-                </div>
-            </div>
+		ob_start();
+		?>
+		<div id="<?php echo esc_attr( $container_id ); ?>" 
+			class="agentic-chat-container agentic-chat-frontend <?php echo esc_attr( $style_class ); ?>"
+			data-agent-id="<?php echo esc_attr( $agent_id ); ?>"
+			data-context="<?php echo esc_attr( $atts['context'] ); ?>"
+			style="--agentic-chat-height: <?php echo esc_attr( $height ); ?>">
+			
+			<?php if ( $show_header ) : ?>
+			<div class="agentic-chat-header">
+				<div class="agentic-agent-info">
+					<span class="agentic-agent-avatar"><?php echo esc_html( $agent->get_icon() ); ?></span>
+					<div class="agentic-agent-details">
+						<h4 id="agentic-agent-name"><?php echo esc_html( $agent->get_name() ); ?></h4>
+					</div>
+				</div>
+			</div>
+			<?php endif; ?>
 
-            <div id="agentic-typing" class="agentic-typing-indicator" style="display: none;">
-                <span></span><span></span><span></span>
-            </div>
+			<div id="agentic-messages" class="agentic-chat-messages">
+				<div class="agentic-message agentic-message-agent">
+					<div class="agentic-message-content">
+						<?php echo wp_kses_post( $agent->get_welcome_message() ); ?>
+					</div>
+				</div>
+			</div>
 
-            <form id="agentic-chat-form" class="agentic-chat-form">
-                <div class="agentic-input-wrapper">
-                    <textarea 
-                        id="agentic-input" 
-                        placeholder="<?php echo esc_attr( $atts['placeholder'] ); ?>"
-                        rows="1"
-                        required
-                    ></textarea>
-                    <button type="submit" id="agentic-send" class="agentic-send-btn">
-                        <span class="dashicons dashicons-arrow-right-alt"></span>
-                    </button>
-                </div>
-            </form>
+			<div id="agentic-typing" class="agentic-typing-indicator" style="display: none;">
+				<span></span><span></span><span></span>
+			</div>
 
-            <div class="agentic-chat-footer">
-                <button type="button" id="agentic-clear-chat" class="agentic-clear-btn">
-                    Clear
-                </button>
-                <span id="agentic-stats" class="agentic-stats"></span>
-            </div>
-        </div>
+			<form id="agentic-chat-form" class="agentic-chat-form">
+				<div class="agentic-input-wrapper">
+					<textarea 
+						id="agentic-input" 
+						placeholder="<?php echo esc_attr( $atts['placeholder'] ); ?>"
+						rows="1"
+						required
+					></textarea>
+					<button type="submit" id="agentic-send" class="agentic-send-btn">
+						<span class="dashicons dashicons-arrow-right-alt"></span>
+					</button>
+				</div>
+			</form>
 
-        <?php if ( $atts['style'] === 'popup' ) : ?>
-        <button class="agentic-chat-trigger" data-target="<?php echo esc_attr( $container_id ); ?>">
-            <?php echo esc_html( $agent->get_icon() ); ?> Chat
-        </button>
-        <script>
-        (function() {
-            const trigger = document.querySelector('[data-target="<?php echo esc_js( $container_id ); ?>"]');
-            const container = document.getElementById('<?php echo esc_js( $container_id ); ?>');
-            if (trigger && container) {
-                container.classList.add('agentic-chat-hidden');
-                trigger.addEventListener('click', function() {
-                    container.classList.toggle('agentic-chat-hidden');
-                });
-            }
-        })();
-        </script>
-        <?php endif; ?>
+			<div class="agentic-chat-footer">
+				<button type="button" id="agentic-clear-chat" class="agentic-clear-btn">
+					Clear
+				</button>
+				<span id="agentic-stats" class="agentic-stats"></span>
+			</div>
+		</div>
 
-        <?php
-        return ob_get_clean();
-    }
+		<?php if ( 'popup' === $atts['style'] ) : ?>
+		<button class="agentic-chat-trigger" data-target="<?php echo esc_attr( $container_id ); ?>">
+			<?php echo esc_html( $agent->get_icon() ); ?> Chat
+		</button>
+		<script>
+		(function() {
+			const trigger = document.querySelector('[data-target="<?php echo esc_js( $container_id ); ?>"]');
+			const container = document.getElementById('<?php echo esc_js( $container_id ); ?>');
+			if (trigger && container) {
+				container.classList.add('agentic-chat-hidden');
+				trigger.addEventListener('click', function() {
+					container.classList.toggle('agentic-chat-hidden');
+				});
+			}
+		})();
+		</script>
+		<?php endif; ?>
 
-    /**
-     * Render ask shortcode (one-shot query).
-     *
-     * Usage:
-     * [agentic_ask agent="seo-analyzer" question="Analyze this page for SEO"]
-     * [agentic_ask agent="product-describer" question="Describe this product" context="product_id:123"]
-     *
-     * @param array $atts Shortcode attributes.
-     * @return string HTML output.
-     */
-    public function render_ask( $atts ): string {
-        $atts = shortcode_atts( [
-            'agent'    => '',
-            'question' => '',
-            'context'  => '',
-            'cache'    => 'true',
-        ], $atts, 'agentic_ask' );
+		<?php
+		return ob_get_clean();
+	}
 
-        if ( empty( $atts['question'] ) ) {
-            return '<p class="agentic-error">Missing question attribute.</p>';
-        }
+	/**
+	 * Render ask shortcode (one-shot query).
+	 *
+	 * Usage:
+	 * [agentic_ask agent="seo-analyzer" question="Analyze this page for SEO"]
+	 * [agentic_ask agent="product-describer" question="Describe this product" context="product_id:123"]
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string HTML output.
+	 */
+	public function render_ask( $atts ): string {
+		$atts = shortcode_atts(
+			array(
+				'agent'    => '',
+				'question' => '',
+				'context'  => '',
+				'cache'    => 'true',
+			),
+			$atts,
+			'agentic_ask'
+		);
 
-        // Get the agent
-        $registry = \Agentic_Agent_Registry::get_instance();
-        $agents = $registry->get_accessible_instances();
+		if ( empty( $atts['question'] ) ) {
+			return '<p class="agentic-error">Missing question attribute.</p>';
+		}
 
-        if ( empty( $agents ) ) {
-            return '<p class="agentic-error">No agents available.</p>';
-        }
+		// Get the agent.
+		$registry = \Agentic_Agent_Registry::get_instance();
+		$agents   = $registry->get_accessible_instances();
 
-        $agent = null;
-        $agent_id = '';
+		if ( empty( $agents ) ) {
+			return '<p class="agentic-error">No agents available.</p>';
+		}
 
-        if ( ! empty( $atts['agent'] ) && isset( $agents[ $atts['agent'] ] ) ) {
-            $agent = $agents[ $atts['agent'] ];
-            $agent_id = $atts['agent'];
-        } else {
-            $agent = reset( $agents );
-            $agent_id = $agent->get_id();
-        }
+		$agent    = null;
+		$agent_id = '';
 
-        // Build the message with context
-        $message = $atts['question'];
-        if ( ! empty( $atts['context'] ) ) {
-            $message .= "\n\nContext: " . $atts['context'];
-        }
+		if ( ! empty( $atts['agent'] ) && isset( $agents[ $atts['agent'] ] ) ) {
+			$agent    = $agents[ $atts['agent'] ];
+			$agent_id = $atts['agent'];
+		} else {
+			$agent    = reset( $agents );
+			$agent_id = $agent->get_id();
+		}
 
-        // Check cache first
-        $use_cache = filter_var( $atts['cache'], FILTER_VALIDATE_BOOLEAN );
-        $user_id = get_current_user_id();
+		// Build the message with context.
+		$message = $atts['question'];
+		if ( ! empty( $atts['context'] ) ) {
+			$message .= "\n\nContext: " . $atts['context'];
+		}
 
-        if ( $use_cache && Response_Cache::should_cache( $message, [] ) ) {
-            $cached = Response_Cache::get( $message, $agent_id, $user_id );
-            if ( $cached !== null ) {
-                return $this->render_ask_response( $cached['response'], $agent, true );
-            }
-        }
+		// Check cache first.
+		$use_cache = filter_var( $atts['cache'], FILTER_VALIDATE_BOOLEAN );
+		$user_id   = get_current_user_id();
 
-        // Call the agent
-        $controller = new Agent_Controller();
-        $response = $controller->chat( $message, [], $user_id, '', $agent_id );
+		if ( $use_cache && Response_Cache::should_cache( $message, array() ) ) {
+			$cached = Response_Cache::get( $message, $agent_id, $user_id );
+			if ( null !== $cached ) {
+				return $this->render_ask_response( $cached['response'], $agent, true );
+			}
+		}
 
-        if ( ! empty( $response['error'] ) ) {
-            return '<p class="agentic-error">' . esc_html( $response['response'] ) . '</p>';
-        }
+		// Call the agent.
+		$controller = new Agent_Controller();
+		$response   = $controller->chat( $message, array(), $user_id, '', $agent_id );
 
-        // Cache the response
-        if ( $use_cache && Response_Cache::should_cache( $message, [] ) ) {
-            Response_Cache::set( $message, $agent_id, $response, $user_id );
-        }
+		if ( ! empty( $response['error'] ) ) {
+			return '<p class="agentic-error">' . esc_html( $response['response'] ) . '</p>';
+		}
 
-        return $this->render_ask_response( $response['response'], $agent, false );
-    }
+		// Cache the response.
+		if ( $use_cache && Response_Cache::should_cache( $message, array() ) ) {
+			Response_Cache::set( $message, $agent_id, $response, $user_id );
+		}
 
-    /**
-     * Render the ask response.
-     *
-     * @param string           $response Response text.
-     * @param \Agentic\Agent_Base $agent Agent instance.
-     * @param bool             $cached   Whether response was cached.
-     * @return string HTML output.
-     */
-    private function render_ask_response( string $response, $agent, bool $cached ): string {
-        ob_start();
-        ?>
-        <div class="agentic-ask-response">
-            <div class="agentic-ask-header">
-                <span class="agentic-agent-avatar"><?php echo esc_html( $agent->get_icon() ); ?></span>
-                <span class="agentic-agent-name"><?php echo esc_html( $agent->get_name() ); ?></span>
-                <?php if ( $cached ) : ?>
-                <span class="agentic-cached-badge" title="Cached response">⚡</span>
-                <?php endif; ?>
-            </div>
-            <div class="agentic-ask-content">
-                <?php echo wp_kses_post( $this->render_markdown( $response ) ); ?>
-            </div>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
+		return $this->render_ask_response( $response['response'], $agent, false );
+	}
 
-    /**
-     * Simple markdown to HTML conversion.
-     *
-     * @param string $text Markdown text.
-     * @return string HTML.
-     */
-    private function render_markdown( string $text ): string {
-        // Basic markdown conversion
-        $html = esc_html( $text );
+	/**
+	 * Render the ask response.
+	 *
+	 * @param string              $response Response text.
+	 * @param \Agentic\Agent_Base $agent Agent instance.
+	 * @param bool                $cached   Whether response was cached.
+	 * @return string HTML output.
+	 */
+	private function render_ask_response( string $response, $agent, bool $cached ): string {
+		ob_start();
+		?>
+		<div class="agentic-ask-response">
+			<div class="agentic-ask-header">
+				<span class="agentic-agent-avatar"><?php echo esc_html( $agent->get_icon() ); ?></span>
+				<span class="agentic-agent-name"><?php echo esc_html( $agent->get_name() ); ?></span>
+				<?php if ( $cached ) : ?>
+				<span class="agentic-cached-badge" title="Cached response">⚡</span>
+				<?php endif; ?>
+			</div>
+			<div class="agentic-ask-content">
+				<?php echo wp_kses_post( $this->render_markdown( $response ) ); ?>
+			</div>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
 
-        // Code blocks
-        $html = preg_replace( '/```(\w*)\n([\s\S]*?)```/m', '<pre><code>$2</code></pre>', $html );
+	/**
+	 * Simple markdown to HTML conversion.
+	 *
+	 * @param string $text Markdown text.
+	 * @return string HTML.
+	 */
+	private function render_markdown( string $text ): string {
+		// Basic markdown conversion.
+		$html = esc_html( $text );
 
-        // Inline code
-        $html = preg_replace( '/`([^`]+)`/', '<code>$1</code>', $html );
+		// Code blocks.
+		$html = preg_replace( '/```(\w*)\n([\s\S]*?)```/m', '<pre><code>$2</code></pre>', $html );
 
-        // Bold
-        $html = preg_replace( '/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $html );
+		// Inline code.
+		$html = preg_replace( '/`([^`]+)`/', '<code>$1</code>', $html );
 
-        // Italic
-        $html = preg_replace( '/\*([^*]+)\*/', '<em>$1</em>', $html );
+		// Bold.
+		$html = preg_replace( '/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $html );
 
-        // Links
-        $html = preg_replace( '/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank" rel="noopener">$1</a>', $html );
+		// Italic.
+		$html = preg_replace( '/\*([^*]+)\*/', '<em>$1</em>', $html );
 
-        // Line breaks
-        $html = nl2br( $html );
+		// Links.
+		$html = preg_replace( '/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank" rel="noopener">$1</a>', $html );
 
-        return $html;
-    }
+		// Line breaks.
+		$html = nl2br( $html );
 
-    /**
-     * Check if current user can access frontend chat.
-     *
-     * @return bool
-     */
-    private function can_access_frontend_chat(): bool {
-        // Allow if logged in
-        if ( is_user_logged_in() ) {
-            return true;
-        }
+		return $html;
+	}
 
-        // Check if anonymous access is allowed
-        return (bool) get_option( 'agentic_allow_anonymous_chat', false );
-    }
+	/**
+	 * Check if current user can access frontend chat.
+	 *
+	 * @return bool
+	 */
+	private function can_access_frontend_chat(): bool {
+		// Allow if logged in.
+		if ( is_user_logged_in() ) {
+			return true;
+		}
 
-    /**
-     * Render login prompt.
-     *
-     * @return string HTML.
-     */
-    private function render_login_prompt(): string {
-        $login_url = wp_login_url( get_permalink() );
-        
-        return sprintf(
-            '<div class="agentic-login-prompt"><p>%s</p><a href="%s" class="button">%s</a></div>',
-            esc_html__( 'Please log in to chat with our AI assistant.', 'agentic-core' ),
-            esc_url( $login_url ),
-            esc_html__( 'Log In', 'agentic-core' )
-        );
-    }
+		// Check if anonymous access is allowed.
+		return (bool) get_option( 'agentic_allow_anonymous_chat', false );
+	}
+
+	/**
+	 * Render login prompt.
+	 *
+	 * @return string HTML.
+	 */
+	private function render_login_prompt(): string {
+		$login_url = wp_login_url( get_permalink() );
+
+		return sprintf(
+			'<div class="agentic-login-prompt"><p>%s</p><a href="%s" class="button">%s</a></div>',
+			esc_html__( 'Please log in to chat with our AI assistant.', 'agentic-core' ),
+			esc_url( $login_url ),
+			esc_html__( 'Log In', 'agentic-core' )
+		);
+	}
 }

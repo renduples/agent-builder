@@ -249,13 +249,6 @@ class Agent_Tools {
 	}
 
 	/**
-	 * Agent tool handlers
-	 *
-	 * @var array
-	 */
-	private array $agent_tool_handlers = array();
-
-	/**
 	 * Execute a tool call
 	 *
 	 * @param string $name      Tool name.

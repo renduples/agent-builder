@@ -6,7 +6,7 @@
  * Version: 0.1.0-alpha
  * Requires at least: 6.4
  * Requires PHP: 8.1
- * Author: AgenticPlugin.com
+ * Author: Agentic-Plugin.com
  * Author URI: https://github.com/renduples/agentic-plugin
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html

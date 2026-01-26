@@ -131,9 +131,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 						value="<?php echo esc_attr( $api_key ); ?>" 
 						class="regular-text"
 					/>
-					<button type="button" id="agentic-test-api" class="button" style="margin-left: 8px;">
-						<span class="dashicons dashicons-controls-play" style="margin-right: 4px; vertical-align: -2px;"></span>Test
-					</button>
+					<button type="button" id="agentic-test-api" class="button" style="margin-left: 8px;">Test</button>
 					<p class="description" id="agentic-api-key-help">
 						<!-- Updated dynamically based on provider -->
 					</p>

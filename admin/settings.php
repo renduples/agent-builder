@@ -104,9 +104,18 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 						<option value="google" <?php selected( $llm_provider, 'google' ); ?>>Google (Gemini)</option>
 						<option value="mistral" <?php selected( $llm_provider, 'mistral' ); ?>>Mistral AI</option>
 					</select>
+					<a href="#" id="agentic-get-api-key" class="button" target="_blank" style="margin-left: 8px;">
+						<span class="dashicons dashicons-external" style="margin-right: 4px; vertical-align: -2px;"></span>Get API Key
+					</a>
 					<p class="description">
 						Choose your preferred AI provider for the agent builder.
 					</p>
+					<div id="agentic-api-key-instructions" style="margin-top: 12px; padding: 12px; background: #f0f6fc; border-left: 4px solid #0073aa; display: none;">
+						<p style="margin: 0 0 8px 0; font-weight: 600;">How to get your API key:</p>
+						<ol style="margin: 0; padding-left: 20px;" id="agentic-api-steps">
+							<!-- Steps populated dynamically -->
+						</ol>
+					</div>
 				</td>
 			</tr>
 

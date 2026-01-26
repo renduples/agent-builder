@@ -14,7 +14,14 @@ const llmProviders = {
 			'gpt-4': 'GPT-4',
 			'gpt-3.5-turbo': 'GPT-3.5 Turbo'
 		},
-		default: 'gpt-4o'
+		default: 'gpt-4o',
+		steps: [
+			'Click the "Get API Key" button above to visit OpenAI Platform',
+			'Sign up or log in to your OpenAI account',
+			'Navigate to the API Keys section',
+			'Click "Create new secret key" and give it a name',
+			'Copy the generated API key and paste it below'
+		]
 	},
 	anthropic: {
 		name: 'Anthropic',
@@ -24,7 +31,14 @@ const llmProviders = {
 			'claude-3-5-haiku-20241022': 'Claude 3.5 Haiku (Fast)',
 			'claude-3-opus-20240229': 'Claude 3 Opus (Most capable)'
 		},
-		default: 'claude-3-5-sonnet-20241022'
+		default: 'claude-3-5-sonnet-20241022',
+		steps: [
+			'Click the "Get API Key" button above to visit Anthropic Console',
+			'Sign up or log in to your Anthropic account',
+			'Go to Settings → API Keys',
+			'Click "Create Key" and provide a name',
+			'Copy the generated API key and paste it below'
+		]
 	},
 	xai: {
 		name: 'xAI',
@@ -35,7 +49,14 @@ const llmProviders = {
 			'grok-3-mini': 'Grok 3 Mini (Efficient)',
 			'grok-3-mini-fast': 'Grok 3 Mini Fast (Fastest)'
 		},
-		default: 'grok-3'
+		default: 'grok-3',
+		steps: [
+			'Click the "Get API Key" button above to visit xAI Console',
+			'Sign up or log in to your xAI account',
+			'Navigate to the API Keys section',
+			'Click "Create API Key" and follow the prompts',
+			'Copy the generated API key and paste it below'
+		]
 	},
 	google: {
 		name: 'Google',
@@ -45,7 +66,14 @@ const llmProviders = {
 			'gemini-1.5-pro': 'Gemini 1.5 Pro',
 			'gemini-1.5-flash': 'Gemini 1.5 Flash (Fast)'
 		},
-		default: 'gemini-2.0-flash-exp'
+		default: 'gemini-2.0-flash-exp',
+		steps: [
+			'Click the "Get API Key" button above to visit Google AI Studio',
+			'Sign in with your Google account',
+			'Click "Get API key" in the left sidebar',
+			'Click "Create API key" and select your Google Cloud project',
+			'Copy the generated API key and paste it below'
+		]
 	},
 	mistral: {
 		name: 'Mistral',
@@ -55,7 +83,14 @@ const llmProviders = {
 			'mistral-medium-latest': 'Mistral Medium',
 			'mistral-small-latest': 'Mistral Small (Fast)'
 		},
-		default: 'mistral-large-latest'
+		default: 'mistral-large-latest',
+		steps: [
+			'Click the "Get API Key" button above to visit Mistral AI Console',
+			'Sign up or log in to your Mistral AI account',
+			'Go to the API Keys section',
+			'Click "Create new key" and provide a name',
+			'Copy the generated API key and paste it below'
+		]
 	}
 };
 
@@ -64,6 +99,9 @@ function updateLLMFields() {
 	const modelSelect = document.getElementById('agentic_model');
 	const apiHelp = document.getElementById('agentic-api-key-help');
 	const modelHelp = document.getElementById('agentic-model-help');
+	const getApiKeyBtn = document.getElementById('agentic-get-api-key');
+	const instructionsDiv = document.getElementById('agentic-api-key-instructions');
+	const stepsOl = document.getElementById('agentic-api-steps');
 
 	if (!providerSelect || !modelSelect || !apiHelp || !modelHelp) {
 		return;
@@ -73,8 +111,18 @@ function updateLLMFields() {
 	const config = llmProviders[provider] || llmProviders.openai;
 	const currentModel = modelSelect.dataset.currentModel || modelSelect.value;
 
+	// Update Get API Key button link
+	if (getApiKeyBtn) {
+		getApiKeyBtn.href = config.docs;
+	}
+
 	// Update API key help text
-	apiHelp.innerHTML = `Your ${config.name} API key. Get one from <a href="${config.docs}" target="_blank">${config.docs}</a>`;
+	apiHelp.innerHTML = `Your ${config.name} API key. <a href="#" id="agentic-show-instructions" style="text-decoration: underline;">Need help getting an API key?</a>`;
+
+	// Update instructions steps
+	if (stepsOl && config.steps) {
+		stepsOl.innerHTML = config.steps.map(step => `<li style="margin-bottom: 4px;">${step}</li>`).join('');
+	}
 
 	// Update model dropdown
 	modelSelect.innerHTML = '';
@@ -88,6 +136,19 @@ function updateLLMFields() {
 
 	// Update model help text
 	modelHelp.innerHTML = `The ${config.name} model to use for agent responses. The recommended option provides the best results.`;
+
+	// Re-attach event listener for show instructions link
+	setTimeout(() => {
+		const showInstructionsLink = document.getElementById('agentic-show-instructions');
+		if (showInstructionsLink && instructionsDiv) {
+			showInstructionsLink.addEventListener('click', function(e) {
+				e.preventDefault();
+				const isVisible = instructionsDiv.style.display !== 'none';
+				instructionsDiv.style.display = isVisible ? 'none' : 'block';
+				showInstructionsLink.textContent = isVisible ? 'Need help getting an API key?' : 'Hide instructions';
+			});
+		}
+	}, 0);
 }
 
 // Initialize on page load

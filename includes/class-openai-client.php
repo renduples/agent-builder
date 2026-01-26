@@ -170,6 +170,106 @@ class LLM_Client {
 	}
 
 	/**
+	 * Get API endpoint for a specific provider (public version for testing)
+	 *
+	 * @param string $provider Provider name.
+	 * @return string Endpoint URL.
+	 */
+	public function get_endpoint_for_provider( string $provider ): string {
+		if ( ! isset( self::ENDPOINTS[ $provider ] ) ) {
+			return '';
+		}
+
+		$endpoint = self::ENDPOINTS[ $provider ];
+
+		// Google uses model-specific endpoints.
+		if ( 'google' === $provider ) {
+			$endpoint .= 'gemini-2.0-flash-exp:generateContent?key=' . get_option( 'agentic_llm_api_key', '' );
+		}
+
+		return $endpoint;
+	}
+
+	/**
+	 * Get headers for a specific provider (public version for testing)
+	 *
+	 * @param string $provider Provider name.
+	 * @param string $api_key  API key to use.
+	 * @return array Headers.
+	 */
+	public function get_headers_for_provider( string $provider, string $api_key ): array {
+		$headers = array( 'Content-Type' => 'application/json' );
+
+		switch ( $provider ) {
+			case 'anthropic':
+				$headers['x-api-key']         = $api_key;
+				$headers['anthropic-version'] = '2023-06-01';
+				break;
+			case 'google':
+				// API key in URL for Google.
+				break;
+			default:
+				// OpenAI, xAI, Mistral use Bearer token.
+				$headers['Authorization'] = 'Bearer ' . $api_key;
+		}
+
+		return $headers;
+	}
+
+	/**
+	 * Format request body for a specific provider (public version for testing)
+	 *
+	 * @param string $provider Provider name.
+	 * @param array  $messages Conversation messages.
+	 * @return array Formatted request body.
+	 */
+	public function format_request_for_provider( string $provider, array $messages ): array {
+		$body = array();
+
+		switch ( $provider ) {
+			case 'anthropic':
+				// Anthropic uses different format.
+				$system = '';
+				$msgs   = array();
+				foreach ( $messages as $msg ) {
+					if ( 'system' === $msg['role'] ) {
+						$system = $msg['content'];
+					} else {
+						$msgs[] = $msg;
+					}
+				}
+				$body['model']      = get_option( 'agentic_model', 'claude-3-5-sonnet-20241022' );
+				$body['messages']   = $msgs;
+				$body['max_tokens'] = 4096;
+				if ( ! empty( $system ) ) {
+					$body['system'] = $system;
+				}
+				break;
+
+			case 'google':
+				// Google uses different format.
+				$contents = array();
+				foreach ( $messages as $msg ) {
+					$contents[] = array(
+						'role'  => 'user' === $msg['role'] ? 'user' : 'model',
+						'parts' => array( array( 'text' => $msg['content'] ) ),
+					);
+				}
+				$body['contents'] = $contents;
+				break;
+
+			default:
+				// OpenAI, xAI, Mistral use standard format.
+				$body['model']       = get_option( 'agentic_model', 'gpt-4o' );
+				$body['messages']    = $messages;
+				$body['max_tokens']  = 4096;
+				$body['temperature'] = 0.7;
+		}
+
+		return $body;
+	}
+
+	/**
 	 * Get API endpoint for the current provider
 	 *
 	 * @return string|\WP_Error Endpoint URL or error.

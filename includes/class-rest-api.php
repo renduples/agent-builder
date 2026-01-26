@@ -81,6 +81,29 @@ class REST_API {
 			)
 		);
 
+		// Test API key
+		register_rest_route(
+			'agentic/v1',
+			'/test-api',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'test_api_key' ),
+				'permission_callback' => array( $this, 'check_admin' ),
+				'args'                => array(
+					'provider' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'api_key' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
 		// Get pending approvals (admin only)
 		register_rest_route(
 			'agentic/v1',
@@ -325,6 +348,91 @@ class REST_API {
 				// Git commands intentionally removed for security.
 				// Changes are written to disk but require manual commit via terminal.
 			}
+		}
+	}
+
+	/**
+	 * Test an API key with the LLM provider
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response
+	 */
+	public function test_api_key( \WP_REST_Request $request ): \WP_REST_Response {
+		$provider = sanitize_text_field( $request->get_param( 'provider' ) );
+		$api_key  = sanitize_text_field( $request->get_param( 'api_key' ) );
+
+		if ( empty( $provider ) || empty( $api_key ) ) {
+			return new \WP_REST_Response(
+				array( 'success' => false, 'message' => 'Provider and API key are required.' ),
+				400
+			);
+		}
+
+		// Create a temporary LLM_Client with the test values
+		$llm = new LLM_Client();
+
+		// Test by making a simple API call
+		$messages = array(
+			array(
+				'role'    => 'user',
+				'content' => 'Hello, please respond with OK.',
+			),
+		);
+
+		// Temporarily override the provider and API key for testing
+		try {
+			$response = wp_remote_post(
+				$llm->get_endpoint_for_provider( $provider ),
+				array(
+					'timeout' => 15,
+					'headers' => $llm->get_headers_for_provider( $provider, $api_key ),
+					'body'    => wp_json_encode( $llm->format_request_for_provider( $provider, $messages ) ),
+				)
+			);
+
+			if ( is_wp_error( $response ) ) {
+				return new \WP_REST_Response(
+					array(
+						'success' => false,
+						'message' => 'Connection failed: ' . $response->get_error_message(),
+					),
+					400
+				);
+			}
+
+			$status = wp_remote_retrieve_response_code( $response );
+			$body   = json_decode( wp_remote_retrieve_body( $response ), true );
+
+			if ( 200 === $status || 201 === $status ) {
+				return new \WP_REST_Response(
+					array(
+						'success' => true,
+						'message' => 'API key is valid and working!',
+					),
+					200
+				);
+			} else {
+				$error_msg = $body['error']['message'] ?? $body['error'] ?? 'Unknown error';
+				if ( is_array( $error_msg ) ) {
+					$error_msg = wp_json_encode( $error_msg );
+				}
+				return new \WP_REST_Response(
+					array(
+						'success' => false,
+						'message' => 'API Error: ' . $error_msg,
+						'status'  => $status,
+					),
+					$status
+				);
+			}
+		} catch ( Exception $e ) {
+			return new \WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => 'Test failed: ' . $e->getMessage(),
+				),
+				400
+			);
 		}
 	}
 

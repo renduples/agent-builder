@@ -724,22 +724,36 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 	document.getElementById('agentic-test-api').addEventListener('click', async function() {
 		const result = document.getElementById('agentic-test-result');
 		const btn = this;
+		const provider = document.getElementById('agentic_llm_provider').value;
+		const apiKey = document.getElementById('agentic_llm_api_key').value;
+		
+		if (!apiKey) {
+			result.innerHTML = '<p style="color: #b91c1c; margin: 0;"><span class="dashicons dashicons-no-alt" style="vertical-align: -2px;"></span> ✗ Please enter an API key first</p>';
+			return;
+		}
+		
 		btn.disabled = true;
 		const originalText = btn.innerHTML;
 		btn.innerHTML = '<span class="spinner" style="float: none; vertical-align: -2px; margin-right: 4px;"></span>Testing...';
 		
 		try {
-			const response = await fetch('<?php echo esc_js( rest_url( 'agentic/v1/status' ) ); ?>', {
+			const response = await fetch('<?php echo esc_js( rest_url( 'agentic/v1/test-api' ) ); ?>', {
+				method: 'POST',
 				headers: {
+					'Content-Type': 'application/json',
 					'X-WP-Nonce': '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>'
-				}
+				},
+				body: JSON.stringify({
+					provider: provider,
+					api_key: apiKey
+				})
 			});
 			const data = await response.json();
 			
-			if (data.configured) {
-				result.innerHTML = '<p style="color: #22c55e; margin: 0;"><span class="dashicons dashicons-yes-alt" style="vertical-align: -2px;"></span> ✓ API is configured and ready!</p>';
+			if (data.success) {
+				result.innerHTML = '<p style="color: #22c55e; margin: 0;"><span class="dashicons dashicons-yes-alt" style="vertical-align: -2px;"></span> ✓ ' + data.message + '</p>';
 			} else {
-				result.innerHTML = '<p style="color: #b91c1c; margin: 0;"><span class="dashicons dashicons-no-alt" style="vertical-align: -2px;"></span> ✗ API key not configured</p>';
+				result.innerHTML = '<p style="color: #b91c1c; margin: 0;"><span class="dashicons dashicons-no-alt" style="vertical-align: -2px;"></span> ✗ ' + (data.message || 'API test failed') + '</p>';
 			}
 		} catch (error) {
 			result.innerHTML = '<p style="color: #b91c1c; margin: 0;"><span class="dashicons dashicons-no-alt" style="vertical-align: -2px;"></span> ✗ Error: ' + error.message + '</p>';

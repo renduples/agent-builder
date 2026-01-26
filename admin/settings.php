@@ -749,13 +749,19 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			const data = await response.json();
 			
 			if (data.success) {
-				result.innerHTML = '<p style="color: #22c55e; margin: 0;"><span class="dashicons dashicons-yes-alt" style="vertical-align: -2px;"></span> ✓ ' + data.message + '</p>';
+				result.innerHTML = '<p style="color: #22c55e; margin: 0;"><span class="dashicons dashicons-yes-alt" style="vertical-align: -2px;"></span> ✓ ' + data.message + ' Saving...</p>';
+				
+				// Auto-save the settings
+				setTimeout(() => {
+					document.querySelector('form').submit();
+				}, 500);
 			} else {
 				result.innerHTML = '<p style="color: #b91c1c; margin: 0;"><span class="dashicons dashicons-no-alt" style="vertical-align: -2px;"></span> ✗ ' + (data.message || 'API test failed') + '</p>';
+				btn.disabled = false;
+				btn.innerHTML = originalText;
 			}
 		} catch (error) {
 			result.innerHTML = '<p style="color: #b91c1c; margin: 0;"><span class="dashicons dashicons-no-alt" style="vertical-align: -2px;"></span> ✗ Error: ' + error.message + '</p>';
-		} finally {
 			btn.disabled = false;
 			btn.innerHTML = originalText;
 		}

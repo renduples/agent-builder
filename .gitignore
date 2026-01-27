@@ -90,3 +90,5 @@ vendor/
 
 # Private project plans (ignored)
 /private/CLAUDE.md
+/CLAUDE.md
+/image/

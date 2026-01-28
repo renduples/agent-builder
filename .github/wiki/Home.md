@@ -1,6 +1,6 @@
 # Agentic Plugin Wiki
 
-Welcome to the Agentic Plugin documentation wiki.
+Welcome to the Agentic Plugin documentation wiki. For assistance please email support@agentic-plugin.com
 
 ## 📚 Documentation
 

@@ -295,7 +295,7 @@ We're actively researching solutions and welcome community input.
 
 **Have ideas?**
 - 💬 Comment on this roadmap in GitHub
-- 📧 Email: feedback@agentic-plugin.com
+- 📧 Email: support@agentic-plugin.com
 - 🤖 Chat with the Developer Agent on our site
 - 🐦 Tweet @agenticplugin
 

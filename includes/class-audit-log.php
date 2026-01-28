@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace Agentic\Core;
+namespace Agentic;
 
 /**
  * Audit logging for agent actions

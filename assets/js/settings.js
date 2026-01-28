@@ -180,4 +180,108 @@ document.addEventListener('DOMContentLoaded', function() {
 		updateAgentModeHelp();
 		agentModeSelect.addEventListener('change', updateAgentModeHelp);
 	}
+
+	// System Requirements Checker
+	const systemCheckBtn = document.getElementById('agentic-system-check');
+	if (systemCheckBtn) {
+		systemCheckBtn.addEventListener('click', async function() {
+			const btn = this;
+			const spinner = document.getElementById('agentic-check-spinner');
+			const resultsDiv = document.getElementById('agentic-system-results');
+			
+			btn.disabled = true;
+			spinner.style.display = 'inline-block';
+			resultsDiv.innerHTML = '<p>Running system checks...</p>';
+			resultsDiv.style.display = 'block';
+			
+			try {
+				// Run all checks
+				const response = await fetch('/wp-json/agentic/v1/system-check', {
+					headers: { 
+						'X-WP-Nonce': '<?php echo wp_create_nonce("wp_rest"); ?>' 
+					}
+				});
+				
+				if (!response.ok) {
+					throw new Error('System check request failed');
+				}
+				
+				const data = await response.json();
+				
+				// Build results table
+				let html = '';
+				
+				// Summary
+				const passed = data.checks.filter(c => c.status === 'pass').length;
+				const total = data.checks.length;
+				
+				if (passed === total) {
+					html += '<div class="notice notice-success inline" style="margin-bottom: 15px;"><p><strong>All checks passed!</strong> Your server is ready for the Agent Builder.</p></div>';
+				} else {
+					html += '<div class="notice notice-error inline" style="margin-bottom: 15px;"><p><strong>Some checks failed.</strong> Please fix the issues below before using the Agent Builder.</p></div>';
+				}
+				
+				// Results table
+				html += '<table class="widefat" style="max-width: 900px;">';
+				html += '<thead><tr>';
+				html += '<th>Requirement</th>';
+				html += '<th>Status</th>';
+				html += '<th>Current Value</th>';
+				html += '<th>Required</th>';
+				html += '<th>Action</th>';
+				html += '</tr></thead><tbody>';
+				
+				data.checks.forEach(check => {
+					let statusIcon, statusColor, statusText, rowClass;
+					
+					if (check.status === 'pass') {
+						statusIcon = '<span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span>';
+						statusColor = '#22c55e';
+						statusText = 'Pass';
+						rowClass = 'pass';
+					} else if (check.status === 'warning') {
+						statusIcon = '<span class="dashicons dashicons-warning" style="color: #f59e0b;"></span>';
+						statusColor = '#f59e0b';
+						statusText = 'Warning';
+						rowClass = 'warning';
+					} else {
+						statusIcon = '<span class="dashicons dashicons-no-alt" style="color: #b91c1c;"></span>';
+						statusColor = '#b91c1c';
+						statusText = 'Fail';
+						rowClass = 'fail';
+					}
+					
+					html += '<tr class="' + rowClass + '">';
+					html += '<td><strong>' + check.name + '</strong></td>';
+					html += '<td>' + statusIcon + ' ' + statusText + '</td>';
+					html += '<td>' + check.value + '</td>';
+					html += '<td>' + check.required + '</td>';
+					html += '<td>';
+					
+					if (check.status !== 'pass') {
+						html += '<details style="cursor: pointer;">';
+						html += '<summary style="color: #2271b1; text-decoration: underline;">Show fix</summary>';
+						html += '<p style="margin: 8px 0 0 0; padding: 8px; background: #f0f0f1; border-left: 3px solid ' + statusColor + ';">';
+						html += check.fix;
+						html += '</p></details>';
+					} else {
+						html += '—';
+					}
+					
+					html += '</td>';
+					html += '</tr>';
+				});
+				
+				html += '</tbody></table>';
+				
+				resultsDiv.innerHTML = html;
+				
+			} catch (error) {
+				resultsDiv.innerHTML = '<div class="notice notice-error inline"><p>System check failed: ' + error.message + '</p></div>';
+			} finally {
+				btn.disabled = false;
+				spinner.style.display = 'none';
+			}
+		});
+	}
 });

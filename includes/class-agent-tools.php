@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace Agentic\Core;
+namespace Agentic;
 
 /**
  * Collection of tools available to the AI agent

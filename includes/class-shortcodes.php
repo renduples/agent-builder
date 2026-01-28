@@ -44,16 +44,16 @@ class Shortcodes {
 	public function register_assets(): void {
 		wp_register_style(
 			'agentic-chat-frontend',
-			AGENTIC_CORE_PLUGIN_URL . 'assets/css/chat-frontend.css',
+			AGENTIC_PLUGIN_URL . 'assets/css/chat-frontend.css',
 			array(),
-			AGENTIC_CORE_VERSION
+			AGENTIC_PLUGIN_VERSION
 		);
 
 		wp_register_script(
 			'agentic-chat-frontend',
-			AGENTIC_CORE_PLUGIN_URL . 'assets/js/chat.js',
+			AGENTIC_PLUGIN_URL . 'assets/js/chat.js',
 			array(),
-			AGENTIC_CORE_VERSION,
+			AGENTIC_PLUGIN_VERSION,
 			true
 		);
 	}
@@ -379,9 +379,9 @@ class Shortcodes {
 
 		return sprintf(
 			'<div class="agentic-login-prompt"><p>%s</p><a href="%s" class="button">%s</a></div>',
-			esc_html__( 'Please log in to chat with our AI assistant.', 'agentic-core' ),
+			esc_html__( 'Please log in to chat with our AI assistant.', 'agentic-plugin' ),
 			esc_url( $login_url ),
-			esc_html__( 'Log In', 'agentic-core' )
+			esc_html__( 'Log In', 'agentic-plugin' )
 		);
 	}
 }

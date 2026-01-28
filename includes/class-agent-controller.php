@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Agentic\Core;
+namespace Agentic;
 
 /**
  * Main agent controller handling conversations and tool orchestration

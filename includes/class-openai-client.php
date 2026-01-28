@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Agentic\Core;
+namespace Agentic;
 
 /**
  * LLM client supporting OpenAI, Anthropic, xAI, Google, and Mistral.

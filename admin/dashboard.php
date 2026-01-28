@@ -9,11 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Agentic\Core\Audit_Log;
-use Agentic\Core\LLM_Client;
+use Agentic\Audit_Log;
+use Agentic\LLM_Client;
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-core' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-plugin' ) );
 }
 
 $audit         = new Audit_Log();
@@ -35,7 +35,7 @@ $model         = $llm->get_model();
 			<table class="widefat">
 				<tr>
 					<td><strong>Version</strong></td>
-					<td><?php echo esc_html( AGENTIC_CORE_VERSION ); ?></td>
+					<td><?php echo esc_html( AGENTIC_PLUGIN_VERSION ); ?></td>
 				</tr>
 				<tr>
 					<td><strong>Mode</strong></td>

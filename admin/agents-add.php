@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Handle install action
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-core' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-plugin' ) );
 }
 
 $action  = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
@@ -31,7 +31,7 @@ if ( $action === 'install' && $slug && wp_verify_nonce( $_GET['_wpnonce'] ?? '',
 	if ( is_wp_error( $result ) ) {
 		$error = $result->get_error_message();
 	} else {
-		$message = __( 'Agent installed successfully.', 'agentic-core' );
+		$message = __( 'Agent installed successfully.', 'agentic-plugin' );
 	}
 }
 
@@ -53,7 +53,7 @@ $library = $registry->get_library_agents(
 ?>
 
 <div class="wrap agentic-add-agents-page">
-	<h1 class="wp-heading-inline"><?php esc_html_e( 'Add Agents', 'agentic-core' ); ?></h1>
+	<h1 class="wp-heading-inline"><?php esc_html_e( 'Add Agents', 'agentic-plugin' ); ?></h1>
 	<hr class="wp-header-end">
 
 	<?php if ( $message ) : ?>
@@ -61,7 +61,7 @@ $library = $registry->get_library_agents(
 			<p>
 				<?php echo esc_html( $message ); ?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents' ) ); ?>">
-					<?php esc_html_e( 'Go to Installed Agents', 'agentic-core' ); ?>
+					<?php esc_html_e( 'Go to Installed Agents', 'agentic-plugin' ); ?>
 				</a>
 			</p>
 		</div>
@@ -78,13 +78,13 @@ $library = $registry->get_library_agents(
 		<li>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&tab=featured' ) ); ?>"
 				class="<?php echo ( $tab === 'featured' && empty( $category ) ) ? 'current' : ''; ?>">
-				<?php esc_html_e( 'Featured', 'agentic-core' ); ?>
+				<?php esc_html_e( 'Featured', 'agentic-plugin' ); ?>
 			</a>
 		</li>
 		<li>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&tab=popular' ) ); ?>"
 				class="<?php echo $tab === 'popular' ? 'current' : ''; ?>">
-				<?php esc_html_e( 'Popular', 'agentic-core' ); ?>
+				<?php esc_html_e( 'Popular', 'agentic-plugin' ); ?>
 			</a>
 		</li>
 		<?php foreach ( $categories as $cat => $count ) : ?>
@@ -103,14 +103,14 @@ $library = $registry->get_library_agents(
 		<input type="hidden" name="page" value="agentic-agents-add">
 		<p class="search-box">
 			<label class="screen-reader-text" for="agent-search-input">
-				<?php esc_html_e( 'Search Agents', 'agentic-core' ); ?>
+				<?php esc_html_e( 'Search Agents', 'agentic-plugin' ); ?>
 			</label>
 			<input type="search" id="agent-search-input" name="s"
 					value="<?php echo esc_attr( $search ); ?>"
-					placeholder="<?php esc_attr_e( 'Search agents...', 'agentic-core' ); ?>"
+					placeholder="<?php esc_attr_e( 'Search agents...', 'agentic-plugin' ); ?>"
 					class="wp-filter-search">
 			<input type="submit" id="search-submit" class="button hide-if-js"
-					value="<?php esc_attr_e( 'Search Agents', 'agentic-core' ); ?>">
+					value="<?php esc_attr_e( 'Search Agents', 'agentic-plugin' ); ?>">
 		</p>
 	</form>
 
@@ -119,14 +119,14 @@ $library = $registry->get_library_agents(
 	<?php if ( empty( $library['agents'] ) ) : ?>
 		<div class="no-plugin-results">
 			<?php if ( $search ) : ?>
-				<p><?php esc_html_e( 'No agents found matching your search.', 'agentic-core' ); ?></p>
+				<p><?php esc_html_e( 'No agents found matching your search.', 'agentic-plugin' ); ?></p>
 			<?php else : ?>
 				<div class="agentic-empty-library">
-					<h2><?php esc_html_e( 'Agent Library is Empty', 'agentic-core' ); ?></h2>
-					<p><?php esc_html_e( 'No agents are available in the library yet. Check back soon or contribute your own agents!', 'agentic-core' ); ?></p>
+					<h2><?php esc_html_e( 'Agent Library is Empty', 'agentic-plugin' ); ?></h2>
+					<p><?php esc_html_e( 'No agents are available in the library yet. Check back soon or contribute your own agents!', 'agentic-plugin' ); ?></p>
 					<p>
 						<a href="https://github.com/renduples/agentic-plugin" target="_blank" class="button button-primary">
-							<?php esc_html_e( 'Learn How to Create Agents', 'agentic-core' ); ?>
+							<?php esc_html_e( 'Learn How to Create Agents', 'agentic-plugin' ); ?>
 						</a>
 					</p>
 				</div>
@@ -155,7 +155,7 @@ $library = $registry->get_library_agents(
 						</div>
 						<p class="authors">
 							<cite>
-								<?php esc_html_e( 'By', 'agentic-core' ); ?>
+								<?php esc_html_e( 'By', 'agentic-plugin' ); ?>
 								<?php if ( ! empty( $agent['author_uri'] ) ) : ?>
 									<a href="<?php echo esc_url( $agent['author_uri'] ); ?>" target="_blank">
 										<?php echo esc_html( $agent['author'] ); ?>
@@ -171,12 +171,12 @@ $library = $registry->get_library_agents(
 						<div class="action-links">
 							<?php if ( $agent['installed'] ) : ?>
 								<button type="button" class="button button-disabled" disabled="disabled">
-									<?php esc_html_e( 'Installed', 'agentic-core' ); ?>
+									<?php esc_html_e( 'Installed', 'agentic-plugin' ); ?>
 								</button>
 							<?php else : ?>
 								<a class="install-now button button-primary"
 									href="<?php echo esc_url( $install_url ); ?>">
-									<?php esc_html_e( 'Install Now', 'agentic-core' ); ?>
+									<?php esc_html_e( 'Install Now', 'agentic-plugin' ); ?>
 								</a>
 							<?php endif; ?>
 						</div>
@@ -190,7 +190,7 @@ $library = $registry->get_library_agents(
 							<?php endif; ?>
 						</div>
 						<div class="column-updated">
-							<strong><?php esc_html_e( 'Version:', 'agentic-core' ); ?></strong>
+							<strong><?php esc_html_e( 'Version:', 'agentic-plugin' ); ?></strong>
 							<?php echo esc_html( $agent['version'] ); ?>
 						</div>
 						<div class="column-compatibility">
@@ -198,7 +198,7 @@ $library = $registry->get_library_agents(
 								<span class="agent-caps" title="<?php echo esc_attr( implode( ', ', $agent['capabilities'] ) ); ?>">
 									<?php
 									printf(
-										esc_html( _n( '%d capability', '%d capabilities', count( $agent['capabilities'] ), 'agentic-core' ) ),
+										esc_html( _n( '%d capability', '%d capabilities', count( $agent['capabilities'] ), 'agentic-plugin' ) ),
 										count( $agent['capabilities'] )
 									);
 									?>
@@ -223,7 +223,7 @@ $library = $registry->get_library_agents(
 					<span class="displaying-num">
 						<?php
 						printf(
-							esc_html( _n( '%s agent', '%s agents', $library['total'], 'agentic-core' ) ),
+							esc_html( _n( '%s agent', '%s agents', $library['total'], 'agentic-plugin' ) ),
 							number_format_i18n( $library['total'] )
 						);
 						?>
@@ -235,14 +235,14 @@ $library = $registry->get_library_agents(
 
 	<!-- Info Box: Creating Your Own Agent -->
 	<div class="agentic-create-agent-info">
-		<h3><?php esc_html_e( 'Create Your Own Agent', 'agentic-core' ); ?></h3>
-		<p><?php esc_html_e( 'Agents are modular components that can be built by any developer. Like WordPress plugins, agents follow a standard structure:', 'agentic-core' ); ?></p>
+		<h3><?php esc_html_e( 'Create Your Own Agent', 'agentic-plugin' ); ?></h3>
+		<p><?php esc_html_e( 'Agents are modular components that can be built by any developer. Like WordPress plugins, agents follow a standard structure:', 'agentic-plugin' ); ?></p>
 		<pre><code>wp-content/agents/my-agent/
 ├── agent.php          # Main file with agent headers
 ├── includes/          # Agent logic
 └── README.md          # Documentation</code></pre>
 		<p>
-			<strong><?php esc_html_e( 'Agent Headers:', 'agentic-core' ); ?></strong>
+			<strong><?php esc_html_e( 'Agent Headers:', 'agentic-plugin' ); ?></strong>
 		</p>
 		<pre><code>&lt;?php
 /**
@@ -255,7 +255,7 @@ $library = $registry->get_library_agents(
  */</code></pre>
 		<p>
 			<a href="https://github.com/renduples/agentic-plugin/wiki/Creating-Agents" target="_blank" class="button">
-				<?php esc_html_e( 'View Documentation', 'agentic-core' ); ?>
+				<?php esc_html_e( 'View Documentation', 'agentic-plugin' ); ?>
 			</a>
 		</p>
 	</div>

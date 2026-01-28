@@ -12,7 +12,7 @@
 
 declare(strict_types=1);
 
-namespace Agentic\Core;
+namespace Agentic;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -60,9 +60,9 @@ class Marketplace_Client {
 	 */
 	public function add_menu_page(): void {
 		add_submenu_page(
-			'agentic-core',
-			__( 'Add New Agent', 'agentic-core' ),
-			__( 'Add New', 'agentic-core' ),
+			'agentic-plugin',
+			__( 'Add New Agent', 'agentic-plugin' ),
+			__( 'Add New', 'agentic-plugin' ),
 			'manage_options',
 			'agentic-marketplace',
 			array( $this, 'render_marketplace_page' )
@@ -79,16 +79,16 @@ class Marketplace_Client {
 
 		wp_enqueue_style(
 			'agentic-marketplace',
-			AGENTIC_CORE_PLUGIN_URL . 'assets/css/marketplace.css',
+			AGENTIC_PLUGIN_URL . 'assets/css/marketplace.css',
 			array(),
-			AGENTIC_CORE_VERSION
+			AGENTIC_PLUGIN_VERSION
 		);
 
 		wp_enqueue_script(
 			'agentic-marketplace',
-			AGENTIC_CORE_PLUGIN_URL . 'assets/js/marketplace.js',
+			AGENTIC_PLUGIN_URL . 'assets/js/marketplace.js',
 			array( 'jquery', 'wp-util' ),
-			AGENTIC_CORE_VERSION,
+			AGENTIC_PLUGIN_VERSION,
 			true
 		);
 
@@ -104,28 +104,28 @@ class Marketplace_Client {
 				'installed'    => $this->get_installed_agents(),
 				'pricingUrl'   => 'https://agentic-plugin.com/pricing/',
 				'strings'      => array(
-					'install'           => __( 'Install', 'agentic-core' ),
-					'installing'        => __( 'Installing...', 'agentic-core' ),
-					'installed'         => __( 'Installed', 'agentic-core' ),
-					'activate'          => __( 'Activate', 'agentic-core' ),
-					'activating'        => __( 'Activating...', 'agentic-core' ),
-					'active'            => __( 'Active', 'agentic-core' ),
-					'deactivate'        => __( 'Deactivate', 'agentic-core' ),
-					'update'            => __( 'Update', 'agentic-core' ),
-					'updating'          => __( 'Updating...', 'agentic-core' ),
-					'purchase'          => __( 'Purchase', 'agentic-core' ),
-					'enterLicense'      => __( 'Enter License Key', 'agentic-core' ),
-					'error'             => __( 'An error occurred', 'agentic-core' ),
-					'searchPlaceholder' => __( 'Search agents...', 'agentic-core' ),
-					'noResults'         => __( 'No agents found', 'agentic-core' ),
-					'viewDetails'       => __( 'View Details', 'agentic-core' ),
-					'downloads'         => __( 'downloads', 'agentic-core' ),
-					'lastUpdated'       => __( 'Last updated', 'agentic-core' ),
-					'version'           => __( 'Version', 'agentic-core' ),
-					'author'            => __( 'By', 'agentic-core' ),
-					'requires'          => __( 'Requires', 'agentic-core' ),
-					'testedUpTo'        => __( 'Tested up to', 'agentic-core' ),
-					'free'              => __( 'Free', 'agentic-core' ),
+					'install'           => __( 'Install', 'agentic-plugin' ),
+					'installing'        => __( 'Installing...', 'agentic-plugin' ),
+					'installed'         => __( 'Installed', 'agentic-plugin' ),
+					'activate'          => __( 'Activate', 'agentic-plugin' ),
+					'activating'        => __( 'Activating...', 'agentic-plugin' ),
+					'active'            => __( 'Active', 'agentic-plugin' ),
+					'deactivate'        => __( 'Deactivate', 'agentic-plugin' ),
+					'update'            => __( 'Update', 'agentic-plugin' ),
+					'updating'          => __( 'Updating...', 'agentic-plugin' ),
+					'purchase'          => __( 'Purchase', 'agentic-plugin' ),
+					'enterLicense'      => __( 'Enter License Key', 'agentic-plugin' ),
+					'error'             => __( 'An error occurred', 'agentic-plugin' ),
+					'searchPlaceholder' => __( 'Search agents...', 'agentic-plugin' ),
+					'noResults'         => __( 'No agents found', 'agentic-plugin' ),
+					'viewDetails'       => __( 'View Details', 'agentic-plugin' ),
+					'downloads'         => __( 'downloads', 'agentic-plugin' ),
+					'lastUpdated'       => __( 'Last updated', 'agentic-plugin' ),
+					'version'           => __( 'Version', 'agentic-plugin' ),
+					'author'            => __( 'By', 'agentic-plugin' ),
+					'requires'          => __( 'Requires', 'agentic-plugin' ),
+					'testedUpTo'        => __( 'Tested up to', 'agentic-plugin' ),
+					'free'              => __( 'Free', 'agentic-plugin' ),
 				),
 			)
 		);
@@ -153,7 +153,7 @@ class Marketplace_Client {
 		}
 
 		// Also check library agents
-		$library_dir = AGENTIC_CORE_PLUGIN_DIR . 'library';
+		$library_dir = AGENTIC_PLUGIN_DIR . 'library';
 		if ( is_dir( $library_dir ) ) {
 			$dirs = glob( $library_dir . '/*', GLOB_ONLYDIR );
 			foreach ( $dirs as $dir ) {
@@ -207,27 +207,27 @@ class Marketplace_Client {
 		if ( ! $has_license ) {
 			?>
 			<div class="wrap">
-				<h1><?php esc_html_e( 'Agent Marketplace', 'agentic-core' ); ?></h1>
+				<h1><?php esc_html_e( 'Agent Marketplace', 'agentic-plugin' ); ?></h1>
 				
 				<div class="notice notice-warning" style="padding: 20px; margin: 20px 0;">
-					<h2 style="margin-top: 0;"><?php esc_html_e( 'License Required', 'agentic-core' ); ?></h2>
-					<p><?php esc_html_e( 'A valid license is required to access the Agent Marketplace and download premium agents.', 'agentic-core' ); ?></p>
+					<h2 style="margin-top: 0;"><?php esc_html_e( 'License Required', 'agentic-plugin' ); ?></h2>
+					<p><?php esc_html_e( 'A valid license is required to access the Agent Marketplace and download premium agents.', 'agentic-plugin' ); ?></p>
 					<p>
 						<a href="https://agentic-plugin.com/pricing" class="button button-primary" target="_blank">
-							<?php esc_html_e( 'Purchase License ($10/year)', 'agentic-core' ); ?>
+							<?php esc_html_e( 'Purchase License ($10/year)', 'agentic-plugin' ); ?>
 						</a>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-settings' ) ); ?>" class="button">
-							<?php esc_html_e( 'Enter License Key', 'agentic-core' ); ?>
+							<?php esc_html_e( 'Enter License Key', 'agentic-plugin' ); ?>
 						</a>
 					</p>
 					<p style="margin: 0;">
-						<strong><?php esc_html_e( 'What you get with a license:', 'agentic-core' ); ?></strong>
+						<strong><?php esc_html_e( 'What you get with a license:', 'agentic-plugin' ); ?></strong>
 					</p>
 					<ul style="margin-left: 20px;">
-						<li><?php esc_html_e( 'Access to 100+ premium agents', 'agentic-core' ); ?></li>
-						<li><?php esc_html_e( 'One-click agent installation', 'agentic-core' ); ?></li>
-						<li><?php esc_html_e( 'Upload and sell your own agents', 'agentic-core' ); ?></li>
-						<li><?php esc_html_e( 'Priority support', 'agentic-core' ); ?></li>
+						<li><?php esc_html_e( 'Access to 100+ premium agents', 'agentic-plugin' ); ?></li>
+						<li><?php esc_html_e( 'One-click agent installation', 'agentic-plugin' ); ?></li>
+						<li><?php esc_html_e( 'Upload and sell your own agents', 'agentic-plugin' ); ?></li>
+						<li><?php esc_html_e( 'Priority support', 'agentic-plugin' ); ?></li>
 					</ul>
 				</div>
 			</div>
@@ -237,24 +237,24 @@ class Marketplace_Client {
 
 		?>
 		<div class="wrap agentic-marketplace-wrap">
-			<h1 class="wp-heading-inline"><?php esc_html_e( 'Add New Agent', 'agentic-core' ); ?></h1>
+			<h1 class="wp-heading-inline"><?php esc_html_e( 'Add New Agent', 'agentic-plugin' ); ?></h1>
 
 			<div class="agentic-marketplace-header">
 				<div class="agentic-marketplace-tabs">
-					<a href="#" class="agentic-tab active" data-tab="featured"><?php esc_html_e( 'Featured', 'agentic-core' ); ?></a>
-					<a href="#" class="agentic-tab" data-tab="popular"><?php esc_html_e( 'Popular', 'agentic-core' ); ?></a>
-					<a href="#" class="agentic-tab" data-tab="recent"><?php esc_html_e( 'Recently Updated', 'agentic-core' ); ?></a>
-					<a href="#" class="agentic-tab" data-tab="free"><?php esc_html_e( 'Free', 'agentic-core' ); ?></a>
+					<a href="#" class="agentic-tab active" data-tab="featured"><?php esc_html_e( 'Featured', 'agentic-plugin' ); ?></a>
+					<a href="#" class="agentic-tab" data-tab="popular"><?php esc_html_e( 'Popular', 'agentic-plugin' ); ?></a>
+					<a href="#" class="agentic-tab" data-tab="recent"><?php esc_html_e( 'Recently Updated', 'agentic-plugin' ); ?></a>
+					<a href="#" class="agentic-tab" data-tab="free"><?php esc_html_e( 'Free', 'agentic-plugin' ); ?></a>
 				</div>
 
 				<div class="agentic-marketplace-search">
-					<input type="search" id="agentic-agent-search" placeholder="<?php esc_attr_e( 'Search agents...', 'agentic-core' ); ?>">
+					<input type="search" id="agentic-agent-search" placeholder="<?php esc_attr_e( 'Search agents...', 'agentic-plugin' ); ?>">
 				</div>
 			</div>
 
 			<div class="agentic-marketplace-filters">
 				<select id="agentic-category-filter">
-					<option value=""><?php esc_html_e( 'All Categories', 'agentic-core' ); ?></option>
+					<option value=""><?php esc_html_e( 'All Categories', 'agentic-plugin' ); ?></option>
 				</select>
 			</div>
 
@@ -262,7 +262,7 @@ class Marketplace_Client {
 				<div class="agentic-agents-grid" id="agentic-agents-grid">
 					<div class="agentic-loading">
 						<span class="spinner is-active"></span>
-						<?php esc_html_e( 'Loading agents...', 'agentic-core' ); ?>
+						<?php esc_html_e( 'Loading agents...', 'agentic-plugin' ); ?>
 					</div>
 				</div>
 
@@ -335,7 +335,7 @@ class Marketplace_Client {
 		$agent_id = isset( $_POST['agent_id'] ) ? absint( $_POST['agent_id'] ) : 0;
 
 		if ( ! $agent_id ) {
-			wp_send_json_error( __( 'Invalid agent ID', 'agentic-core' ) );
+			wp_send_json_error( __( 'Invalid agent ID', 'agentic-plugin' ) );
 		}
 
 		$response = $this->api_request( "agents/{$agent_id}" );
@@ -354,14 +354,14 @@ class Marketplace_Client {
 		check_ajax_referer( 'agentic_marketplace', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied', 'agentic-core' ) );
+			wp_send_json_error( __( 'Permission denied', 'agentic-plugin' ) );
 		}
 
 		$agent_id    = isset( $_POST['agent_id'] ) ? absint( $_POST['agent_id'] ) : 0;
 		$license_key = isset( $_POST['license_key'] ) ? sanitize_text_field( $_POST['license_key'] ) : '';
 
 		if ( ! $agent_id ) {
-			wp_send_json_error( __( 'Invalid agent ID', 'agentic-core' ) );
+			wp_send_json_error( __( 'Invalid agent ID', 'agentic-plugin' ) );
 		}
 
 		// Get agent details
@@ -373,7 +373,7 @@ class Marketplace_Client {
 		// Check if premium and verify license
 		if ( $agent['is_premium'] ) {
 			if ( empty( $license_key ) ) {
-				wp_send_json_error( __( 'License key required for premium agents', 'agentic-core' ) );
+				wp_send_json_error( __( 'License key required for premium agents', 'agentic-plugin' ) );
 			}
 
 			$verification = $this->api_request(
@@ -391,7 +391,7 @@ class Marketplace_Client {
 			}
 
 			if ( ! $verification['valid'] ) {
-				wp_send_json_error( __( 'Invalid license key', 'agentic-core' ) );
+				wp_send_json_error( __( 'Invalid license key', 'agentic-plugin' ) );
 			}
 
 			$download_url = $verification['download_url'];
@@ -421,7 +421,7 @@ class Marketplace_Client {
 
 		wp_send_json_success(
 			array(
-				'message' => __( 'Agent installed successfully', 'agentic-core' ),
+				'message' => __( 'Agent installed successfully', 'agentic-plugin' ),
 				'slug'    => $agent['slug'],
 			)
 		);
@@ -465,7 +465,7 @@ class Marketplace_Client {
 				$this->move_directory_contents( $subdirs[0], $agent_dir );
 				@rmdir( $subdirs[0] );
 			} else {
-				return new \WP_Error( 'invalid_agent', __( 'Invalid agent package: agent.php not found', 'agentic-core' ) );
+				return new \WP_Error( 'invalid_agent', __( 'Invalid agent package: agent.php not found', 'agentic-plugin' ) );
 			}
 		}
 
@@ -492,13 +492,13 @@ class Marketplace_Client {
 		check_ajax_referer( 'agentic_marketplace', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied', 'agentic-core' ) );
+			wp_send_json_error( __( 'Permission denied', 'agentic-plugin' ) );
 		}
 
 		$slug = isset( $_POST['slug'] ) ? sanitize_text_field( $_POST['slug'] ) : '';
 
 		if ( ! $slug ) {
-			wp_send_json_error( __( 'Invalid agent slug', 'agentic-core' ) );
+			wp_send_json_error( __( 'Invalid agent slug', 'agentic-plugin' ) );
 		}
 
 		$active_agents = get_option( 'agentic_active_agents', array() );
@@ -509,7 +509,7 @@ class Marketplace_Client {
 
 		wp_send_json_success(
 			array(
-				'message' => __( 'Agent activated', 'agentic-core' ),
+				'message' => __( 'Agent activated', 'agentic-plugin' ),
 				'slug'    => $slug,
 			)
 		);
@@ -522,13 +522,13 @@ class Marketplace_Client {
 		check_ajax_referer( 'agentic_marketplace', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied', 'agentic-core' ) );
+			wp_send_json_error( __( 'Permission denied', 'agentic-plugin' ) );
 		}
 
 		$slug = isset( $_POST['slug'] ) ? sanitize_text_field( $_POST['slug'] ) : '';
 
 		if ( ! $slug ) {
-			wp_send_json_error( __( 'Invalid agent slug', 'agentic-core' ) );
+			wp_send_json_error( __( 'Invalid agent slug', 'agentic-plugin' ) );
 		}
 
 		$active_agents = get_option( 'agentic_active_agents', array() );
@@ -537,7 +537,7 @@ class Marketplace_Client {
 
 		wp_send_json_success(
 			array(
-				'message' => __( 'Agent deactivated', 'agentic-core' ),
+				'message' => __( 'Agent deactivated', 'agentic-plugin' ),
 				'slug'    => $slug,
 			)
 		);
@@ -561,7 +561,7 @@ class Marketplace_Client {
 		$rating   = isset( $_POST['rating'] ) ? absint( $_POST['rating'] ) : 0;
 
 		if ( ! $agent_id || $rating < 1 || $rating > 5 ) {
-			wp_send_json_error( __( 'Invalid rating', 'agentic-core' ) );
+			wp_send_json_error( __( 'Invalid rating', 'agentic-plugin' ) );
 		}
 
 		$response = $this->api_request(
@@ -621,13 +621,13 @@ class Marketplace_Client {
 		$data = json_decode( $body, true );
 
 		if ( $data === null || ! is_array( $data ) ) {
-			return new \WP_Error( 'api_error', __( 'Invalid API response format', 'agentic-core' ) );
+			return new \WP_Error( 'api_error', __( 'Invalid API response format', 'agentic-plugin' ) );
 		}
 
 		if ( $code >= 400 ) {
 			return new \WP_Error(
 				'api_error',
-				$data['message'] ?? __( 'API request failed', 'agentic-core' )
+				$data['message'] ?? __( 'API request failed', 'agentic-plugin' )
 			);
 		}
 

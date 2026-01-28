@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace Agentic\Core;
+namespace Agentic;
 
 /**
  * Manages the approval queue for agent actions requiring human oversight

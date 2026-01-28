@@ -1,16 +1,16 @@
 <?php
 /**
- * Plugin Name: Agentic Core
+ * Plugin Name: Agentic Plugin
  * Plugin URI: https://agentic-plugin.com
- * Description: Core AI agent capabilities for WordPress - enables autonomous agents for content management, administration, and user interaction.
- * Version: 0.1.0-alpha
+ * Description: AI agent marketplace for WordPress - build, deploy & monetize autonomous agents for content management, administration, and user interaction.
+ * Version: 0.1.3-alpha
  * Requires at least: 6.4
  * Requires PHP: 8.1
  * Author: Agentic-Plugin.com
  * Author URI: https://github.com/renduples/agentic-plugin
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: agentic-core
+ * Text Domain: agentic-plugin
  * Domain Path: /languages
  *
  * @package Agentic_Plugin
@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace Agentic\Core;
+namespace Agentic;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,32 +26,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'AGENTIC_CORE_VERSION', '0.1.0-alpha' );
-define( 'AGENTIC_CORE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'AGENTIC_CORE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'AGENTIC_CORE_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-define( 'AGENTIC_CORE_PATH', plugin_dir_path( __FILE__ ) );
+define( 'AGENTIC_PLUGIN_VERSION', '0.1.3-alpha' );
+define( 'AGENTIC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'AGENTIC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'AGENTIC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+define( 'AGENTIC_PLUGIN_FILE', __FILE__ );
 
 /**
  * Main plugin class
  *
  * @since 0.1.0
  */
-final class Agentic_Core {
+final class Plugin {
 
     /**
      * Plugin instance
      *
-     * @var Agentic_Core|null
+     * @var Plugin|null
      */
-    private static ?Agentic_Core $instance = null;
+    private static ?Plugin $instance = null;
 
     /**
      * Get plugin instance
      *
-     * @return Agentic_Core
+     * @return Plugin
      */
-    public static function get_instance(): Agentic_Core {
+    public static function get_instance(): Plugin {
         if ( null === self::$instance ) {
             self::$instance = new self();
         }
@@ -92,9 +92,9 @@ final class Agentic_Core {
      */
     public function load_textdomain(): void {
         load_plugin_textdomain(
-            'agentic-core',
+            'agentic-plugin',
             false,
-            dirname( AGENTIC_CORE_PLUGIN_BASENAME ) . '/languages'
+            dirname( AGENTIC_PLUGIN_BASENAME ) . '/languages'
         );
     }
 
@@ -132,29 +132,29 @@ final class Agentic_Core {
      */
     public function admin_menu(): void {
         add_menu_page(
-            __( 'Agentic', 'agentic-core' ),
-            __( 'Agentic', 'agentic-core' ),
+            __( 'Agentic', 'agentic-plugin' ),
+            __( 'Agentic', 'agentic-plugin' ),
             'manage_options',
-            'agentic-core',
+            'agentic-plugin',
             [ $this, 'render_admin_page' ],
             'dashicons-superhero',
             30
         );
 
         add_submenu_page(
-            'agentic-core',
-            __( 'Dashboard', 'agentic-core' ),
-            __( 'Dashboard', 'agentic-core' ),
+            'agentic-plugin',
+            __( 'Dashboard', 'agentic-plugin' ),
+            __( 'Dashboard', 'agentic-plugin' ),
             'manage_options',
-            'agentic-core',
+            'agentic-plugin',
             [ $this, 'render_admin_page' ]
         );
 
         // Agent Chat
         add_submenu_page(
-            'agentic-core',
-            __( 'Agent Chat', 'agentic-core' ),
-            __( 'Agent Chat', 'agentic-core' ),
+            'agentic-plugin',
+            __( 'Agent Chat', 'agentic-plugin' ),
+            __( 'Agent Chat', 'agentic-plugin' ),
             'read',
             'agentic-chat',
             [ $this, 'render_chat_page' ]
@@ -162,45 +162,45 @@ final class Agentic_Core {
 
         // Agents menu (like Plugins menu)
         add_submenu_page(
-            'agentic-core',
-            __( 'Installed Agents', 'agentic-core' ),
-            __( 'Installed Agents', 'agentic-core' ),
+            'agentic-plugin',
+            __( 'Installed Agents', 'agentic-plugin' ),
+            __( 'Installed Agents', 'agentic-plugin' ),
             'manage_options',
             'agentic-agents',
             [ $this, 'render_agents_page' ]
         );
 
         add_submenu_page(
-            'agentic-core',
-            __( 'Add New Agent', 'agentic-core' ),
-            __( 'Add Agent', 'agentic-core' ),
+            'agentic-plugin',
+            __( 'Add New Agent', 'agentic-plugin' ),
+            __( 'Add Agent', 'agentic-plugin' ),
             'manage_options',
             'agentic-agents-add',
             [ $this, 'render_agents_add_page' ]
         );
 
         add_submenu_page(
-            'agentic-core',
-            __( 'Audit Log', 'agentic-core' ),
-            __( 'Audit Log', 'agentic-core' ),
+            'agentic-plugin',
+            __( 'Audit Log', 'agentic-plugin' ),
+            __( 'Audit Log', 'agentic-plugin' ),
             'manage_options',
             'agentic-audit',
             [ $this, 'render_audit_log_page' ]
         );
 
         add_submenu_page(
-            'agentic-core',
-            __( 'Code Proposals', 'agentic-core' ),
-            __( 'Code Proposals', 'agentic-core' ),
+            'agentic-plugin',
+            __( 'Code Proposals', 'agentic-plugin' ),
+            __( 'Code Proposals', 'agentic-plugin' ),
             'manage_options',
             'agentic-approvals',
             [ $this, 'render_approvals_page' ]
         );
 
         add_submenu_page(
-            'agentic-core',
-            __( 'Settings', 'agentic-core' ),
-            __( 'Settings', 'agentic-core' ),
+            'agentic-plugin',
+            __( 'Settings', 'agentic-plugin' ),
+            __( 'Settings', 'agentic-plugin' ),
             'manage_options',
             'agentic-settings',
             [ $this, 'render_settings_page' ]
@@ -221,10 +221,10 @@ final class Agentic_Core {
         // Add parent menu
         $wp_admin_bar->add_node( [
             'id'    => 'agentic',
-            'title' => '<span class="ab-icon dashicons dashicons-superhero" style="font-size: 18px; line-height: 1.3;"></span>' . __( 'Agents', 'agentic-core' ),
+            'title' => '<span class="ab-icon dashicons dashicons-superhero" style="font-size: 18px; line-height: 1.3;"></span>' . __( 'Agents', 'agentic-plugin' ),
             'href'  => admin_url( 'admin.php?page=agentic-agents' ),
             'meta'  => [
-                'title' => __( 'Agentic Plugin Agents', 'agentic-core' ),
+                'title' => __( 'Agentic Plugin Agents', 'agentic-plugin' ),
             ],
         ] );
 
@@ -232,28 +232,28 @@ final class Agentic_Core {
         $wp_admin_bar->add_node( [
             'id'     => 'agentic-agents',
             'parent' => 'agentic',
-            'title'  => __( 'Installed Agents', 'agentic-core' ),
+            'title'  => __( 'Installed Agents', 'agentic-plugin' ),
             'href'   => admin_url( 'admin.php?page=agentic-agents' ),
         ] );
 
         $wp_admin_bar->add_node( [
             'id'     => 'agentic-add-new',
             'parent' => 'agentic',
-            'title'  => __( 'Add Agent', 'agentic-core' ),
+            'title'  => __( 'Add Agent', 'agentic-plugin' ),
             'href'   => admin_url( 'admin.php?page=agentic-agents-add' ),
         ] );
 
         $wp_admin_bar->add_node( [
             'id'     => 'agentic-audit',
             'parent' => 'agentic',
-            'title'  => __( 'Audit Log', 'agentic-core' ),
+            'title'  => __( 'Audit Log', 'agentic-plugin' ),
             'href'   => admin_url( 'admin.php?page=agentic-audit' ),
         ] );
 
         $wp_admin_bar->add_node( [
             'id'     => 'agentic-settings',
             'parent' => 'agentic',
-            'title'  => __( 'Settings', 'agentic-core' ),
+            'title'  => __( 'Settings', 'agentic-plugin' ),
             'href'   => admin_url( 'admin.php?page=agentic-settings' ),
         ] );
     }
@@ -281,6 +281,9 @@ final class Agentic_Core {
             'callback'            => [ $this, 'get_capabilities' ],
             'permission_callback' => '__return_true',
         ] );
+
+        // Register System Checker routes
+        \Agentic\System_Checker::register_routes();
     }
 
     /**
@@ -291,8 +294,8 @@ final class Agentic_Core {
     private function register_post_types(): void {
         register_post_type( 'agent_audit_log', [
             'labels'       => [
-                'name'          => __( 'Agent Audit Logs', 'agentic-core' ),
-                'singular_name' => __( 'Audit Log', 'agentic-core' ),
+                'name'          => __( 'Agent Audit Logs', 'agentic-plugin' ),
+                'singular_name' => __( 'Audit Log', 'agentic-plugin' ),
             ],
             'public'       => false,
             'show_ui'      => false,
@@ -305,8 +308,8 @@ final class Agentic_Core {
 
         register_post_type( 'agent_approval', [
             'labels'       => [
-                'name'          => __( 'Agent Approvals', 'agentic-core' ),
-                'singular_name' => __( 'Approval', 'agentic-core' ),
+                'name'          => __( 'Agent Approvals', 'agentic-plugin' ),
+                'singular_name' => __( 'Approval', 'agentic-plugin' ),
             ],
             'public'       => false,
             'show_ui'      => false,
@@ -320,23 +323,26 @@ final class Agentic_Core {
      * @return void
      */
     private function load_components(): void {
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-openai-client.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-audit-log.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-agent-tools.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-agent-controller.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-rest-api.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-approval-queue.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-agent-registry.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-chat-security.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-response-cache.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-shortcodes.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-openai-client.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-audit-log.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-tools.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-controller.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-rest-api.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-approval-queue.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-registry.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-chat-security.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-response-cache.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-shortcodes.php';
+
+        // System requirements checker.
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-system-checker.php';
 
         // License management.
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-license-manager.php';
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/license-ajax-handlers.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-license-manager.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/license-ajax-handlers.php';
 
         // Marketplace components
-        require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-marketplace-client.php';
+        require_once AGENTIC_PLUGIN_DIR . 'includes/class-marketplace-client.php';
 
         // Initialize components.
         new REST_API();
@@ -366,7 +372,7 @@ final class Agentic_Core {
 
         // TODO: Implement actual agent chat logic
         return new \WP_REST_Response( [
-            'response'    => __( 'Agent functionality coming soon. This is a placeholder response.', 'agentic-core' ),
+            'response'    => __( 'Agent functionality coming soon. This is a placeholder response.', 'agentic-plugin' ),
             'session_id'  => $session_id,
             'agent_id'    => 'frontend_assistant',
             'tokens_used' => 0,
@@ -381,7 +387,7 @@ final class Agentic_Core {
      */
     public function get_status( \WP_REST_Request $request ): \WP_REST_Response {
         return new \WP_REST_Response( [
-            'version'     => AGENTIC_CORE_VERSION,
+            'version'     => AGENTIC_PLUGIN_VERSION,
             'mode'        => get_option( 'agentic_agent_mode', 'supervised' ),
             'status'      => 'active',
             'ai_provider' => defined( 'AI_PROVIDER' ) ? AI_PROVIDER : 'none',
@@ -420,7 +426,7 @@ final class Agentic_Core {
      * @return void
      */
     public function render_admin_page(): void {
-        include AGENTIC_CORE_PLUGIN_DIR . 'admin/dashboard.php';
+        include AGENTIC_PLUGIN_DIR . 'admin/dashboard.php';
     }
 
     /**
@@ -429,7 +435,7 @@ final class Agentic_Core {
      * @return void
      */
     public function render_audit_log_page(): void {
-        include AGENTIC_CORE_PLUGIN_DIR . 'admin/audit.php';
+        include AGENTIC_PLUGIN_DIR . 'admin/audit.php';
     }
 
     /**
@@ -438,7 +444,7 @@ final class Agentic_Core {
      * @return void
      */
     public function render_approvals_page(): void {
-        include AGENTIC_CORE_PLUGIN_DIR . 'admin/approvals.php';
+        include AGENTIC_PLUGIN_DIR . 'admin/approvals.php';
     }
 
     /**
@@ -447,7 +453,7 @@ final class Agentic_Core {
      * @return void
      */
     public function render_agents_page(): void {
-        include AGENTIC_CORE_PLUGIN_DIR . 'admin/agents.php';
+        include AGENTIC_PLUGIN_DIR . 'admin/agents.php';
     }
 
     /**
@@ -456,7 +462,7 @@ final class Agentic_Core {
      * @return void
      */
     public function render_agents_add_page(): void {
-        include AGENTIC_CORE_PLUGIN_DIR . 'admin/agents-add.php';
+        include AGENTIC_PLUGIN_DIR . 'admin/agents-add.php';
     }
 
     /**
@@ -468,16 +474,16 @@ final class Agentic_Core {
         // Enqueue chat assets for admin
         wp_enqueue_style(
             'agentic-chat',
-            AGENTIC_CORE_PLUGIN_URL . 'assets/css/chat.css',
+            AGENTIC_PLUGIN_URL . 'assets/css/chat.css',
             [],
-            AGENTIC_CORE_VERSION
+            AGENTIC_PLUGIN_VERSION
         );
 
         wp_enqueue_script(
             'agentic-chat',
-            AGENTIC_CORE_PLUGIN_URL . 'assets/js/chat.js',
+            AGENTIC_PLUGIN_URL . 'assets/js/chat.js',
             [],
-            AGENTIC_CORE_VERSION,
+            AGENTIC_PLUGIN_VERSION,
             true
         );
 
@@ -489,12 +495,12 @@ final class Agentic_Core {
         ] );
 
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__( 'Agent Chat', 'agentic-core' ) . '</h1>';
+        echo '<h1>' . esc_html__( 'Agent Chat', 'agentic-plugin' ) . '</h1>';
         
         // Load agent registry to initialize agents
         $registry = \Agentic_Agent_Registry::get_instance();
         
-        include AGENTIC_CORE_PLUGIN_DIR . 'templates/chat-interface.php';
+        include AGENTIC_PLUGIN_DIR . 'templates/chat-interface.php';
         echo '</div>';
     }
 
@@ -507,18 +513,18 @@ final class Agentic_Core {
         // Enqueue settings page script.
         wp_enqueue_script(
             'agentic-settings',
-            AGENTIC_CORE_PLUGIN_URL . 'assets/js/settings.js',
+            AGENTIC_PLUGIN_URL . 'assets/js/settings.js',
             array(),
-            AGENTIC_CORE_VERSION,
+            AGENTIC_PLUGIN_VERSION,
             true
         );
 
         // Enqueue license management script.
         wp_enqueue_script(
             'agentic-license',
-            AGENTIC_CORE_PLUGIN_URL . 'assets/js/license.js',
+            AGENTIC_PLUGIN_URL . 'assets/js/license.js',
             array( 'jquery' ),
-            AGENTIC_CORE_VERSION,
+            AGENTIC_PLUGIN_VERSION,
             true
         );
 
@@ -532,7 +538,7 @@ final class Agentic_Core {
             )
         );
 
-        include AGENTIC_CORE_PLUGIN_DIR . 'admin/settings.php';
+        include AGENTIC_PLUGIN_DIR . 'admin/settings.php';
     }
 
     /**
@@ -544,16 +550,16 @@ final class Agentic_Core {
         if ( is_page( 'agent-chat' ) && is_user_logged_in() ) {
             wp_enqueue_style(
                 'agentic-chat',
-                AGENTIC_CORE_PLUGIN_URL . 'assets/css/chat.css',
+                AGENTIC_PLUGIN_URL . 'assets/css/chat.css',
                 [],
-                AGENTIC_CORE_VERSION
+                AGENTIC_PLUGIN_VERSION
             );
 
             wp_enqueue_script(
                 'agentic-chat',
-                AGENTIC_CORE_PLUGIN_URL . 'assets/js/chat.js',
+                AGENTIC_PLUGIN_URL . 'assets/js/chat.js',
                 [],
-                AGENTIC_CORE_VERSION,
+                AGENTIC_PLUGIN_VERSION,
                 true
             );
 
@@ -576,7 +582,7 @@ final class Agentic_Core {
         if ( is_page( 'agent-chat' ) ) {
             if ( is_user_logged_in() ) {
                 ob_start();
-                include AGENTIC_CORE_PLUGIN_DIR . 'templates/chat-interface.php';
+                include AGENTIC_PLUGIN_DIR . 'templates/chat-interface.php';
                 return ob_get_clean();
             } else {
                 $login_url = home_url( '/login/' );
@@ -813,12 +819,12 @@ final class Agentic_Core {
 }
 
 // Initialize Job Manager
-require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-job-manager.php';
-require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/interface-job-processor.php';
-require_once AGENTIC_CORE_PLUGIN_DIR . 'includes/class-jobs-api.php';
+require_once AGENTIC_PLUGIN_DIR . 'includes/class-job-manager.php';
+require_once AGENTIC_PLUGIN_DIR . 'includes/interface-job-processor.php';
+require_once AGENTIC_PLUGIN_DIR . 'includes/class-jobs-api.php';
 
 Job_Manager::init();
 Jobs_API::init();
 
 // Initialize plugin
-Agentic_Core::get_instance();
+Plugin::get_instance();

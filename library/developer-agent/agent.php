@@ -265,7 +265,7 @@ PROMPT;
      */
     private function tool_read_file( array $args ): array {
         $path = $this->sanitize_path( $args['path'] ?? '' );
-        $base_path = WP_PLUGIN_DIR . '/agentic-core/';
+        $base_path = WP_PLUGIN_DIR . '/agentic-plugin/';
         $full_path = $base_path . $path;
 
         if ( ! file_exists( $full_path ) ) {
@@ -297,7 +297,7 @@ PROMPT;
      */
     private function tool_list_directory( array $args ): array {
         $path = $this->sanitize_path( $args['path'] ?? '' );
-        $base_path = WP_PLUGIN_DIR . '/agentic-core/';
+        $base_path = WP_PLUGIN_DIR . '/agentic-plugin/';
         $full_path = $base_path . $path;
 
         if ( ! is_dir( $full_path ) ) {
@@ -330,7 +330,7 @@ PROMPT;
     private function tool_search_code( array $args ): array {
         $pattern = $args['pattern'] ?? '';
         $file_type = $args['file_type'] ?? null;
-        $base_path = WP_PLUGIN_DIR . '/agentic-core/';
+        $base_path = WP_PLUGIN_DIR . '/agentic-plugin/';
 
         if ( empty( $pattern ) ) {
             return [ 'error' => 'Search pattern required' ];
@@ -397,7 +397,7 @@ PROMPT;
         $agents = [];
 
         // Check library directory for agents
-        $library_path = WP_PLUGIN_DIR . '/agentic-core/library/';
+        $library_path = WP_PLUGIN_DIR . '/agentic-plugin/library/';
         
         if ( is_dir( $library_path ) ) {
             $dirs = scandir( $library_path );

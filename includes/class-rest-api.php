@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace Agentic\Core;
+namespace Agentic;
 
 /**
  * REST API handler for agent interactions
@@ -225,7 +225,7 @@ class REST_API {
 
 		return new \WP_REST_Response(
 			array(
-				'version'      => AGENTIC_CORE_VERSION,
+				'version'      => AGENTIC_PLUGIN_VERSION,
 				'configured'   => $llm->is_configured(),
 				'provider'     => $llm->get_provider(),
 				'model'        => $llm->get_model(),

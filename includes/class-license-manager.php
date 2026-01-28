@@ -186,7 +186,7 @@ class License_Manager {
 					array(
 						'license_key'    => $license_key,
 						'site_url'       => $site_url,
-						'plugin_version' => defined( 'AGENTIC_CORE_VERSION' ) ? AGENTIC_CORE_VERSION : '1.0.0',
+						'plugin_version' => defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '1.0.0',
 					)
 				),
 			)
@@ -230,7 +230,7 @@ class License_Manager {
 						'license_key'    => $license_key,
 						'site_url'       => $site_url,
 						'site_name'      => get_bloginfo( 'name' ),
-						'plugin_version' => defined( 'AGENTIC_CORE_VERSION' ) ? AGENTIC_CORE_VERSION : '1.0.0',
+						'plugin_version' => defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '1.0.0',
 						'wp_version'     => get_bloginfo( 'version' ),
 						'php_version'    => PHP_VERSION,
 					)

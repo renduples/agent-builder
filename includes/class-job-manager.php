@@ -25,19 +25,19 @@ class Job_Manager {
 	/**
 	 * Job statuses
 	 */
-	public const STATUS_PENDING = 'pending';
+	public const STATUS_PENDING    = 'pending';
 	public const STATUS_PROCESSING = 'processing';
-	public const STATUS_COMPLETED = 'completed';
-	public const STATUS_FAILED = 'failed';
-	public const STATUS_CANCELLED = 'cancelled';
+	public const STATUS_COMPLETED  = 'completed';
+	public const STATUS_FAILED     = 'failed';
+	public const STATUS_CANCELLED  = 'cancelled';
 
 	/**
 	 * Initialize
 	 */
 	public static function init(): void {
-		add_action( 'agentic_process_job', [ __CLASS__, 'process_job' ] );
-		add_action( 'agentic_cleanup_jobs', [ __CLASS__, 'cleanup_old_jobs' ] );
-		
+		add_action( 'agentic_process_job', array( __CLASS__, 'process_job' ) );
+		add_action( 'agentic_cleanup_jobs', array( __CLASS__, 'cleanup_old_jobs' ) );
+
 		// Schedule hourly cleanup if not already scheduled
 		if ( ! wp_next_scheduled( 'agentic_cleanup_jobs' ) ) {
 			wp_schedule_event( time(), 'hourly', 'agentic_cleanup_jobs' );
@@ -61,8 +61,8 @@ class Job_Manager {
 	 */
 	public static function create_table(): void {
 		global $wpdb;
-		
-		$table_name = self::get_table_name();
+
+		$table_name      = self::get_table_name();
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
@@ -96,17 +96,17 @@ class Job_Manager {
 	public static function create_job( array $args ): string {
 		global $wpdb;
 
-		$defaults = [
+		$defaults = array(
 			'user_id'      => get_current_user_id(),
 			'agent_id'     => null,
-			'request_data' => [],
+			'request_data' => array(),
 			'processor'    => null,
-		];
+		);
 
 		$args = wp_parse_args( $args, $defaults );
-		
+
 		$job_id = wp_generate_uuid4();
-		$now = current_time( 'mysql' );
+		$now    = current_time( 'mysql' );
 
 		// Store processor class in request_data
 		if ( $args['processor'] ) {
@@ -115,7 +115,7 @@ class Job_Manager {
 
 		$wpdb->insert(
 			self::get_table_name(),
-			[
+			array(
 				'id'           => $job_id,
 				'user_id'      => $args['user_id'],
 				'agent_id'     => $args['agent_id'],
@@ -125,12 +125,12 @@ class Job_Manager {
 				'request_data' => wp_json_encode( $args['request_data'] ),
 				'created_at'   => $now,
 				'updated_at'   => $now,
-			],
-			[ '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%s' ]
+			),
+			array( '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%s' )
 		);
 
 		// Schedule async processing
-		wp_schedule_single_event( time(), 'agentic_process_job', [ $job_id ] );
+		wp_schedule_single_event( time(), 'agentic_process_job', array( $job_id ) );
 
 		return $job_id;
 	}
@@ -143,12 +143,12 @@ class Job_Manager {
 	 */
 	public static function get_job( string $job_id ): ?object {
 		global $wpdb;
-		
+
 		$table = self::get_table_name();
-		
+
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$job = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %s", $job_id ) );
-		
+
 		if ( ! $job ) {
 			return null;
 		}
@@ -182,9 +182,9 @@ class Job_Manager {
 		$result = $wpdb->update(
 			self::get_table_name(),
 			$data,
-			[ 'id' => $job_id ],
+			array( 'id' => $job_id ),
 			null,
-			[ '%s' ]
+			array( '%s' )
 		);
 
 		return false !== $result;
@@ -204,12 +204,12 @@ class Job_Manager {
 		}
 
 		// Check if already processing or completed
-		if ( in_array( $job->status, [ self::STATUS_PROCESSING, self::STATUS_COMPLETED, self::STATUS_CANCELLED ], true ) ) {
+		if ( in_array( $job->status, array( self::STATUS_PROCESSING, self::STATUS_COMPLETED, self::STATUS_CANCELLED ), true ) ) {
 			return;
 		}
 
 		// Update to processing
-		self::update_job( $job_id, [ 'status' => self::STATUS_PROCESSING ] );
+		self::update_job( $job_id, array( 'status' => self::STATUS_PROCESSING ) );
 
 		try {
 			// Get processor class from request data
@@ -225,13 +225,13 @@ class Job_Manager {
 			// Execute with progress callback
 			$result = $processor->execute(
 				$job->request_data,
-				function( $progress, $message ) use ( $job_id ) {
+				function ( $progress, $message ) use ( $job_id ) {
 					self::update_job(
 						$job_id,
-						[
+						array(
 							'progress' => $progress,
 							'message'  => $message,
-						]
+						)
 					);
 				}
 			);
@@ -239,23 +239,23 @@ class Job_Manager {
 			// Mark as completed
 			self::update_job(
 				$job_id,
-				[
+				array(
 					'status'        => self::STATUS_COMPLETED,
 					'progress'      => 100,
 					'message'       => 'Completed',
 					'response_data' => $result,
-				]
+				)
 			);
 
 		} catch ( \Exception $e ) {
 			// Mark as failed
 			self::update_job(
 				$job_id,
-				[
+				array(
 					'status'        => self::STATUS_FAILED,
 					'error_message' => $e->getMessage(),
 					'message'       => 'Failed: ' . $e->getMessage(),
-				]
+				)
 			);
 		}
 	}
@@ -275,10 +275,10 @@ class Job_Manager {
 
 		return self::update_job(
 			$job_id,
-			[
+			array(
 				'status'  => self::STATUS_CANCELLED,
 				'message' => 'Cancelled by user',
-			]
+			)
 		);
 	}
 
@@ -292,7 +292,7 @@ class Job_Manager {
 	 */
 	public static function get_user_jobs( int $user_id, string $status = '', int $limit = 50 ): array {
 		global $wpdb;
-		
+
 		$table = self::get_table_name();
 
 		if ( $status ) {
@@ -334,7 +334,7 @@ class Job_Manager {
 	 */
 	public static function cleanup_old_jobs(): int {
 		global $wpdb;
-		
+
 		$table = self::get_table_name();
 
 		// Delete completed/failed jobs older than 24 hours
@@ -356,7 +356,7 @@ class Job_Manager {
 	 */
 	public static function get_stats( int $user_id = 0 ): array {
 		global $wpdb;
-		
+
 		$table = self::get_table_name();
 
 		$where = $user_id ? $wpdb->prepare( 'WHERE user_id = %d', $user_id ) : '';
@@ -373,12 +373,12 @@ class Job_Manager {
 			ARRAY_A
 		);
 
-		return $stats ?: [
+		return $stats ?: array(
 			'total'      => 0,
 			'pending'    => 0,
 			'processing' => 0,
 			'completed'  => 0,
 			'failed'     => 0,
-		];
+		);
 	}
 }

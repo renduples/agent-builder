@@ -47,12 +47,12 @@ class Agent_Tools {
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->repo_path    = self::get_allowed_repo_base();
+		$this->repo_path     = self::get_allowed_repo_base();
 		$this->allowed_roots = array(
 			trailingslashit( WP_CONTENT_DIR . '/plugins' ),
 			trailingslashit( WP_CONTENT_DIR . '/themes' ),
 		);
-		$this->audit = new Audit_Log();
+		$this->audit         = new Audit_Log();
 	}
 
 	/**
@@ -345,7 +345,7 @@ class Agent_Tools {
 	 */
 	private function read_file( string $path ): array {
 		// Security: prevent path traversal
-		$path      = $this->sanitize_path( $path );
+		$path = $this->sanitize_path( $path );
 
 		if ( ! self::is_allowed_subpath( $path ) ) {
 			return array(
@@ -643,7 +643,7 @@ class Agent_Tools {
 			return array( 'error' => 'Only documentation files (.md, .txt, .rst) can be updated autonomously' );
 		}
 
-		$path      = $this->sanitize_path( $path );
+		$path = $this->sanitize_path( $path );
 
 		if ( ! self::is_allowed_subpath( $path ) ) {
 			return array( 'error' => 'Path not allowed. Only plugins/ or themes/ are accessible.' );
@@ -695,7 +695,7 @@ class Agent_Tools {
 	 * @return array Result.
 	 */
 	private function request_code_change( string $path, string $content, string $reasoning ): array {
-		$path      = $this->sanitize_path( $path );
+		$path = $this->sanitize_path( $path );
 
 		if ( ! self::is_allowed_subpath( $path ) ) {
 			return array( 'error' => 'Path not allowed. Only plugins/ or themes/ are accessible.' );

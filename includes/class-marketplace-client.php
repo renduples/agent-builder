@@ -96,14 +96,14 @@ class Marketplace_Client {
 			'agentic-marketplace',
 			'agenticMarketplace',
 			array(
-				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-				'nonce'        => wp_create_nonce( 'agentic_marketplace' ),
-				'apiBase'      => $this->api_base,
-				'siteUrl'      => home_url(),
-				'siteHash'     => md5( home_url() . wp_salt() ),
-				'installed'    => $this->get_installed_agents(),
-				'pricingUrl'   => 'https://agentic-plugin.com/pricing/',
-				'strings'      => array(
+				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+				'nonce'      => wp_create_nonce( 'agentic_marketplace' ),
+				'apiBase'    => $this->api_base,
+				'siteUrl'    => home_url(),
+				'siteHash'   => md5( home_url() . wp_salt() ),
+				'installed'  => $this->get_installed_agents(),
+				'pricingUrl' => 'https://agentic-plugin.com/pricing/',
+				'strings'    => array(
 					'install'           => __( 'Install', 'agentic-plugin' ),
 					'installing'        => __( 'Installing...', 'agentic-plugin' ),
 					'installed'         => __( 'Installed', 'agentic-plugin' ),

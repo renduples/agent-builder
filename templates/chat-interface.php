@@ -162,7 +162,7 @@ if ( $default_agent_id && isset( $agents[ $default_agent_id ] ) ) {
 
 	<div class="agentic-chat-footer">
 		<span class="agentic-footer-info">
-			Powered by Agentic Core v<?php echo esc_html( AGENTIC_PLUGIN_VERSION ); ?>
+			Powered by Agentic Plugin v<?php echo esc_html( AGENTIC_PLUGIN_VERSION ); ?>
 		</span>
 		<span class="agentic-footer-stats" id="agentic-stats"></span>
 	</div>

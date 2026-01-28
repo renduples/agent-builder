@@ -39,31 +39,31 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 		$progress_callback( 10, 'Loading conversation history...' );
 
 		// Build message array from history
-		$messages = [];
-		
+		$messages = array();
+
 		// Add system prompt
-		$messages[] = [
+		$messages[] = array(
 			'role'    => 'system',
 			'content' => $agent->get_system_prompt(),
-		];
+		);
 
 		// Add history if provided
 		if ( ! empty( $request_data['history'] ) ) {
 			foreach ( $request_data['history'] as $entry ) {
 				if ( isset( $entry['role'], $entry['content'] ) ) {
-					$messages[] = [
+					$messages[] = array(
 						'role'    => $entry['role'],
 						'content' => $entry['content'],
-					];
+					);
 				}
 			}
 		}
 
 		// Add current message
-		$messages[] = [
+		$messages[] = array(
 			'role'    => 'user',
 			'content' => $request_data['message'],
-		];
+		);
 
 		$progress_callback( 20, 'Analyzing request...' );
 
@@ -87,7 +87,7 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 		}
 
 		// Extract message from response
-		$choice = $llm_response['choices'][0]['message'] ?? [];
+		$choice = $llm_response['choices'][0]['message'] ?? array();
 
 		$progress_callback( 50, 'Executing agent tools...' );
 
@@ -96,32 +96,32 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 		$iteration      = 0;
 
 		while ( isset( $choice['tool_calls'] ) && ! empty( $choice['tool_calls'] ) && $iteration < $max_iterations ) {
-			$iteration++;
+			++$iteration;
 
 			$progress_percent = 50 + ( $iteration * 10 );
 			$progress_callback( $progress_percent, "Processing tools (iteration {$iteration})..." );
 
 			// Add assistant message with tool calls
-			$messages[] = [
+			$messages[] = array(
 				'role'       => 'assistant',
 				'content'    => $choice['content'] ?? '',
 				'tool_calls' => $choice['tool_calls'],
-			];
+			);
 
 			// Execute each tool call
 			foreach ( $choice['tool_calls'] as $tool_call ) {
 				$tool_name = $tool_call['function']['name'];
-				$tool_args = json_decode( $tool_call['function']['arguments'], true ) ?: [];
+				$tool_args = json_decode( $tool_call['function']['arguments'], true ) ?: array();
 
 				// Execute tool through the agent
 				$tool_result = $agent->execute_tool( $tool_name, $tool_args );
 
 				// Add tool result
-				$messages[] = [
+				$messages[] = array(
 					'role'         => 'tool',
 					'tool_call_id' => $tool_call['id'],
 					'content'      => is_array( $tool_result ) ? wp_json_encode( $tool_result ) : (string) $tool_result,
-				];
+				);
 			}
 
 			// Get next LLM response
@@ -132,7 +132,7 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 			}
 
 			// Update choice from new response
-			$choice = $llm_response['choices'][0]['message'] ?? [];
+			$choice = $llm_response['choices'][0]['message'] ?? array();
 		}
 
 		$progress_callback( 95, 'Finalizing response...' );
@@ -141,10 +141,10 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 
 		$progress_callback( 100, 'Completed' );
 
-		return [
+		return array(
 			'response'   => $response_content,
 			'agent_id'   => 'agent-builder',
 			'iterations' => $iteration,
-		];
+		);
 	}
 }

@@ -119,7 +119,7 @@ class Agentic_Agent_Registry {
 	 * Get all installed agents
 	 *
 	 * Includes both user-installed agents (wp-content/agents) and
-	 * bundled library agents (agentic-core/library).
+	 * bundled library agents (agentic-plugin/library).
 	 *
 	 * @param bool $force_refresh Force refresh the cache
 	 * @return array

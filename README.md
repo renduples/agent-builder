@@ -5,13 +5,11 @@
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-green)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![GitHub Stars](https://img.shields.io/github/stars/renduples/agentic-plugin?style=social)](https://github.com/renduples/agentic-plugin)
 
-> **The marketplace for AI agents on WordPress. Build once, sell to 500K+ WordPress sites. Earn 70% revenue share. Zero upfront cost.**
-
 ---
 
 ## 🚀 What is Agentic Plugin?
 
-The Agentic Plugin transforms WordPress into an AI-native platform. Build autonomous AI agents that handle repetitive tasks, create content, manage commerce, and more.
+The Agentic Plugin transforms WordPress into an AI friendly platform. Build AI agents that handle repetitive tasks, create content, manage commerce, and more.
 
 **This is the gold rush moment for WordPress developers.**
 
@@ -19,10 +17,7 @@ If you've built a plugin or theme, you already know the process. Now harness AI 
 
 ### Why Agentic Matters
 
-- **500K+ WordPress sites** waiting for AI-powered agents
-- **70% revenue share** – Highest in the WordPress ecosystem
-- **Zero upfront cost** – Build, deploy, earn
-- **Passive income potential** – Agents sell in the background ($12K+/year per agent)
+- **500K+ WordPress sites** waiting for AI-powered agents that enhance Wordpress
 - **Open-source community** – Transparent, collaborative, GPL v2 licensed
 
 ---
@@ -40,7 +35,7 @@ git clone https://github.com/renduples/agentic-plugin.git
 ### 2. Activate & Configure
 
 1. Go to WordPress Admin → Plugins
-2. Activate **Agentic Core**
+2. Activate **Agentic Plugin**
 3. Go to **Agentic → Settings**
 4. Add your OpenAI/Anthropic API key
 5. Enable your first agent
@@ -59,20 +54,18 @@ That's it. Your first AI agent is live.
 
 Agentic comes with **10 pre-built agents** to jumpstart development:
 
-| Agent | Use Case | Revenue Potential |
-|-------|----------|------------------|
-| **SEO Analyzer** | Automatic on-page SEO audits | $29-49/month |
-| **Content Assistant** | AI-powered post drafting & optimization | $39-59/month |
-| **Product Describer** | WooCommerce product descriptions | $29-39/month |
-| **Social Media Agent** | Schedule & auto-compose social posts | $49-79/month |
-| **Code Generator** | Custom code generation for devs | $49-99/month |
-| **Theme Builder** | Quick WordPress theme customization | $39-69/month |
-| **Security Monitor** | AI vulnerability scanning | $49-99/month |
-| **Comment Moderator** | Smart spam detection & responses | $19-29/month |
-| **Agent Builder** | Visual agent builder (meta) | $99-199/month |
-| **Developer Agent** | Your own AI coding assistant | Free/Internal |
-
-**Example**: Price your SEO Analyzer at $29/month. Get 50 customers. Earn $20.30/month × 12 = **$243.60/year per customer** = **$12,180/year total**.
+| Agent | Use Case |
+|-------|----------|
+| **SEO Analyzer** | Automatic on-page SEO audits |
+| **Content Assistant** | AI-powered post drafting & optimization |
+| **Product Describer** | WooCommerce product descriptions |
+| **Social Media Agent** | Schedule & auto-compose social posts |
+| **Code Generator** | Custom code generation for devs |
+| **Theme Builder** | Quick WordPress theme customization |
+| **Security Monitor** | AI vulnerability scanning |
+| **Comment Moderator** | Smart spam detection & responses |
+| **Agent Builder** | Visual agent builder (meta) |
+| **Developer Agent** | Your own AI coding assistant |
 
 ---
 
@@ -89,41 +82,49 @@ Agentic comes with **10 pre-built agents** to jumpstart development:
 - **Full WordPress API access**: Call any WordPress function safely
 - **Rich tooling**: 20+ pre-built tools (file I/O, API calls, data queries)
 - **Audit logging**: Every agent action is logged and auditable
-
-### Monetization Ready
-- **Stripe integration**: Automatic payouts to your account
-- **Usage analytics**: Track installs, ratings, active users
 - **Version management**: Auto-update agents across all installations
-- **Developer dashboard**: Real-time earnings and performance metrics
+- **Usage analytics**: Track installs, ratings, active users
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-agentic-core.php (Plugin entry point)
-├── includes/
-│   ├── class-agent-base.php (Extend this)
-│   ├── class-agent-controller.php (Orchestration)
-│   ├── class-openai-client.php (LLM integration)
-│   ├── class-audit-log.php (Compliance)
-│   ├── class-approval-queue.php (Safety)
-│   └── ... (10+ more core classes)
-├── library/ (Pre-built agents)
-│   ├── seo-analyzer/agent.php
-│   ├── content-assistant/agent.php
-│   ├── social-media/agent.php
-│   └── ... (10 total)
-├── admin/ (Dashboard UI)
-└── templates/
-    └── chat-interface.php (User interface)
+WordPress Installation
+├── wp-content/
+│   ├── plugins/
+│   │   └── agentic-plugin/
+│   │       ├── agentic-plugin.php (Plugin entry point)
+│   │       ├── includes/
+│   │       │   ├── class-agent-base.php (Extend this)
+│   │       │   ├── class-agent-controller.php (Orchestration)
+│   │       │   ├── class-openai-client.php (LLM integration)
+│   │       │   ├── class-audit-log.php (Compliance)
+│   │       │   ├── class-approval-queue.php (Safety)
+│   │       │   └── ... (10+ more core classes)
+│   │       ├── library/ (Bundled agents - 10 pre-built)
+│   │       │   ├── seo-analyzer/agent.php
+│   │       │   ├── content-assistant/agent.php
+│   │       │   ├── social-media/agent.php
+│   │       │   └── ... (7 more)
+│   │       ├── admin/ (Dashboard UI)
+│   │       └── templates/
+│   │           └── chat-interface.php (User interface)
+│   │
+│   └── agents/ (User-installed agents - survives plugin upgrades)
+│       ├── my-custom-agent/
+│       │   └── agent.php
+│       └── another-agent/
+│           └── agent.php
 ```
 
 ---
 
 ## 🔧 Building Your First Agent (15 minutes)
 
-### Create `my-custom-agent/agent.php`
+### Create `wp-content/agents/my-custom-agent/agent.php`
+
+**Note:** User agents are stored in `wp-content/agents/` to survive plugin updates. Bundled agents are in `wp-content/plugins/agentic-plugin/library/`.
 
 ```php
 <?php
@@ -163,28 +164,9 @@ class My_Custom_Agent extends \Agentic\Agent_Base {
 ```
 
 **Next steps:**
-1. Add tools to handles specific tasks
+1. Add tools to handle specific tasks
 2. Test in WordPress admin
 3. Submit to marketplace (agentic-plugin.com/submit-agent/)
-4. Start earning
-
----
-
-## 📊 Agent Economics
-
-Quick earnings calculator:
-
-```
-Agent Price       $29-99/month
-Expected Customers (Year 1) 10-100
-Your Commission   70%
-Annual Potential  $2,436 - $82,320
-```
-
-Real examples from our pre-built agents:
-- **SEO Analyzer**: Adopted by 500+ sites = $121,800/year
-- **Content Assistant**: 1,200+ sites = $291,600/year
-- **Social Media Agent**: 300+ sites = $64,800/year
 
 ---
 
@@ -201,51 +183,39 @@ Real examples from our pre-built agents:
 
 ## 📚 Documentation
 
-Roadmap and docs live on agentic-plugin.com. Core sections:
+All documentation is now available on our [GitHub Wiki](https://github.com/renduples/agentic-plugin/wiki):
 
-- [Roadmap Overview](https://agentic-plugin.com/roadmap/)
-- [Executive Summary](https://agentic-plugin.com/roadmap/executive-summary/)
-- [Core Architecture](https://agentic-plugin.com/roadmap/core-architecture/)
-- [Backend Capabilities](https://agentic-plugin.com/roadmap/backend-capabilities/)
-- [Frontend Capabilities](https://agentic-plugin.com/roadmap/frontend-capabilities/)
-- [Plugin Architecture](https://agentic-plugin.com/roadmap/plugin-architecture/)
-- [Security & Guardrails](https://agentic-plugin.com/roadmap/security-guardrails/)
-- [Data Flow Architecture](https://agentic-plugin.com/roadmap/data-flow/)
-- [REST API Specification](https://agentic-plugin.com/roadmap/rest-api/)
-- [Use Cases](https://agentic-plugin.com/roadmap/use-cases/)
-- [Migration Path](https://agentic-plugin.com/roadmap/migration-path/)
-- [Discussion Points](https://agentic-plugin.com/roadmap/discussion-points/)
+- **[Quick Start Guide](https://github.com/renduples/agentic-plugin/wiki/Quickstart)** – Get up and running in 5 minutes
+- **[Contributing Guidelines](https://github.com/renduples/agentic-plugin/wiki/Contributing)** – Help build the future
+- **[Security Policy](https://github.com/renduples/agentic-plugin/wiki/Security)** – Report vulnerabilities
+- **[Technical Roadmap](https://github.com/renduples/agentic-plugin/wiki/Roadmap)** – What's next
+- **[Release Notes](https://github.com/renduples/agentic-plugin/wiki/Release-Notes)** – Version history
 
-Quick links:
+### Additional Resources
+
 - [Agents Marketplace](https://agentic-plugin.com/agents/)
 - [Ask Agent](https://agentic-plugin.com/agent-chat/)
 - [Discussions](https://agentic-plugin.com/discussions/)
 - [Submit Agent](https://agentic-plugin.com/submit-agent/)
-- [Login](https://agentic-plugin.com/login/)
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how:
+We welcome contributions! See our [Contributing Guidelines](https://github.com/renduples/agentic-plugin/wiki/Contributing) for details.
 
+**Quick ways to contribute:**
 1. **Build an agent** and test it thoroughly
 2. **Improve core** – Submit PRs to [issues](https://github.com/renduples/agentic-plugin/issues)
 3. **Report bugs** – Open an issue with reproduction steps
 4. **Suggest features** – Use GitHub Discussions
 5. **Improve docs** – Help other developers succeed
 
-**Contributor guidelines:**
-- Follow WordPress coding standards
-- Include tests and documentation
-- GPL v2 or later only
-- No external phone-home functionality
-
 ## 🆘 Support & Help
 
-- Open issues: https://github.com/renduples/agentic-plugin/issues
-- Join discussions: https://github.com/renduples/agentic-plugin/discussions
-- Ask Agent (product Q&A): https://agentic-plugin.com/agent-chat/
+- **Issues**: https://github.com/renduples/agentic-plugin/issues
+- **Discussions**: https://github.com/renduples/agentic-plugin/discussions
+- **Security**: See our [Security Policy](https://github.com/renduples/agentic-plugin/wiki/Security)
 
 ---
 
@@ -257,7 +227,6 @@ We welcome contributions! Here's how:
 - **cURL** for external API calls
 
 Optional (for full functionality):
-- **Stripe account** (to accept payments)
 - **Git** (for agent version control)
 
 ---
@@ -269,7 +238,7 @@ Start with these quick wins:
 1. **Use a pre-built agent** (5 min) – Enable one of the 10 included agents
 2. **Customize an agent** (15 min) – Modify an existing agent slightly
 3. **Build your own agent** (45 min) – Create a simple custom agent
-4. **Publish your agent** (10 min) – Submit to marketplace and start earning
+4. **Publish your agent** (10 min) – Submit to marketplace
 
 Reference guides:
 - [Roadmap Overview](https://agentic-plugin.com/roadmap/)
@@ -316,7 +285,7 @@ This is an **independent community project** — not affiliated with or endorsed
 3. **Configure**: Add API key in Settings
 4. **Test**: Try the SEO Analyzer or Content Assistant
 5. **Build**: Create your first custom agent
-6. **Submit**: Earn 70% on every install
+6. **Share**: Submit your agent to the marketplace
 
 [Submit Your Agent →](https://agentic-plugin.com/submit-agent/)
 

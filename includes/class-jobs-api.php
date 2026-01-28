@@ -21,7 +21,7 @@ class Jobs_API {
 	 * Initialize
 	 */
 	public static function init(): void {
-		add_action( 'rest_api_init', [ __CLASS__, 'register_routes' ] );
+		add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
 	}
 
 	/**
@@ -31,38 +31,38 @@ class Jobs_API {
 		register_rest_route(
 			'agentic/v1',
 			'/jobs',
-			[
+			array(
 				'methods'             => 'POST',
-				'callback'            => [ __CLASS__, 'create_job' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
-			]
+				'callback'            => array( __CLASS__, 'create_job' ),
+				'permission_callback' => array( __CLASS__, 'check_permission' ),
+			)
 		);
 
 		register_rest_route(
 			'agentic/v1',
 			'/jobs/(?P<id>[a-f0-9\-]+)',
-			[
-				[
+			array(
+				array(
 					'methods'             => 'GET',
-					'callback'            => [ __CLASS__, 'get_job' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
-				],
-				[
+					'callback'            => array( __CLASS__, 'get_job' ),
+					'permission_callback' => array( __CLASS__, 'check_permission' ),
+				),
+				array(
 					'methods'             => 'DELETE',
-					'callback'            => [ __CLASS__, 'cancel_job' ],
-					'permission_callback' => [ __CLASS__, 'check_permission' ],
-				],
-			]
+					'callback'            => array( __CLASS__, 'cancel_job' ),
+					'permission_callback' => array( __CLASS__, 'check_permission' ),
+				),
+			)
 		);
 
 		register_rest_route(
 			'agentic/v1',
 			'/jobs/user/(?P<user_id>\d+)',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ __CLASS__, 'get_user_jobs' ],
-				'permission_callback' => [ __CLASS__, 'check_permission' ],
-			]
+				'callback'            => array( __CLASS__, 'get_user_jobs' ),
+				'permission_callback' => array( __CLASS__, 'check_permission' ),
+			)
 		);
 	}
 
@@ -85,10 +85,10 @@ class Jobs_API {
 		$job_id = Job_Manager::create_job( $request->get_params() );
 
 		return new \WP_REST_Response(
-			[
+			array(
 				'job_id' => $job_id,
 				'status' => Job_Manager::STATUS_PENDING,
-			],
+			),
 			202
 		);
 	}
@@ -107,7 +107,7 @@ class Jobs_API {
 			return new \WP_Error(
 				'job_not_found',
 				'Job not found',
-				[ 'status' => 404 ]
+				array( 'status' => 404 )
 			);
 		}
 
@@ -116,12 +116,12 @@ class Jobs_API {
 			return new \WP_Error(
 				'forbidden',
 				'You do not have permission to access this job',
-				[ 'status' => 403 ]
+				array( 'status' => 403 )
 			);
 		}
 
 		return new \WP_REST_Response(
-			[
+			array(
 				'id'            => $job->id,
 				'status'        => $job->status,
 				'progress'      => (int) $job->progress,
@@ -130,7 +130,7 @@ class Jobs_API {
 				'error_message' => $job->error_message,
 				'created_at'    => $job->created_at,
 				'updated_at'    => $job->updated_at,
-			],
+			),
 			200
 		);
 	}
@@ -149,7 +149,7 @@ class Jobs_API {
 			return new \WP_Error(
 				'job_not_found',
 				'Job not found',
-				[ 'status' => 404 ]
+				array( 'status' => 404 )
 			);
 		}
 
@@ -158,7 +158,7 @@ class Jobs_API {
 			return new \WP_Error(
 				'forbidden',
 				'You do not have permission to cancel this job',
-				[ 'status' => 403 ]
+				array( 'status' => 403 )
 			);
 		}
 
@@ -168,15 +168,15 @@ class Jobs_API {
 			return new \WP_Error(
 				'cannot_cancel',
 				'Job cannot be cancelled (may already be processing or completed)',
-				[ 'status' => 400 ]
+				array( 'status' => 400 )
 			);
 		}
 
 		return new \WP_REST_Response(
-			[
+			array(
 				'success' => true,
 				'message' => 'Job cancelled',
-			],
+			),
 			200
 		);
 	}
@@ -195,7 +195,7 @@ class Jobs_API {
 			return new \WP_Error(
 				'forbidden',
 				'You do not have permission to view these jobs',
-				[ 'status' => 403 ]
+				array( 'status' => 403 )
 			);
 		}
 
@@ -206,8 +206,8 @@ class Jobs_API {
 
 		// Sanitize output - remove sensitive request data
 		$jobs = array_map(
-			function( $job ) {
-				return [
+			function ( $job ) {
+				return array(
 					'id'         => $job->id,
 					'agent_id'   => $job->agent_id,
 					'status'     => $job->status,
@@ -215,16 +215,16 @@ class Jobs_API {
 					'message'    => $job->message,
 					'created_at' => $job->created_at,
 					'updated_at' => $job->updated_at,
-				];
+				);
 			},
 			$jobs
 		);
 
 		return new \WP_REST_Response(
-			[
+			array(
 				'jobs'  => $jobs,
 				'total' => count( $jobs ),
-			],
+			),
 			200
 		);
 	}

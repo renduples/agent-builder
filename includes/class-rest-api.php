@@ -95,7 +95,7 @@ class REST_API {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'api_key' => array(
+					'api_key'  => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
@@ -363,7 +363,10 @@ class REST_API {
 
 		if ( empty( $provider ) || empty( $api_key ) ) {
 			return new \WP_REST_Response(
-				array( 'success' => false, 'message' => 'Provider and API key are required.' ),
+				array(
+					'success' => false,
+					'message' => 'Provider and API key are required.',
+				),
 				400
 			);
 		}

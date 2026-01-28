@@ -1,0 +1,536 @@
+# Copyright (C) 2026 Agentic-Plugin.com
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Agentic Plugin 1.0.0-beta\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentic-plugin\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-01-28T07:30:34+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: agentic-plugin\n"
+
+#. Plugin Name of the plugin
+#: agentic-plugin.php
+msgid "Agentic Plugin"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: agentic-plugin.php
+msgid "https://agentic-plugin.com"
+msgstr ""
+
+#. Description of the plugin
+#: agentic-plugin.php
+msgid "AI agent marketplace for WordPress - imagine it, build it, monetize it."
+msgstr ""
+
+#. Author of the plugin
+#: agentic-plugin.php
+msgid "Agentic-Plugin.com"
+msgstr ""
+
+#. Author URI of the plugin
+#: agentic-plugin.php
+msgid "https://github.com/renduples/agentic-plugin"
+msgstr ""
+
+#: admin/agents-add.php:19
+#: admin/agents.php:19
+#: admin/approvals.php:15
+#: admin/audit.php:16
+#: admin/dashboard.php:16
+#: admin/settings.php:16
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: admin/agents-add.php:34
+msgid "Agent installed successfully."
+msgstr ""
+
+#: admin/agents-add.php:56
+msgid "Add Agents"
+msgstr ""
+
+#: admin/agents-add.php:64
+msgid "Go to Installed Agents"
+msgstr ""
+
+#: admin/agents-add.php:81
+#: includes/class-marketplace-client.php:244
+msgid "Featured"
+msgstr ""
+
+#: admin/agents-add.php:87
+#: includes/class-marketplace-client.php:245
+msgid "Popular"
+msgstr ""
+
+#: admin/agents-add.php:106
+#: admin/agents-add.php:113
+#: admin/agents.php:145
+#: admin/agents.php:151
+msgid "Search Agents"
+msgstr ""
+
+#: admin/agents-add.php:110
+#: includes/class-marketplace-client.php:119
+#: includes/class-marketplace-client.php:251
+msgid "Search agents..."
+msgstr ""
+
+#: admin/agents-add.php:122
+#: admin/agents.php:175
+msgid "No agents found matching your search."
+msgstr ""
+
+#: admin/agents-add.php:125
+msgid "Agent Library is Empty"
+msgstr ""
+
+#: admin/agents-add.php:126
+msgid "No agents are available in the library yet. Check back soon or contribute your own agents!"
+msgstr ""
+
+#: admin/agents-add.php:129
+msgid "Learn How to Create Agents"
+msgstr ""
+
+#: admin/agents-add.php:158
+#: admin/agents.php:238
+#: includes/class-marketplace-client.php:125
+msgid "By"
+msgstr ""
+
+#: admin/agents-add.php:174
+#: includes/class-marketplace-client.php:109
+msgid "Installed"
+msgstr ""
+
+#: admin/agents-add.php:179
+msgid "Install Now"
+msgstr ""
+
+#: admin/agents-add.php:193
+msgid "Version:"
+msgstr ""
+
+#: admin/agents-add.php:201
+#, php-format
+msgid "%d capability"
+msgid_plural "%d capabilities"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/agents-add.php:226
+#, php-format
+msgid "%s agent"
+msgid_plural "%s agents"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/agents-add.php:238
+msgid "Create Your Own Agent"
+msgstr ""
+
+#: admin/agents-add.php:239
+msgid "Agents are modular components that can be built by any developer. Like WordPress plugins, agents follow a standard structure:"
+msgstr ""
+
+#: admin/agents-add.php:245
+msgid "Agent Headers:"
+msgstr ""
+
+#: admin/agents-add.php:258
+msgid "View Documentation"
+msgstr ""
+
+#: admin/agents.php:40
+#, php-format
+msgid "%1$s activated. <a href=\"%2$s\">Chat with this agent now →</a>"
+msgstr ""
+
+#: admin/agents.php:52
+msgid "Agent deactivated."
+msgstr ""
+
+#: admin/agents.php:61
+msgid "Agent deleted."
+msgstr ""
+
+#: admin/agents.php:97
+#: agentic-plugin.php:229
+msgid "Agents"
+msgstr ""
+
+#: admin/agents.php:99
+#: agentic-plugin.php:179
+#: includes/class-marketplace-client.php:64
+#: includes/class-marketplace-client.php:240
+msgid "Add New Agent"
+msgstr ""
+
+#: admin/agents.php:120
+msgid "All"
+msgstr ""
+
+#: admin/agents.php:127
+#: includes/class-marketplace-client.php:112
+msgid "Active"
+msgstr ""
+
+#: admin/agents.php:134
+msgid "Inactive"
+msgstr ""
+
+#: admin/agents.php:149
+msgid "Search installed agents..."
+msgstr ""
+
+#: admin/agents.php:163
+#: admin/agents.php:279
+msgid "Agent"
+msgstr ""
+
+#: admin/agents.php:166
+#: admin/agents.php:282
+msgid "Description"
+msgstr ""
+
+#: admin/agents.php:177
+msgid "No agents installed yet."
+msgstr ""
+
+#: admin/agents.php:179
+msgid "Add your first agent"
+msgstr ""
+
+#: admin/agents.php:200
+msgid "Chat"
+msgstr ""
+
+#: admin/agents.php:205
+#: includes/class-marketplace-client.php:113
+msgid "Deactivate"
+msgstr ""
+
+#: admin/agents.php:211
+#: includes/class-marketplace-client.php:110
+msgid "Activate"
+msgstr ""
+
+#: admin/agents.php:217
+msgid "Are you sure you want to delete this agent?"
+msgstr ""
+
+#: admin/agents.php:218
+msgid "Delete"
+msgstr ""
+
+#: admin/agents.php:231
+#, php-format
+msgid "Version %s"
+msgstr ""
+
+#: admin/agents.php:261
+#, php-format
+msgid "Capabilities: %s"
+msgstr ""
+
+#: agentic-plugin.php:139
+#: agentic-plugin.php:140
+msgid "Agentic"
+msgstr ""
+
+#: agentic-plugin.php:150
+#: agentic-plugin.php:151
+msgid "Dashboard"
+msgstr ""
+
+#: agentic-plugin.php:160
+#: agentic-plugin.php:161
+#: agentic-plugin.php:543
+msgid "Agent Chat"
+msgstr ""
+
+#: agentic-plugin.php:170
+#: agentic-plugin.php:171
+#: agentic-plugin.php:242
+msgid "Installed Agents"
+msgstr ""
+
+#: agentic-plugin.php:180
+#: agentic-plugin.php:251
+msgid "Add Agent"
+msgstr ""
+
+#: agentic-plugin.php:188
+#: agentic-plugin.php:189
+#: agentic-plugin.php:260
+#: agentic-plugin.php:326
+msgid "Audit Log"
+msgstr ""
+
+#: agentic-plugin.php:197
+#: agentic-plugin.php:198
+msgid "Code Proposals"
+msgstr ""
+
+#: agentic-plugin.php:206
+#: agentic-plugin.php:207
+#: agentic-plugin.php:269
+msgid "Settings"
+msgstr ""
+
+#: agentic-plugin.php:232
+msgid "Agentic Plugin Agents"
+msgstr ""
+
+#: agentic-plugin.php:325
+msgid "Agent Audit Logs"
+msgstr ""
+
+#: agentic-plugin.php:342
+msgid "Agent Approvals"
+msgstr ""
+
+#: agentic-plugin.php:343
+msgid "Approval"
+msgstr ""
+
+#: agentic-plugin.php:408
+msgid "Agent functionality coming soon. This is a placeholder response."
+msgstr ""
+
+#: includes/class-agent-registry.php:324
+msgid "Agent not found."
+msgstr ""
+
+#: includes/class-agent-registry.php:328
+msgid "Agent is already active."
+msgstr ""
+
+#: includes/class-agent-registry.php:338
+#, php-format
+msgid "This agent requires PHP %s or higher."
+msgstr ""
+
+#: includes/class-agent-registry.php:349
+#, php-format
+msgid "This agent requires WordPress %s or higher."
+msgstr ""
+
+#: includes/class-agent-registry.php:401
+msgid "Agent is not active."
+msgstr ""
+
+#: includes/class-agent-registry.php:443
+msgid "Agent file not found."
+msgstr ""
+
+#: includes/class-agent-registry.php:452
+#, php-format
+msgid "Error loading agent: %s"
+msgstr ""
+
+#: includes/class-agent-registry.php:621
+msgid "Agent not found in library."
+msgstr ""
+
+#: includes/class-agent-registry.php:625
+msgid "Agent is already installed."
+msgstr ""
+
+#: includes/class-agent-registry.php:635
+msgid "Failed to copy agent files."
+msgstr ""
+
+#: includes/class-agent-registry.php:666
+msgid "Agent is not installed."
+msgstr ""
+
+#: includes/class-agent-registry.php:688
+msgid "Failed to delete agent files."
+msgstr ""
+
+#: includes/class-marketplace-client.php:65
+msgid "Add New"
+msgstr ""
+
+#: includes/class-marketplace-client.php:107
+msgid "Install"
+msgstr ""
+
+#: includes/class-marketplace-client.php:108
+msgid "Installing..."
+msgstr ""
+
+#: includes/class-marketplace-client.php:111
+msgid "Activating..."
+msgstr ""
+
+#: includes/class-marketplace-client.php:114
+msgid "Update"
+msgstr ""
+
+#: includes/class-marketplace-client.php:115
+msgid "Updating..."
+msgstr ""
+
+#: includes/class-marketplace-client.php:116
+msgid "Purchase"
+msgstr ""
+
+#: includes/class-marketplace-client.php:117
+#: includes/class-marketplace-client.php:220
+msgid "Enter License Key"
+msgstr ""
+
+#: includes/class-marketplace-client.php:118
+msgid "An error occurred"
+msgstr ""
+
+#: includes/class-marketplace-client.php:120
+msgid "No agents found"
+msgstr ""
+
+#: includes/class-marketplace-client.php:121
+msgid "View Details"
+msgstr ""
+
+#: includes/class-marketplace-client.php:122
+msgid "downloads"
+msgstr ""
+
+#: includes/class-marketplace-client.php:123
+msgid "Last updated"
+msgstr ""
+
+#: includes/class-marketplace-client.php:124
+msgid "Version"
+msgstr ""
+
+#: includes/class-marketplace-client.php:126
+msgid "Requires"
+msgstr ""
+
+#: includes/class-marketplace-client.php:127
+msgid "Tested up to"
+msgstr ""
+
+#: includes/class-marketplace-client.php:128
+#: includes/class-marketplace-client.php:247
+msgid "Free"
+msgstr ""
+
+#: includes/class-marketplace-client.php:210
+msgid "Agent Marketplace"
+msgstr ""
+
+#: includes/class-marketplace-client.php:213
+msgid "License Required"
+msgstr ""
+
+#: includes/class-marketplace-client.php:214
+msgid "A valid license is required to access the Agent Marketplace and download premium agents."
+msgstr ""
+
+#: includes/class-marketplace-client.php:217
+msgid "Purchase License ($10/year)"
+msgstr ""
+
+#: includes/class-marketplace-client.php:224
+msgid "What you get with a license:"
+msgstr ""
+
+#: includes/class-marketplace-client.php:227
+msgid "Access to 100+ premium agents"
+msgstr ""
+
+#: includes/class-marketplace-client.php:228
+msgid "One-click agent installation"
+msgstr ""
+
+#: includes/class-marketplace-client.php:229
+msgid "Upload and sell your own agents"
+msgstr ""
+
+#: includes/class-marketplace-client.php:230
+msgid "Priority support"
+msgstr ""
+
+#: includes/class-marketplace-client.php:246
+msgid "Recently Updated"
+msgstr ""
+
+#: includes/class-marketplace-client.php:257
+msgid "All Categories"
+msgstr ""
+
+#: includes/class-marketplace-client.php:265
+msgid "Loading agents..."
+msgstr ""
+
+#: includes/class-marketplace-client.php:338
+#: includes/class-marketplace-client.php:364
+msgid "Invalid agent ID"
+msgstr ""
+
+#: includes/class-marketplace-client.php:357
+#: includes/class-marketplace-client.php:495
+#: includes/class-marketplace-client.php:525
+msgid "Permission denied"
+msgstr ""
+
+#: includes/class-marketplace-client.php:376
+msgid "License key required for premium agents"
+msgstr ""
+
+#: includes/class-marketplace-client.php:394
+msgid "Invalid license key"
+msgstr ""
+
+#: includes/class-marketplace-client.php:424
+msgid "Agent installed successfully"
+msgstr ""
+
+#: includes/class-marketplace-client.php:468
+msgid "Invalid agent package: agent.php not found"
+msgstr ""
+
+#: includes/class-marketplace-client.php:501
+#: includes/class-marketplace-client.php:531
+msgid "Invalid agent slug"
+msgstr ""
+
+#: includes/class-marketplace-client.php:512
+msgid "Agent activated"
+msgstr ""
+
+#: includes/class-marketplace-client.php:540
+msgid "Agent deactivated"
+msgstr ""
+
+#: includes/class-marketplace-client.php:564
+msgid "Invalid rating"
+msgstr ""
+
+#: includes/class-marketplace-client.php:624
+msgid "Invalid API response format"
+msgstr ""
+
+#: includes/class-marketplace-client.php:630
+msgid "API request failed"
+msgstr ""
+
+#: includes/class-shortcodes.php:382
+msgid "Please log in to chat with our AI assistant."
+msgstr ""
+
+#: includes/class-shortcodes.php:384
+msgid "Log In"
+msgstr ""

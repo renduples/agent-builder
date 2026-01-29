@@ -28,7 +28,7 @@ class REST_API {
 	 * @return void
 	 */
 	public function register_routes(): void {
-		// Chat endpoint
+		// Chat endpoint.
 		register_rest_route(
 			'agentic/v1',
 			'/chat',
@@ -59,7 +59,7 @@ class REST_API {
 			)
 		);
 
-		// Get conversation history
+		// Get conversation history.
 		register_rest_route(
 			'agentic/v1',
 			'/history/(?P<session_id>[a-zA-Z0-9-]+)',
@@ -70,7 +70,7 @@ class REST_API {
 			)
 		);
 
-		// Get agent status
+		// Get agent status.
 		register_rest_route(
 			'agentic/v1',
 			'/status',
@@ -81,7 +81,7 @@ class REST_API {
 			)
 		);
 
-		// Test API key
+		// Test API key.
 		register_rest_route(
 			'agentic/v1',
 			'/test-api',
@@ -104,7 +104,7 @@ class REST_API {
 			)
 		);
 
-		// Get pending approvals (admin only)
+		// Get pending approvals (admin only).
 		register_rest_route(
 			'agentic/v1',
 			'/approvals',
@@ -115,7 +115,7 @@ class REST_API {
 			)
 		);
 
-		// Handle approval action
+		// Handle approval action.
 		register_rest_route(
 			'agentic/v1',
 			'/approvals/(?P<id>\d+)',
@@ -146,7 +146,7 @@ class REST_API {
 		$history    = $request->get_param( 'history' ) ?: array();
 		$user_id    = get_current_user_id();
 
-		// Security check FIRST - fast, in-memory scan
+		// Security check FIRST - fast, in-memory scan.
 		$security_result = \Agentic\Chat_Security::scan( $message, $user_id );
 
 		if ( ! $security_result['pass'] ) {
@@ -162,14 +162,14 @@ class REST_API {
 			);
 		}
 
-		// Get agent ID for caching
+		// Get agent ID for caching.
 		$agent_id = $request->get_param( 'agent_id' ) ?: 'default';
 
-		// Check cache BEFORE calling LLM (saves tokens)
+		// Check cache BEFORE calling LLM (saves tokens).
 		if ( \Agentic\Response_Cache::should_cache( $message, $history ) ) {
 			$cached = \Agentic\Response_Cache::get( $message, $agent_id, $user_id );
-			if ( $cached !== null ) {
-				// Add PII warning if applicable
+			if ( null !== $cached ) {
+				// Add PII warning if applicable.
 				if ( ! empty( $security_result['pii_warning'] ) ) {
 					$cached['pii_warning'] = $security_result['pii_warning'];
 				}
@@ -180,12 +180,12 @@ class REST_API {
 		$controller = new Agent_Controller();
 		$response   = $controller->chat( $message, $history, $user_id, $session_id, $agent_id );
 
-		// Cache the response for future identical queries
+		// Cache the response for future identical queries.
 		if ( \Agentic\Response_Cache::should_cache( $message, $history ) ) {
 			\Agentic\Response_Cache::set( $message, $agent_id, $response, $user_id );
 		}
 
-		// Add PII warning to response if detected (non-blocking)
+		// Add PII warning to response if detected (non-blocking).
 		if ( ! empty( $security_result['pii_warning'] ) ) {
 			$response['pii_warning'] = $security_result['pii_warning'];
 		}
@@ -202,8 +202,8 @@ class REST_API {
 	public function get_history( \WP_REST_Request $request ): \WP_REST_Response {
 		$session_id = $request->get_param( 'session_id' );
 
-		// History is stored client-side for now
-		// Could be enhanced to use transients or database storage
+		// History is stored client-side for now.
+		// Could be enhanced to use transients or database storage.
 		return new \WP_REST_Response(
 			array(
 				'session_id' => $session_id,
@@ -300,8 +300,8 @@ class REST_API {
 			array( 'id' => $id )
 		);
 
-		// If approved, execute the action
-		if ( $action === 'approve' ) {
+		// If approved, execute the action.
+		if ( 'approve' === $action ) {
 			$this->execute_approved_action( $approval );
 		}
 
@@ -371,10 +371,10 @@ class REST_API {
 			);
 		}
 
-		// Create a temporary LLM_Client with the test values
+		// Create a temporary LLM_Client with the test values.
 		$llm = new LLM_Client();
 
-		// Test by making a simple API call
+		// Test by making a simple API call.
 		$messages = array(
 			array(
 				'role'    => 'user',
@@ -382,7 +382,7 @@ class REST_API {
 			),
 		);
 
-		// Temporarily override the provider and API key for testing
+		// Temporarily override the provider and API key for testing.
 		try {
 			$response = wp_remote_post(
 				$llm->get_endpoint_for_provider( $provider ),

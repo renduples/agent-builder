@@ -122,7 +122,7 @@ $show_empty_note = empty( $pending );
 
 <script>
 jQuery(document).ready(function($) {
-	// Handle approve
+	// Handle approve.
 	$('.agentic-approve-btn').on('click', function() {
 		const btn = $(this);
 		const id = btn.data('id');
@@ -159,7 +159,7 @@ jQuery(document).ready(function($) {
 		});
 	});
 	
-	// Handle reject
+	// Handle reject.
 	$('.agentic-reject-btn').on('click', function() {
 		const btn = $(this);
 		const id = btn.data('id');

@@ -13,18 +13,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Handle install action
+// Handle install action.
 
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-plugin' ) );
 }
 
-$action  = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
-$slug    = isset( $_GET['agent'] ) ? sanitize_text_field( $_GET['agent'] ) : '';
+$action  = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
+$slug    = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
 $message = '';
 $error   = '';
 
-if ( $action === 'install' && $slug && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'agentic_install_agent' ) ) {
+if ( 'install' === $action && $slug && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'agentic_install_agent' ) ) {
 	$registry = Agentic_Agent_Registry::get_instance();
 	$result   = $registry->install_agent( $slug );
 
@@ -38,12 +38,12 @@ if ( $action === 'install' && $slug && wp_verify_nonce( $_GET['_wpnonce'] ?? '',
 $registry   = Agentic_Agent_Registry::get_instance();
 $categories = $registry->get_agent_categories();
 
-// Get search/filter params
-$search   = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
-$category = isset( $_GET['category'] ) ? sanitize_text_field( $_GET['category'] ) : '';
-$tab      = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'featured';
+// Get search/filter params.
+$search   = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+$category = isset( $_GET['category'] ) ? sanitize_text_field( wp_unslash( $_GET['category'] ) ) : '';
+$tab      = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'featured';
 
-// Fetch library agents
+// Fetch library agents.
 $library = $registry->get_library_agents(
 	array(
 		'search'   => $search,

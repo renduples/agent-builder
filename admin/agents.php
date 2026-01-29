@@ -13,18 +13,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Handle actions
+// Handle actions.
 
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-plugin' ) );
 }
 
-// Get available updates
+// Get available updates.
 $marketplace_client = new \Agentic\Marketplace_Client();
 $available_updates  = $marketplace_client->get_available_updates();
 
-$action  = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
-$slug    = isset( $_GET['agent'] ) ? sanitize_text_field( $_GET['agent'] ) : '';
+$action  = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
+$slug    = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
 $message = '';
 $error   = '';
 
@@ -62,35 +62,35 @@ switch ( $action ) {
 		if ( is_wp_error( $result ) ) {
 			$error = $result->get_error_message();
 		} else {
-			// Deactivate license if agent had one
+			// Deactivate license if agent had one.
 			$marketplace            = new \Agentic\Marketplace_Client();
 			$marketplace_reflection = new \ReflectionClass( $marketplace );
 			$deactivate_method      = $marketplace_reflection->getMethod( 'deactivate_agent_license' );
 			$deactivate_method->setAccessible( true );
 			$deactivate_method->invoke( $marketplace, $slug );
 
-			// Download and install the update
+			// Download and install the update.
 			if ( isset( $available_updates[ $slug ] ) ) {
 				$update_data = $available_updates[ $slug ];
 				$was_active  = $registry->is_agent_active( $slug );
 
-				// Deactivate if active
+				// Deactivate if active.
 				if ( $was_active ) {
 					$registry->deactivate_agent( $slug );
 				}
 
-				// Install the update (replaces files)
+				// Install the update (replaces files).
 				$result = $registry->install_agent( $slug );
 
 				if ( is_wp_error( $result ) ) {
 					$error = $result->get_error_message();
 				} else {
-					// Reactivate if was active
+					// Reactivate if was active.
 					if ( $was_active ) {
 						$registry->activate_agent( $slug );
 					}
 
-					// Clear update cache to refresh
+					// Clear update cache to refresh.
 					delete_transient( 'agentic_available_updates' );
 
 					$message = sprintf(
@@ -110,21 +110,21 @@ switch ( $action ) {
 $registry = Agentic_Agent_Registry::get_instance();
 $agents   = $registry->get_installed_agents( true );
 
-// Filter by status
-$filter = isset( $_GET['agent_status'] ) ? sanitize_text_field( $_GET['agent_status'] ) : 'all';
+// Filter by status.
+$filter = isset( $_GET['agent_status'] ) ? sanitize_text_field( wp_unslash( $_GET['agent_status'] ) ) : 'all';
 
 $all_count      = count( $agents );
 $active_count   = count( array_filter( $agents, fn( $a ) => $a['active'] ) );
 $inactive_count = $all_count - $active_count;
 
-if ( $filter === 'active' ) {
+if ( 'active' === $filter ) {
 	$agents = array_filter( $agents, fn( $a ) => $a['active'] );
-} elseif ( $filter === 'inactive' ) {
+} elseif ( 'inactive' === $filter ) {
 	$agents = array_filter( $agents, fn( $a ) => ! $a['active'] );
 }
 
-// Search
-$search = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
+// Search.
+$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
 if ( $search ) {
 	$agents = array_filter(
 		$agents,

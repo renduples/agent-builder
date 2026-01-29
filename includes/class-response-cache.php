@@ -104,13 +104,13 @@ class Response_Cache {
 	 * @return string Cache key.
 	 */
 	public static function generate_key( string $message, string $agent_id, int $user_id = 0 ): string {
-		// Normalize message: lowercase, trim, collapse whitespace
+		// Normalize message: lowercase, trim, collapse whitespace.
 		$normalized = strtolower( trim( preg_replace( '/\s+/', ' ', $message ) ) );
 
-		// Get user role bucket (not exact role, just privilege level)
+		// Get user role bucket (not exact role, just privilege level).
 		$role_bucket = self::get_role_bucket( $user_id );
 
-		// Build cache key components
+		// Build cache key components.
 		$key_data = implode(
 			'|',
 			array(
@@ -120,7 +120,7 @@ class Response_Cache {
 			)
 		);
 
-		// Hash it (MD5 is fine for cache keys, not security)
+		// Hash it (MD5 is fine for cache keys, not security).
 		return self::CACHE_PREFIX . md5( $key_data );
 	}
 
@@ -134,7 +134,7 @@ class Response_Cache {
 	 * @return string Role bucket (admin, editor, user, guest).
 	 */
 	private static function get_role_bucket( int $user_id ): string {
-		if ( $user_id === 0 ) {
+		if ( 0 === $user_id ) {
 			return 'guest';
 		}
 
@@ -143,7 +143,7 @@ class Response_Cache {
 			return 'guest';
 		}
 
-		// Admin bucket: administrators, super admins
+		// Admin bucket: administrators, super admins.
 		if ( user_can( $user, 'manage_options' ) ) {
 			return 'admin';
 		}
@@ -153,7 +153,7 @@ class Response_Cache {
 			return 'editor';
 		}
 
-		// User bucket: subscribers, customers, contributors, authors
+		// User bucket: subscribers, customers, contributors, authors.
 		return 'user';
 	}
 
@@ -170,22 +170,22 @@ class Response_Cache {
 	 * @return bool Whether to use cache.
 	 */
 	public static function should_cache( string $message, array $history = array() ): bool {
-		// Caching disabled globally
+		// Caching disabled globally.
 		if ( ! self::is_enabled() ) {
 			return false;
 		}
 
-		// Too short - likely a follow-up or clarification
+		// Too short - likely a follow-up or clarification.
 		if ( strlen( $message ) < self::MIN_MESSAGE_LENGTH ) {
 			return false;
 		}
 
-		// Has conversation history - context matters
+		// Has conversation history - context matters.
 		if ( ! empty( $history ) ) {
 			return false;
 		}
 
-		// Check for context-dependent phrases
+		// Check for context-dependent phrases.
 		$message_lower = strtolower( $message );
 		foreach ( self::CONTEXT_DEPENDENT_PHRASES as $phrase ) {
 			if ( strpos( $message_lower, $phrase ) !== false ) {
@@ -215,17 +215,17 @@ class Response_Cache {
 		$key    = self::generate_key( $message, $agent_id, $user_id );
 		$cached = get_transient( $key );
 
-		if ( $cached === false ) {
+		if ( false === $cached ) {
 			return null;
 		}
 
-		// Validate cached data structure
+		// Validate cached data structure.
 		if ( ! is_array( $cached ) || empty( $cached['response'] ) ) {
 			delete_transient( $key );
 			return null;
 		}
 
-		// Mark as cached in response
+		// Mark as cached in response.
 		$cached['cached']    = true;
 		$cached['cache_hit'] = true;
 
@@ -251,17 +251,17 @@ class Response_Cache {
 	 * @return bool Whether caching succeeded.
 	 */
 	public static function set( string $message, string $agent_id, array $response, int $user_id = 0 ): bool {
-		// Don't cache error responses
+		// Don't cache error responses.
 		if ( ! empty( $response['error'] ) ) {
 			return false;
 		}
 
-		// Don't cache empty responses
+		// Don't cache empty responses.
 		if ( empty( $response['response'] ) ) {
 			return false;
 		}
 
-		// Don't cache if tool calls were made (side effects might differ)
+		// Don't cache if tool calls were made (side effects might differ).
 		if ( ! empty( $response['tools_used'] ) ) {
 			return false;
 		}
@@ -269,7 +269,7 @@ class Response_Cache {
 		$key = self::generate_key( $message, $agent_id, $user_id );
 		$ttl = self::get_ttl();
 
-		// Store with timestamp
+		// Store with timestamp.
 		$cache_data              = $response;
 		$cache_data['cached_at'] = time();
 		unset( $cache_data['cached'], $cache_data['cache_hit'] ); // Clean up
@@ -313,7 +313,7 @@ class Response_Cache {
 	public static function clear_all(): int {
 		global $wpdb;
 
-		// For database transients
+		// For database transients.
 		$count = $wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
@@ -329,7 +329,7 @@ class Response_Cache {
 		 */
 		do_action( 'agentic_cache_cleared', $count );
 
-		// Also clear object cache if available
+		// Also clear object cache if available.
 		if ( function_exists( 'wp_cache_flush_group' ) ) {
 			wp_cache_flush_group( 'agentic_responses' );
 		}

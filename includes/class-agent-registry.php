@@ -92,7 +92,7 @@ class Agentic_Agent_Registry {
 		$this->agents_dir  = WP_CONTENT_DIR . '/agents';
 		$this->library_dir = AGENTIC_PLUGIN_DIR . 'library';
 
-		// Ensure directories exist
+		// Ensure directories exist.
 		$this->ensure_directories();
 	}
 
@@ -103,7 +103,7 @@ class Agentic_Agent_Registry {
 		if ( ! file_exists( $this->agents_dir ) ) {
 			wp_mkdir_p( $this->agents_dir );
 
-			// Create index.php for security
+			// Create index.php for security.
 			file_put_contents(
 				$this->agents_dir . '/index.php',
 				"<?php\n// Silence is golden.\n"
@@ -121,7 +121,7 @@ class Agentic_Agent_Registry {
 	 * Includes both user-installed agents (wp-content/agents) and
 	 * bundled library agents (agentic-plugin/library).
 	 *
-	 * @param bool $force_refresh Force refresh the cache
+	 * @param bool $force_refresh Force refresh the cache.
 	 * @return array
 	 */
 	public function get_installed_agents( bool $force_refresh = false ): array {
@@ -131,12 +131,12 @@ class Agentic_Agent_Registry {
 
 		$agents = array();
 
-		// First, load agents from wp-content/agents (user-installed)
+		// First, load agents from wp-content/agents (user-installed).
 		if ( is_dir( $this->agents_dir ) ) {
 			$agent_folders = scandir( $this->agents_dir );
 
 			foreach ( $agent_folders as $folder ) {
-				if ( $folder === '.' || $folder === '..' || $folder === 'index.php' ) {
+				if ( '.' === $folder || '..' === $folder || 'index.php' === $folder ) {
 					continue;
 				}
 
@@ -164,16 +164,16 @@ class Agentic_Agent_Registry {
 			}
 		}
 
-		// Then, load bundled agents from library (skip if already installed)
+		// Then, load bundled agents from library (skip if already installed).
 		if ( is_dir( $this->library_dir ) ) {
 			$library_folders = scandir( $this->library_dir );
 
 			foreach ( $library_folders as $folder ) {
-				if ( $folder === '.' || $folder === '..' || $folder === 'README.md' ) {
+				if ( '.' === $folder || '..' === $folder || 'README.md' === $folder ) {
 					continue;
 				}
 
-				// Skip if already loaded from agents_dir
+				// Skip if already loaded from agents_dir.
 				if ( isset( $agents[ $folder ] ) ) {
 					continue;
 				}
@@ -210,22 +210,22 @@ class Agentic_Agent_Registry {
 	/**
 	 * Find the main agent file in a directory
 	 *
-	 * @param string $agent_path Path to agent directory
-	 * @param string $folder     Folder name
+	 * @param string $agent_path Path to agent directory.
+	 * @param string $folder     Folder name.
 	 * @return string|null
 	 */
 	private function find_agent_main_file( string $agent_path, string $folder ): ?string {
-		// First check for agent.php
+		// First check for agent.php.
 		if ( file_exists( $agent_path . '/agent.php' ) ) {
 			return $agent_path . '/agent.php';
 		}
 
-		// Then check for {folder-name}.php
+		// Then check for {folder-name}.php.
 		if ( file_exists( $agent_path . '/' . $folder . '.php' ) ) {
 			return $agent_path . '/' . $folder . '.php';
 		}
 
-		// Look for any PHP file with agent headers
+		// Look for any PHP file with agent headers.
 		$php_files = glob( $agent_path . '/*.php' );
 
 		foreach ( $php_files as $file ) {
@@ -241,7 +241,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Parse agent file headers (similar to get_plugin_data)
 	 *
-	 * @param string $file Path to agent file
+	 * @param string $file Path to agent file.
 	 * @return array|null
 	 */
 	public function get_agent_data( string $file ): ?array {
@@ -269,19 +269,19 @@ class Agentic_Agent_Registry {
 
 		$data = get_file_data( $file, $default_headers );
 
-		// Must have at least a name
+		// Must have at least a name.
 		if ( empty( $data['name'] ) ) {
 			return null;
 		}
 
-		// Parse capabilities as comma-separated list
+		// Parse capabilities as comma-separated list.
 		if ( ! empty( $data['capabilities'] ) ) {
 			$data['capabilities'] = array_map( 'trim', explode( ',', $data['capabilities'] ) );
 		} else {
 			$data['capabilities'] = array();
 		}
 
-		// Parse tags as comma-separated list
+		// Parse tags as comma-separated list.
 		if ( ! empty( $data['tags'] ) ) {
 			$data['tags'] = array_map( 'trim', explode( ',', $data['tags'] ) );
 		} else {
@@ -294,7 +294,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Check if an agent is active
 	 *
-	 * @param string $slug Agent slug
+	 * @param string $slug Agent slug.
 	 * @return bool
 	 */
 	public function is_agent_active( string $slug ): bool {
@@ -314,7 +314,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Activate an agent
 	 *
-	 * @param string $slug Agent slug
+	 * @param string $slug Agent slug.
 	 * @return bool|WP_Error
 	 */
 	public function activate_agent( string $slug ) {
@@ -330,7 +330,7 @@ class Agentic_Agent_Registry {
 
 		$agent = $agents[ $slug ];
 
-		// Check PHP version requirement
+		// Check PHP version requirement.
 		if ( ! empty( $agent['requires_php'] ) && version_compare( PHP_VERSION, $agent['requires_php'], '<' ) ) {
 			return new WP_Error(
 				'php_version',
@@ -341,7 +341,7 @@ class Agentic_Agent_Registry {
 			);
 		}
 
-		// Check WordPress version requirement
+		// Check WordPress version requirement.
 		if ( ! empty( $agent['requires_wp'] ) && version_compare( get_bloginfo( 'version' ), $agent['requires_wp'], '<' ) ) {
 			return new WP_Error(
 				'wp_version',
@@ -352,28 +352,28 @@ class Agentic_Agent_Registry {
 			);
 		}
 
-		// Load the agent to check for errors
+		// Load the agent to check for errors.
 		$result = $this->load_agent( $agent );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		// Call activation hook if exists
+		// Call activation hook if exists.
 		$activation_hook = 'agentic_agent_' . $slug . '_activate';
 		if ( has_action( $activation_hook ) ) {
 			do_action( $activation_hook );
 		}
 
-		// Add to active agents
+		// Add to active agents.
 		$active_agents   = $this->get_active_agents();
 		$active_agents[] = $slug;
 		update_option( self::ACTIVE_AGENTS_OPTION, array_unique( $active_agents ) );
 
-		// Clear cache
+		// Clear cache.
 		$this->agents_cache = array();
 
-		// Log activation
+		// Log activation.
 		if ( class_exists( 'Agentic_Audit_Log' ) ) {
 			Agentic_Audit_Log::get_instance()->log(
 				'agent_activated',
@@ -393,7 +393,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Deactivate an agent
 	 *
-	 * @param string $slug Agent slug
+	 * @param string $slug Agent slug.
 	 * @return bool|WP_Error
 	 */
 	public function deactivate_agent( string $slug ) {
@@ -404,21 +404,21 @@ class Agentic_Agent_Registry {
 		$agents = $this->get_installed_agents( true );
 		$agent  = $agents[ $slug ] ?? null;
 
-		// Call deactivation hook if exists
+		// Call deactivation hook if exists.
 		$deactivation_hook = 'agentic_agent_' . $slug . '_deactivate';
 		if ( has_action( $deactivation_hook ) ) {
 			do_action( $deactivation_hook );
 		}
 
-		// Remove from active agents
+		// Remove from active agents.
 		$active_agents = $this->get_active_agents();
 		$active_agents = array_diff( $active_agents, array( $slug ) );
 		update_option( self::ACTIVE_AGENTS_OPTION, array_values( $active_agents ) );
 
-		// Clear cache
+		// Clear cache.
 		$this->agents_cache = array();
 
-		// Log deactivation
+		// Log deactivation.
 		if ( class_exists( 'Agentic_Audit_Log' ) && $agent ) {
 			Agentic_Audit_Log::get_instance()->log(
 				'agent_deactivated',
@@ -435,7 +435,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Load a single agent
 	 *
-	 * @param array $agent Agent data
+	 * @param array $agent Agent data.
 	 * @return bool|WP_Error
 	 */
 	public function load_agent( array $agent ) {
@@ -463,12 +463,12 @@ class Agentic_Agent_Registry {
 		$active_slugs = $this->get_active_agents();
 
 		if ( empty( $active_slugs ) ) {
-			// Still init agent instances for base functionality
+			// Still init agent instances for base functionality.
 			$this->init_agent_instances();
 			return;
 		}
 
-		// Include base class first
+		// Include base class first.
 		require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-base.php';
 
 		$installed = $this->get_installed_agents();
@@ -478,7 +478,7 @@ class Agentic_Agent_Registry {
 				$result = $this->load_agent( $installed[ $slug ] );
 
 				if ( is_wp_error( $result ) ) {
-					// Log error but continue loading other agents
+					// Log error but continue loading other agents.
 					error_log(
 						sprintf(
 							'Agentic: Failed to load agent %s: %s',
@@ -490,7 +490,7 @@ class Agentic_Agent_Registry {
 			}
 		}
 
-		// Allow agents to register their instances
+		// Allow agents to register their instances.
 		do_action( 'agentic_register_agents', $this );
 
 		do_action( 'agentic_agents_loaded' );
@@ -499,7 +499,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Get agents from the library (available to install)
 	 *
-	 * @param array $args Search/filter arguments
+	 * @param array $args Search/filter arguments.
 	 * @return array
 	 */
 	public function get_library_agents( array $args = array() ): array {
@@ -523,7 +523,7 @@ class Agentic_Agent_Registry {
 		$library_folders = scandir( $this->library_dir );
 
 		foreach ( $library_folders as $folder ) {
-			if ( $folder === '.' || $folder === '..' ) {
+			if ( '.' === $folder || '..' === $folder ) {
 				continue;
 			}
 
@@ -543,7 +543,7 @@ class Agentic_Agent_Registry {
 					$agent_data['library_path'] = $agent_path;
 					$agent_data['installed']    = $this->is_agent_installed( $folder );
 
-					// Apply search filter
+					// Apply search filter.
 					if ( ! empty( $args['search'] ) ) {
 						$search = strtolower( $args['search'] );
 						$match  = str_contains( strtolower( $agent_data['name'] ), $search )
@@ -554,7 +554,7 @@ class Agentic_Agent_Registry {
 						}
 					}
 
-					// Apply category filter
+					// Apply category filter.
 					if ( ! empty( $args['category'] ) && ! empty( $agent_data['category'] ) ) {
 						if ( strtolower( $agent_data['category'] ) !== strtolower( $args['category'] ) ) {
 							continue;
@@ -568,7 +568,7 @@ class Agentic_Agent_Registry {
 
 		$total = count( $agents );
 
-		// Pagination
+		// Pagination.
 		$offset = ( $args['page'] - 1 ) * $args['per_page'];
 		$agents = array_slice( $agents, $offset, $args['per_page'], true );
 
@@ -582,7 +582,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Check if an agent is installed
 	 *
-	 * @param string $slug Agent slug
+	 * @param string $slug Agent slug.
 	 * @return bool
 	 */
 	public function is_agent_installed( string $slug ): bool {
@@ -592,7 +592,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Install an agent from the library
 	 *
-	 * @param string $slug Agent slug
+	 * @param string $slug Agent slug.
 	 * @return bool|WP_Error
 	 */
 	public function install_agent( string $slug ) {
@@ -606,7 +606,7 @@ class Agentic_Agent_Registry {
 			}
 		}
 
-		// Also check full library without pagination
+		// Also check full library without pagination.
 		if ( ! $agent ) {
 			$full_library = $this->get_library_agents( array( 'per_page' => 1000 ) );
 			foreach ( $full_library['agents'] as $lib_slug => $lib_agent ) {
@@ -628,17 +628,17 @@ class Agentic_Agent_Registry {
 		$source = $agent['library_path'];
 		$dest   = $this->agents_dir . '/' . $slug;
 
-		// Copy agent files
+		// Copy agent files.
 		$result = $this->copy_directory( $source, $dest );
 
 		if ( ! $result ) {
 			return new WP_Error( 'copy_failed', __( 'Failed to copy agent files.', 'agentic-plugin' ) );
 		}
 
-		// Clear cache
+		// Clear cache.
 		$this->agents_cache = array();
 
-		// Log installation
+		// Log installation.
 		if ( class_exists( 'Agentic_Audit_Log' ) ) {
 			Agentic_Audit_Log::get_instance()->log(
 				'agent_installed',
@@ -658,7 +658,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Delete an installed agent
 	 *
-	 * @param string $slug Agent slug
+	 * @param string $slug Agent slug.
 	 * @return bool|WP_Error
 	 */
 	public function delete_agent( string $slug ) {
@@ -666,7 +666,7 @@ class Agentic_Agent_Registry {
 			return new WP_Error( 'not_installed', __( 'Agent is not installed.', 'agentic-plugin' ) );
 		}
 
-		// Deactivate first if active
+		// Deactivate first if active.
 		if ( $this->is_agent_active( $slug ) ) {
 			$this->deactivate_agent( $slug );
 		}
@@ -675,23 +675,23 @@ class Agentic_Agent_Registry {
 		$agent      = $agents[ $slug ] ?? null;
 		$agent_path = $this->agents_dir . '/' . $slug;
 
-		// Call uninstall hook if exists
+		// Call uninstall hook if exists.
 		$uninstall_hook = 'agentic_agent_' . $slug . '_uninstall';
 		if ( has_action( $uninstall_hook ) ) {
 			do_action( $uninstall_hook );
 		}
 
-		// Delete directory
+		// Delete directory.
 		$result = $this->delete_directory( $agent_path );
 
 		if ( ! $result ) {
 			return new WP_Error( 'delete_failed', __( 'Failed to delete agent files.', 'agentic-plugin' ) );
 		}
 
-		// Clear cache
+		// Clear cache.
 		$this->agents_cache = array();
 
-		// Log deletion
+		// Log deletion.
 		if ( class_exists( 'Agentic_Audit_Log' ) && $agent ) {
 			Agentic_Audit_Log::get_instance()->log(
 				'agent_deleted',
@@ -708,8 +708,8 @@ class Agentic_Agent_Registry {
 	/**
 	 * Copy a directory recursively
 	 *
-	 * @param string $source Source path
-	 * @param string $dest   Destination path
+	 * @param string $source Source path.
+	 * @param string $dest   Destination path.
 	 * @return bool
 	 */
 	private function copy_directory( string $source, string $dest ): bool {
@@ -744,7 +744,7 @@ class Agentic_Agent_Registry {
 	/**
 	 * Delete a directory recursively
 	 *
-	 * @param string $dir Directory path
+	 * @param string $dir Directory path.
 	 * @return bool
 	 */
 	private function delete_directory( string $dir ): bool {
@@ -892,10 +892,10 @@ class Agentic_Agent_Registry {
 	 * Called after active agents are loaded.
 	 */
 	public function init_agent_instances(): void {
-		// Include base class
+		// Include base class.
 		require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-base.php';
 
-		// Allow agents to register themselves
+		// Allow agents to register themselves.
 		do_action( 'agentic_register_agents', $this );
 	}
 }

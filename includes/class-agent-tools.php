@@ -87,7 +87,7 @@ class Agent_Tools {
 	 * @return array Tool definitions.
 	 */
 	public function get_tool_definitions(): array {
-		// Core tools always available
+		// Core tools always available.
 		$core_tools = array(
 			array(
 				'type'     => 'function',
@@ -261,10 +261,10 @@ class Agent_Tools {
 			),
 		);
 
-		// Get tools from activated agents via filter
+		// Get tools from activated agents via filter.
 		$agent_tools = apply_filters( 'agentic_agent_tools', array() );
 
-		// Convert agent tools to OpenAI function format and merge
+		// Convert agent tools to OpenAI function format and merge.
 		foreach ( $agent_tools as $tool_name => $tool ) {
 			$core_tools[] = array(
 				'type'     => 'function',
@@ -278,7 +278,7 @@ class Agent_Tools {
 				),
 			);
 
-			// Store handler for later execution
+			// Store handler for later execution.
 			$this->agent_tool_handlers[ $tool['name'] ] = $tool['handler'] ?? null;
 		}
 
@@ -296,8 +296,8 @@ class Agent_Tools {
 	public function execute( string $name, array $arguments, string $agent_id = 'developer_agent' ): array|\WP_Error {
 		$this->audit->log( $agent_id, 'tool_call', $name, $arguments );
 
-		// Check for agent-registered tool handlers first
-		// Make sure handlers are loaded by calling get_tool_definitions
+		// Check for agent-registered tool handlers first.
+		// Make sure handlers are loaded by calling get_tool_definitions.
 		if ( empty( $this->agent_tool_handlers ) ) {
 			$this->get_tool_definitions();
 		}
@@ -306,7 +306,7 @@ class Agent_Tools {
 			return call_user_func( $this->agent_tool_handlers[ $name ], $arguments );
 		}
 
-		// Core tools
+		// Core tools.
 		switch ( $name ) {
 			case 'read_file':
 				return $this->read_file( $arguments['path'] );
@@ -344,7 +344,7 @@ class Agent_Tools {
 	 * @return array File content or error.
 	 */
 	private function read_file( string $path ): array {
-		// Security: prevent path traversal
+		// Security: prevent path traversal.
 		$path = $this->sanitize_path( $path );
 
 		if ( ! self::is_allowed_subpath( $path ) ) {
@@ -371,7 +371,7 @@ class Agent_Tools {
 		$content = file_get_contents( $full_path );
 		$size    = filesize( $full_path );
 
-		// Limit content size
+		// Limit content size.
 		if ( $size > 100000 ) {
 			$content = substr( $content, 0, 100000 ) . "\n\n[Content truncated - file too large]";
 		}
@@ -393,7 +393,7 @@ class Agent_Tools {
 		$path = $this->sanitize_path( $path );
 
 		// If no path provided, list allowed roots.
-		if ( $path === '' ) {
+		if ( '' === $path ) {
 			$items = array();
 			foreach ( $this->allowed_roots as $root ) {
 				if ( is_dir( $root ) ) {
@@ -470,7 +470,7 @@ class Agent_Tools {
 				}
 
 				if ( $file->isFile() && ( ! $file_type || $file->getExtension() === $file_type ) ) {
-					// Skip vendor/node_modules
+					// Skip vendor/node_modules.
 					if ( strpos( $file->getPathname(), 'vendor/' ) !== false || strpos( $file->getPathname(), 'node_modules/' ) !== false ) {
 						continue;
 					}
@@ -577,7 +577,7 @@ class Agent_Tools {
 		$agent_user = get_user_by( 'login', 'developer-agent' );
 
 		if ( ! $agent_user ) {
-			// Create agent user if it doesn't exist
+			// Create agent user if it doesn't exist.
 			$user_id = wp_insert_user(
 				array(
 					'user_login'   => 'developer-agent',
@@ -638,7 +638,7 @@ class Agent_Tools {
 	 * @return array Result.
 	 */
 	private function update_documentation( string $path, string $content, string $reasoning ): array {
-		// Only allow markdown files
+		// Only allow markdown files.
 		if ( ! preg_match( '/\.(md|txt|rst)$/i', $path ) ) {
 			return array( 'error' => 'Only documentation files (.md, .txt, .rst) can be updated autonomously' );
 		}
@@ -651,17 +651,17 @@ class Agent_Tools {
 
 		$full_path = $this->repo_path . '/' . $path;
 
-		// Backup existing content
+		// Backup existing content.
 		$backup = file_exists( $full_path ) ? file_get_contents( $full_path ) : null;
 
-		// Write new content
+		// Write new content.
 		$result = file_put_contents( $full_path, $content );
 
-		if ( $result === false ) {
+		if ( false === $result ) {
 			return array( 'error' => 'Failed to write file' );
 		}
 
-		// Commit the change directly to current branch (docs are autonomous)
+		// Commit the change directly to current branch (docs are autonomous).
 		$commit_message = "docs: Update {$path}\\n\\nReasoning: {$reasoning}";
 		$this->git_exec( 'git add ' . escapeshellarg( $path ) );
 		$this->git_exec( 'git commit -m ' . escapeshellarg( $commit_message ) );
@@ -702,53 +702,53 @@ class Agent_Tools {
 		}
 		$full_path = $this->repo_path . '/' . $path;
 
-		// Generate branch name
+		// Generate branch name.
 		$timestamp   = date( 'Ymd-His' );
 		$path_slug   = preg_replace( '/[^a-z0-9]+/', '-', strtolower( basename( $path, '.' . pathinfo( $path, PATHINFO_EXTENSION ) ) ) );
 		$branch_name = "agent/{$path_slug}-{$timestamp}";
 
-		// Get current branch to return to later
+		// Get current branch to return to later.
 		$current_branch = $this->git_exec( 'git rev-parse --abbrev-ref HEAD' );
 		if ( ! $current_branch ) {
 			return array( 'error' => 'Failed to get current git branch' );
 		}
 		$current_branch = trim( $current_branch );
 
-		// Create and checkout new branch
+		// Create and checkout new branch.
 		$result = $this->git_exec( 'git checkout -b ' . escapeshellarg( $branch_name ) );
-		if ( $result === false ) {
+		if ( false === $result ) {
 			return array( 'error' => 'Failed to create git branch: ' . $branch_name );
 		}
 
-		// Write the file
+		// Write the file.
 		$dir = dirname( $full_path );
 		if ( ! is_dir( $dir ) ) {
 			mkdir( $dir, 0755, true );
 		}
 
 		if ( file_put_contents( $full_path, $content ) === false ) {
-			// Checkout back to original branch
+			// Checkout back to original branch.
 			$this->git_exec( 'git checkout ' . escapeshellarg( $current_branch ) );
 			$this->git_exec( 'git branch -D ' . escapeshellarg( $branch_name ) );
 			return array( 'error' => 'Failed to write file: ' . $path );
 		}
 
-		// Stage and commit
+		// Stage and commit.
 		$commit_message = "feat(agent): {$reasoning}\n\nProposed by Developer Agent\nFile: {$path}";
 		$this->git_exec( 'git add ' . escapeshellarg( $path ) );
 		$commit_result = $this->git_exec( 'git commit -m ' . escapeshellarg( $commit_message ) );
 
-		if ( $commit_result === false ) {
-			// Checkout back and clean up
+		if ( false === $commit_result ) {
+			// Checkout back and clean up.
 			$this->git_exec( 'git checkout ' . escapeshellarg( $current_branch ) );
 			$this->git_exec( 'git branch -D ' . escapeshellarg( $branch_name ) );
 			return array( 'error' => 'Failed to commit changes' );
 		}
 
-		// Switch back to original branch
+		// Switch back to original branch.
 		$this->git_exec( 'git checkout ' . escapeshellarg( $current_branch ) );
 
-		// Log the action
+		// Log the action.
 		$this->audit->log(
 			'developer_agent',
 			'request_code_change',
@@ -760,7 +760,7 @@ class Agent_Tools {
 			)
 		);
 
-		// Build response with instructions
+		// Build response with instructions.
 		$remote_url    = trim( $this->git_exec( 'git remote get-url origin' ) ?? '' );
 		$github_pr_url = '';
 		if ( preg_match( '#github\.com[:/]([^/]+/[^/\.]+)#', $remote_url, $matches ) ) {

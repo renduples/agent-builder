@@ -39,7 +39,7 @@ class Marketplace_Client {
 	 * Initialize the client
 	 */
 	public function __construct() {
-		// Allow override for local development
+		// Allow override for local development.
 		$this->api_base = defined( 'AGENTIC_MARKETPLACE_URL' )
 			? AGENTIC_MARKETPLACE_URL
 			: 'https://agentic-plugin.com';
@@ -54,7 +54,7 @@ class Marketplace_Client {
 		add_action( 'wp_ajax_agentic_update_agent', array( $this, 'ajax_update_agent' ) );
 		add_action( 'wp_ajax_agentic_rate_agent', array( $this, 'ajax_rate_agent' ) );
 
-		// Schedule update checks
+		// Schedule update checks.
 		add_action( 'init', array( $this, 'schedule_update_checks' ) );
 		add_action( 'agentic_check_agent_updates', array( $this, 'check_for_updates' ) );
 	}
@@ -77,22 +77,22 @@ class Marketplace_Client {
 		$updates   = array();
 
 		foreach ( $installed as $slug => $agent ) {
-			// Skip bundled agents - they update with the plugin
+			// Skip bundled agents - they update with the plugin.
 			if ( ! empty( $agent['bundled'] ) ) {
 				continue;
 			}
 
-			// Get stored license for this agent (if premium)
+			// Get stored license for this agent (if premium).
 			$licenses    = get_option( 'agentic_licenses', array() );
 			$license_key = $licenses[ $slug ]['license_key'] ?? '';
 
-			// Check marketplace for latest version
+			// Check marketplace for latest version.
 			$params = array(
 				'current_version' => $agent['version'] ?? '0.0.0',
 				'site_url'        => home_url(),
 			);
 
-			// Add license key if agent is premium
+			// Add license key if agent is premium.
 			if ( ! empty( $license_key ) ) {
 				$params['license_key'] = $license_key;
 			}
@@ -103,7 +103,7 @@ class Marketplace_Client {
 				continue;
 			}
 
-			// Check if update requires license renewal
+			// Check if update requires license renewal.
 			if ( isset( $response['error']['code'] ) && 'license_required' === $response['error']['code'] ) {
 				$updates[ $slug ] = array(
 					'current'         => $agent['version'] ?? '0.0.0',
@@ -132,7 +132,7 @@ class Marketplace_Client {
 			}
 		}
 
-		// Store updates in transient (12 hours)
+		// Store updates in transient (12 hours).
 		set_transient( 'agentic_available_updates', $updates, 12 * HOUR_IN_SECONDS );
 
 		do_action( 'agentic_updates_checked', $updates );
@@ -259,7 +259,7 @@ class Marketplace_Client {
 			}
 		}
 
-		// Also check library agents
+		// Also check library agents.
 		$library_dir = AGENTIC_PLUGIN_DIR . 'library';
 		if ( is_dir( $library_dir ) ) {
 			$dirs = glob( $library_dir . '/*', GLOB_ONLYDIR );
@@ -416,10 +416,10 @@ class Marketplace_Client {
 		$params = array(
 			'page'      => isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 1,
 			'per_page'  => isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 12,
-			'search'    => isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '',
-			'category'  => isset( $_POST['category'] ) ? sanitize_text_field( $_POST['category'] ) : '',
-			'orderby'   => isset( $_POST['orderby'] ) ? sanitize_text_field( $_POST['orderby'] ) : 'date',
-			'order'     => isset( $_POST['order'] ) ? sanitize_text_field( $_POST['order'] ) : 'DESC',
+			'search'    => isset( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '',
+			'category'  => isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '',
+			'orderby'   => isset( $_POST['orderby'] ) ? sanitize_text_field( wp_unslash( $_POST['orderby'] ) ) : 'date',
+			'order'     => isset( $_POST['order'] ) ? sanitize_text_field( wp_unslash( $_POST['order'] ) ) : 'DESC',
 			'free_only' => isset( $_POST['free_only'] ) && $_POST['free_only'] === 'true',
 		);
 
@@ -472,19 +472,19 @@ class Marketplace_Client {
 		}
 
 		$agent_id    = isset( $_POST['agent_id'] ) ? absint( $_POST['agent_id'] ) : 0;
-		$license_key = isset( $_POST['license_key'] ) ? sanitize_text_field( $_POST['license_key'] ) : '';
+		$license_key = isset( $_POST['license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['license_key'] ) ) : '';
 
 		if ( ! $agent_id ) {
 			wp_send_json_error( __( 'Invalid agent ID', 'agentic-plugin' ) );
 		}
 
-		// Get agent details
+		// Get agent details.
 		$agent = $this->api_request( "agents/{$agent_id}" );
 		if ( is_wp_error( $agent ) ) {
 			wp_send_json_error( $agent->get_error_message() );
 		}
 
-		// Check if premium and verify license
+		// Check if premium and verify license.
 		if ( $agent['is_premium'] ) {
 			if ( empty( $license_key ) ) {
 				wp_send_json_error( __( 'License key required for premium agents', 'agentic-plugin' ) );
@@ -506,7 +506,7 @@ class Marketplace_Client {
 				wp_send_json_error( $verification->get_error_message() );
 			}
 
-			// Handle error responses
+			// Handle error responses.
 			if ( isset( $verification['error'] ) ) {
 				$error      = $verification['error'];
 				$error_code = $error['code'] ?? 'unknown_error';
@@ -517,9 +517,9 @@ class Marketplace_Client {
 
 				switch ( $error_code ) {
 					case 'license_expired':
-						// Check if still in grace period
+						// Check if still in grace period.
 						if ( ! empty( $error['allow_existing_usage'] ) ) {
-							// Allow install but show warning
+							// Allow install but show warning.
 							$grace_warning = sprintf(
 								/* translators: 1: expiration date, 2: grace period days, 3: renewal URL */
 								__( 'License expired on %1$s. You have %2$d days to renew. <a href="%3$s" target="_blank">Renew now</a>', 'agentic-plugin' ),
@@ -528,7 +528,7 @@ class Marketplace_Client {
 								esc_url( $error['renewal_url'] ?? '' )
 							);
 							set_transient( "agentic_license_warning_{$agent['slug']}", $grace_warning, DAY_IN_SECONDS );
-							// Continue with download
+							// Continue with download.
 							$download_url = $verification['data']['download_url'] ?? '';
 							break;
 						} else {
@@ -562,14 +562,14 @@ class Marketplace_Client {
 				}
 			}
 
-			// Success - extract download URL from response data
+			// Success - extract download URL from response data.
 			if ( isset( $verification['data']['download_url'] ) ) {
 				$download_url = $verification['data']['download_url'];
 			} else {
 				wp_send_json_error( __( 'Invalid license validation response', 'agentic-plugin' ) );
 			}
 
-			// Store license with complete metadata
+			// Store license with complete metadata.
 			$licenses                   = get_option( 'agentic_licenses', array() );
 			$licenses[ $agent['slug'] ] = array(
 				'license_key'      => $license_key,
@@ -583,7 +583,7 @@ class Marketplace_Client {
 			);
 			update_option( 'agentic_licenses', $licenses );
 		} else {
-			// Track download
+			// Track download.
 			$download = $this->api_request( "agents/{$agent_id}/download", array(), 'POST' );
 			if ( is_wp_error( $download ) ) {
 				wp_send_json_error( $download->get_error_message() );
@@ -591,7 +591,7 @@ class Marketplace_Client {
 			$download_url = $download['download_url'];
 		}
 
-		// Download and install
+		// Download and install.
 		$result = $this->download_and_install_agent( $download_url, $agent['slug'] );
 
 		if ( is_wp_error( $result ) ) {
@@ -613,7 +613,7 @@ class Marketplace_Client {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-		// Create agents directory if it doesn't exist
+		// Create agents directory if it doesn't exist.
 		$agents_dir = WP_CONTENT_DIR . '/agents';
 		if ( ! is_dir( $agents_dir ) ) {
 			wp_mkdir_p( $agents_dir );
@@ -621,13 +621,13 @@ class Marketplace_Client {
 
 		$agent_dir = $agents_dir . '/' . $slug;
 
-		// Download the file
+		// Download the file.
 		$temp_file = download_url( $download_url );
 		if ( is_wp_error( $temp_file ) ) {
 			return $temp_file;
 		}
 
-		// Extract to agents directory
+		// Extract to agents directory.
 		$result = unzip_file( $temp_file, $agent_dir );
 		@unlink( $temp_file );
 
@@ -635,12 +635,12 @@ class Marketplace_Client {
 			return $result;
 		}
 
-		// Check if agent.php exists in extracted content
+		// Check if agent.php exists in extracted content.
 		if ( ! file_exists( $agent_dir . '/agent.php' ) ) {
-			// Maybe it's in a subdirectory
+			// Maybe it's in a subdirectory.
 			$subdirs = glob( $agent_dir . '/*', GLOB_ONLYDIR );
 			if ( ! empty( $subdirs ) && file_exists( $subdirs[0] . '/agent.php' ) ) {
-				// Move contents up
+				// Move contents up.
 				$this->move_directory_contents( $subdirs[0], $agent_dir );
 				@rmdir( $subdirs[0] );
 			} else {
@@ -657,7 +657,7 @@ class Marketplace_Client {
 	private function move_directory_contents( string $source, string $dest ): void {
 		$files = scandir( $source );
 		foreach ( $files as $file ) {
-			if ( $file === '.' || $file === '..' ) {
+			if ( '.' === $file || '..' === $file ) {
 				continue;
 			}
 			rename( $source . '/' . $file, $dest . '/' . $file );
@@ -674,7 +674,7 @@ class Marketplace_Client {
 			wp_send_json_error( __( 'Permission denied', 'agentic-plugin' ) );
 		}
 
-		$slug = isset( $_POST['slug'] ) ? sanitize_text_field( $_POST['slug'] ) : '';
+		$slug = isset( $_POST['slug'] ) ? sanitize_text_field( wp_unslash( $_POST['slug'] ) ) : '';
 
 		if ( ! $slug ) {
 			wp_send_json_error( __( 'Invalid agent slug', 'agentic-plugin' ) );
@@ -704,7 +704,7 @@ class Marketplace_Client {
 			wp_send_json_error( __( 'Permission denied', 'agentic-plugin' ) );
 		}
 
-		$slug = isset( $_POST['slug'] ) ? sanitize_text_field( $_POST['slug'] ) : '';
+		$slug = isset( $_POST['slug'] ) ? sanitize_text_field( wp_unslash( $_POST['slug'] ) ) : '';
 
 		if ( ! $slug ) {
 			wp_send_json_error( __( 'Invalid agent slug', 'agentic-plugin' ) );
@@ -726,7 +726,7 @@ class Marketplace_Client {
 	 * AJAX: Update agent
 	 */
 	public function ajax_update_agent(): void {
-		// Same as install, but preserves settings
+		// Same as install, but preserves settings.
 		$this->ajax_install_agent();
 	}
 
@@ -774,7 +774,7 @@ class Marketplace_Client {
 
 		$license = $licenses[ $slug ];
 
-		// Call API to deactivate
+		// Call API to deactivate.
 		$response = $this->api_request(
 			'licenses/deactivate',
 			array(
@@ -785,7 +785,7 @@ class Marketplace_Client {
 			'POST'
 		);
 
-		// Remove from local storage whether API call succeeds or fails
+		// Remove from local storage whether API call succeeds or fails.
 		unset( $licenses[ $slug ] );
 		update_option( 'agentic_licenses', $licenses );
 
@@ -810,9 +810,9 @@ class Marketplace_Client {
 
 		$license = $licenses[ $slug ];
 
-		// Check status
+		// Check status.
 		if ( 'active' !== $license['status'] ) {
-			// Check if expired and within grace period
+			// Check if expired and within grace period.
 			if ( isset( $license['expires_at'] ) ) {
 				$expires    = strtotime( $license['expires_at'] );
 				$grace_days = 7; // From licensing strategy.
@@ -854,15 +854,15 @@ class Marketplace_Client {
 			),
 		);
 
-		if ( $method === 'GET' && ! empty( $params ) ) {
+		if ( 'GET' === $method && ! empty( $params ) ) {
 			$url = add_query_arg( $params, $url );
-		} elseif ( $method === 'POST' ) {
+		} elseif ( 'POST' === $method ) {
 			$args['method'] = 'POST';
 			$args['body']   = $params;
 		}
 
-		// Check cache for GET requests
-		if ( $method === 'GET' ) {
+		// Check cache for GET requests.
+		if ( 'GET' === $method ) {
 			$cache_key = 'agentic_api_' . md5( $url );
 			$cached    = get_transient( $cache_key );
 			if ( false !== $cached ) {
@@ -880,7 +880,7 @@ class Marketplace_Client {
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
 
-		if ( $data === null || ! is_array( $data ) ) {
+		if ( null === $data || ! is_array( $data ) ) {
 			return new \WP_Error( 'api_error', __( 'Invalid API response format', 'agentic-plugin' ) );
 		}
 
@@ -891,8 +891,8 @@ class Marketplace_Client {
 			);
 		}
 
-		// Cache successful GET requests
-		if ( $method === 'GET' ) {
+		// Cache successful GET requests.
+		if ( 'GET' === $method ) {
 			set_transient( $cache_key, $data, self::CACHE_DURATION );
 		}
 

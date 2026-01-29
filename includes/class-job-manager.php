@@ -38,7 +38,7 @@ class Job_Manager {
 		add_action( 'agentic_process_job', array( __CLASS__, 'process_job' ) );
 		add_action( 'agentic_cleanup_jobs', array( __CLASS__, 'cleanup_old_jobs' ) );
 
-		// Schedule hourly cleanup if not already scheduled
+		// Schedule hourly cleanup if not already scheduled.
 		if ( ! wp_next_scheduled( 'agentic_cleanup_jobs' ) ) {
 			wp_schedule_event( time(), 'hourly', 'agentic_cleanup_jobs' );
 		}
@@ -108,7 +108,7 @@ class Job_Manager {
 		$job_id = wp_generate_uuid4();
 		$now    = current_time( 'mysql' );
 
-		// Store processor class in request_data
+		// Store processor class in request_data.
 		if ( $args['processor'] ) {
 			$args['request_data']['_processor'] = $args['processor'];
 		}
@@ -129,7 +129,7 @@ class Job_Manager {
 			array( '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%s' )
 		);
 
-		// Schedule async processing
+		// Schedule async processing.
 		wp_schedule_single_event( time(), 'agentic_process_job', array( $job_id ) );
 
 		return $job_id;
@@ -146,14 +146,14 @@ class Job_Manager {
 
 		$table = self::get_table_name();
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared.
 		$job = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %s", $job_id ) );
 
 		if ( ! $job ) {
 			return null;
 		}
 
-		// Decode JSON fields
+		// Decode JSON fields.
 		$job->request_data = json_decode( $job->request_data, true );
 		if ( $job->response_data ) {
 			$job->response_data = json_decode( $job->response_data, true );
@@ -174,7 +174,7 @@ class Job_Manager {
 
 		$data['updated_at'] = current_time( 'mysql' );
 
-		// Encode response_data if provided
+		// Encode response_data if provided.
 		if ( isset( $data['response_data'] ) && is_array( $data['response_data'] ) ) {
 			$data['response_data'] = wp_json_encode( $data['response_data'] );
 		}
@@ -203,26 +203,26 @@ class Job_Manager {
 			return;
 		}
 
-		// Check if already processing or completed
+		// Check if already processing or completed.
 		if ( in_array( $job->status, array( self::STATUS_PROCESSING, self::STATUS_COMPLETED, self::STATUS_CANCELLED ), true ) ) {
 			return;
 		}
 
-		// Update to processing
+		// Update to processing.
 		self::update_job( $job_id, array( 'status' => self::STATUS_PROCESSING ) );
 
 		try {
-			// Get processor class from request data
+			// Get processor class from request data.
 			$processor_class = $job->request_data['_processor'] ?? null;
 
 			if ( ! $processor_class || ! class_exists( $processor_class ) ) {
 				throw new \Exception( 'Invalid or missing job processor' );
 			}
 
-			// Create processor instance
+			// Create processor instance.
 			$processor = new $processor_class();
 
-			// Execute with progress callback
+			// Execute with progress callback.
 			$result = $processor->execute(
 				$job->request_data,
 				function ( $progress, $message ) use ( $job_id ) {
@@ -236,7 +236,7 @@ class Job_Manager {
 				}
 			);
 
-			// Mark as completed
+			// Mark as completed.
 			self::update_job(
 				$job_id,
 				array(
@@ -248,7 +248,7 @@ class Job_Manager {
 			);
 
 		} catch ( \Exception $e ) {
-			// Mark as failed
+			// Mark as failed.
 			self::update_job(
 				$job_id,
 				array(
@@ -296,7 +296,7 @@ class Job_Manager {
 		$table = self::get_table_name();
 
 		if ( $status ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared.
 			$jobs = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT * FROM {$table} WHERE user_id = %d AND status = %s ORDER BY created_at DESC LIMIT %d",
@@ -306,7 +306,7 @@ class Job_Manager {
 				)
 			);
 		} else {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared.
 			$jobs = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT * FROM {$table} WHERE user_id = %d ORDER BY created_at DESC LIMIT %d",
@@ -316,7 +316,7 @@ class Job_Manager {
 			);
 		}
 
-		// Decode JSON fields
+		// Decode JSON fields.
 		foreach ( $jobs as $job ) {
 			$job->request_data = json_decode( $job->request_data, true );
 			if ( $job->response_data ) {
@@ -337,8 +337,8 @@ class Job_Manager {
 
 		$table = self::get_table_name();
 
-		// Delete completed/failed jobs older than 24 hours
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// Delete completed/failed jobs older than 24 hours.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared.
 		$deleted = $wpdb->query(
 			"DELETE FROM {$table} 
 			WHERE status IN ('completed', 'failed', 'cancelled') 
@@ -361,7 +361,7 @@ class Job_Manager {
 
 		$where = $user_id ? $wpdb->prepare( 'WHERE user_id = %d', $user_id ) : '';
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared.
 		$stats = $wpdb->get_row(
 			"SELECT 
 				COUNT(*) as total,

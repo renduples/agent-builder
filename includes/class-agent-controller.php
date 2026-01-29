@@ -99,13 +99,13 @@ class Agent_Controller {
 	private function get_tools_for_agent(): array {
 		$tools = array();
 
-		// Add agent-specific tools first
+		// Add agent-specific tools first.
 		if ( $this->current_agent ) {
 			$tools = $this->current_agent->get_tools();
 		}
 
-		// Agent can optionally use core tools (read-only ones)
-		// For now, agents define their own tools
+		// Agent can optionally use core tools (read-only ones).
+		// For now, agents define their own tools.
 
 		return $tools;
 	}
@@ -124,16 +124,16 @@ class Agent_Controller {
 
 		$this->audit->log( $agent_id, 'tool_call', $tool_name, $arguments );
 
-		// First, let the agent try to handle it
+		// First, let the agent try to handle it.
 		if ( $this->current_agent ) {
 			$result = $this->current_agent->execute_tool( $tool_name, $arguments );
 
-			if ( $result !== null ) {
+			if ( null !== $result ) {
 				return $result;
 			}
 		}
 
-		// Fall back to core tools
+		// Fall back to core tools.
 		$result = $this->core_tools->execute( $tool_name, $arguments, $agent_id );
 
 		if ( is_wp_error( $result ) ) {
@@ -154,7 +154,7 @@ class Agent_Controller {
 	 * @return array Response data.
 	 */
 	public function chat( string $message, array $history = array(), int $user_id = 0, string $session_id = '', string $agent_id = '' ): array {
-		// Set agent if specified
+		// Set agent if specified.
 		if ( $agent_id && ( ! $this->current_agent || $this->current_agent->get_id() !== $agent_id ) ) {
 			if ( ! $this->set_agent( $agent_id ) ) {
 				return array(
@@ -183,7 +183,7 @@ class Agent_Controller {
 
 		$current_agent_id = $this->current_agent->get_id();
 
-		// Build messages array with agent's system prompt
+		// Build messages array with agent's system prompt.
 		$messages = array(
 			array(
 				'role'    => 'system',
@@ -191,7 +191,7 @@ class Agent_Controller {
 			),
 		);
 
-		// Add history
+		// Add history.
 		foreach ( $history as $entry ) {
 			$messages[] = array(
 				'role'    => $entry['role'],
@@ -199,16 +199,16 @@ class Agent_Controller {
 			);
 		}
 
-		// Add current message
+		// Add current message.
 		$messages[] = array(
 			'role'    => 'user',
 			'content' => $message,
 		);
 
-		// Get tools for this agent
+		// Get tools for this agent.
 		$tools = $this->get_tools_for_agent();
 
-		// Log the conversation start
+		// Log the conversation start.
 		$this->audit->log(
 			$current_agent_id,
 			'chat_start',
@@ -220,7 +220,7 @@ class Agent_Controller {
 			)
 		);
 
-		// Process with potential tool calls
+		// Process with potential tool calls.
 		$response     = null;
 		$total_tokens = 0;
 		$iterations   = 0;
@@ -233,7 +233,7 @@ class Agent_Controller {
 		while ( $iterations < self::MAX_ITERATIONS ) {
 			++$iterations;
 
-			// Pass empty tools array if no tools defined
+			// Pass empty tools array if no tools defined.
 			$result = $this->llm->chat( $messages, $tools ?: null );
 
 			if ( is_wp_error( $result ) ) {
@@ -259,16 +259,16 @@ class Agent_Controller {
 			$assistant_message = $choice['message'];
 			$messages[]        = $assistant_message;
 
-			// Check if we have tool calls
+			// Check if we have tool calls.
 			if ( ! empty( $assistant_message['tool_calls'] ) ) {
 				foreach ( $assistant_message['tool_calls'] as $tool_call ) {
 					$function_name = $tool_call['function']['name'];
 					$arguments     = json_decode( $tool_call['function']['arguments'], true ) ?? array();
 
-					// Execute the tool
+					// Execute the tool.
 					$tool_result = $this->execute_tool( $function_name, $arguments );
 
-					// Add tool result to messages
+					// Add tool result to messages.
 					$messages[] = array(
 						'role'         => 'tool',
 						'tool_call_id' => $tool_call['id'],
@@ -281,20 +281,20 @@ class Agent_Controller {
 					);
 				}
 			} else {
-				// No more tool calls, we have our final response
+				// No more tool calls, we have our final response.
 				$response = $assistant_message['content'];
 				break;
 			}
 		}
 
-		if ( $response === null ) {
+		if ( null === $response ) {
 			$response = 'I reached the maximum number of tool iterations. Please try a simpler request.';
 		}
 
-		// Estimate cost (Grok 3 pricing: $3/1M input, $15/1M output)
+		// Estimate cost (Grok 3 pricing: $3/1M input, $15/1M output).
 		$estimated_cost = ( $usage['prompt_tokens'] * 0.000003 ) + ( $usage['completion_tokens'] * 0.000015 );
 
-		// Log completion
+		// Log completion.
 		$this->audit->log(
 			$current_agent_id,
 			'chat_complete',

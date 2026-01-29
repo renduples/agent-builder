@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Handle deactivation action.
-if ( isset( $_GET['action'] ) && 'deactivate' === $_GET['action'] && isset( $_GET['slug'] ) && check_admin_referer( 'agentic_deactivate_license_' . sanitize_key( $_GET['slug'] ) ) ) {
-	$slug     = sanitize_key( $_GET['slug'] );
+if ( isset( $_GET['action'] ) && 'deactivate' === $_GET['action'] && isset( $_GET['slug'] ) && check_admin_referer( 'agentic_deactivate_license_' . sanitize_key( wp_unslash( $_GET['slug'] ) ) ) ) {
+	$slug     = sanitize_key( wp_unslash( $_GET['slug'] ) );
 	$licenses = get_option( 'agentic_licenses', array() );
 
 	if ( isset( $licenses[ $slug ] ) ) {

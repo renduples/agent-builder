@@ -28,7 +28,7 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 	public function execute( array $request_data, callable $progress_callback ): array {
 		$progress_callback( 5, 'Initializing agent builder...' );
 
-		// Get the agent builder agent
+		// Get the agent builder agent.
 		$registry = Agent_Registry::get_instance();
 		$agent    = $registry->get_agent_instance( 'agent-builder' );
 
@@ -38,16 +38,16 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 
 		$progress_callback( 10, 'Loading conversation history...' );
 
-		// Build message array from history
+		// Build message array from history.
 		$messages = array();
 
-		// Add system prompt
+		// Add system prompt.
 		$messages[] = array(
 			'role'    => 'system',
 			'content' => $agent->get_system_prompt(),
 		);
 
-		// Add history if provided
+		// Add history if provided.
 		if ( ! empty( $request_data['history'] ) ) {
 			foreach ( $request_data['history'] as $entry ) {
 				if ( isset( $entry['role'], $entry['content'] ) ) {
@@ -59,7 +59,7 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 			}
 		}
 
-		// Add current message
+		// Add current message.
 		$messages[] = array(
 			'role'    => 'user',
 			'content' => $request_data['message'],
@@ -67,31 +67,31 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 
 		$progress_callback( 20, 'Analyzing request...' );
 
-		// Create LLM client
+		// Create LLM client.
 		$llm = new LLM_Client();
 
 		if ( ! $llm->is_configured() ) {
 			throw new \Exception( 'LLM API is not configured. Please add your API key in settings.' );
 		}
 
-		// Get tools
+		// Get tools.
 		$tools = $agent->get_tools();
 
 		$progress_callback( 30, 'Generating agent specification...' );
 
-		// Make initial LLM call
+		// Make initial LLM call.
 		$llm_response = $llm->chat( $messages, $tools );
 
 		if ( is_wp_error( $llm_response ) ) {
 			throw new \Exception( 'LLM request failed: ' . $llm_response->get_error_message() );
 		}
 
-		// Extract message from response
+		// Extract message from response.
 		$choice = $llm_response['choices'][0]['message'] ?? array();
 
 		$progress_callback( 50, 'Executing agent tools...' );
 
-		// Handle tool calls iteratively
+		// Handle tool calls iteratively.
 		$max_iterations = 5;
 		$iteration      = 0;
 
@@ -101,22 +101,22 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 			$progress_percent = 50 + ( $iteration * 10 );
 			$progress_callback( $progress_percent, "Processing tools (iteration {$iteration})..." );
 
-			// Add assistant message with tool calls
+			// Add assistant message with tool calls.
 			$messages[] = array(
 				'role'       => 'assistant',
 				'content'    => $choice['content'] ?? '',
 				'tool_calls' => $choice['tool_calls'],
 			);
 
-			// Execute each tool call
+			// Execute each tool call.
 			foreach ( $choice['tool_calls'] as $tool_call ) {
 				$tool_name = $tool_call['function']['name'];
 				$tool_args = json_decode( $tool_call['function']['arguments'], true ) ?: array();
 
-				// Execute tool through the agent
+				// Execute tool through the agent.
 				$tool_result = $agent->execute_tool( $tool_name, $tool_args );
 
-				// Add tool result
+				// Add tool result.
 				$messages[] = array(
 					'role'         => 'tool',
 					'tool_call_id' => $tool_call['id'],
@@ -124,14 +124,14 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 				);
 			}
 
-			// Get next LLM response
+			// Get next LLM response.
 			$llm_response = $llm->chat( $messages, $tools );
 
 			if ( is_wp_error( $llm_response ) ) {
 				break;
 			}
 
-			// Update choice from new response
+			// Update choice from new response.
 			$choice = $llm_response['choices'][0]['message'] ?? array();
 		}
 

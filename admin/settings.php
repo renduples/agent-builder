@@ -10,30 +10,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Handle form submission
+// Handle form submission.
 
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-plugin' ) );
 }
 
 if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_settings_nonce' ) ) {
-	// Core settings
+	// Core settings.
 	update_option( 'agentic_llm_provider', sanitize_text_field( $_POST['agentic_llm_provider'] ?? 'openai' ) );
 	update_option( 'agentic_llm_api_key', sanitize_text_field( $_POST['agentic_llm_api_key'] ?? '' ) );
 	update_option( 'agentic_model', sanitize_text_field( $_POST['agentic_model'] ?? 'gpt-4o' ) );
 	update_option( 'agentic_agent_mode', sanitize_text_field( $_POST['agentic_agent_mode'] ?? 'supervised' ) );
 
-	// Cache settings
+	// Cache settings.
 	update_option( 'agentic_response_cache_enabled', isset( $_POST['agentic_response_cache_enabled'] ) );
 	update_option( 'agentic_response_cache_ttl', absint( $_POST['agentic_response_cache_ttl'] ?? 3600 ) );
 
-	// Security settings
+	// Security settings.
 	update_option( 'agentic_security_enabled', isset( $_POST['agentic_security_enabled'] ) );
 	update_option( 'agentic_rate_limit_authenticated', absint( $_POST['agentic_rate_limit_authenticated'] ?? 30 ) );
 	update_option( 'agentic_rate_limit_anonymous', absint( $_POST['agentic_rate_limit_anonymous'] ?? 10 ) );
 	update_option( 'agentic_allow_anonymous_chat', isset( $_POST['agentic_allow_anonymous_chat'] ) );
 
-	// Stripe settings (only on marketplace site)
+	// Stripe settings (only on marketplace site).
 	if ( defined( 'AGENTIC_IS_MARKETPLACE' ) && AGENTIC_IS_MARKETPLACE ) {
 		update_option( 'agentic_stripe_test_mode', isset( $_POST['agentic_stripe_test_mode'] ) );
 		update_option( 'agentic_stripe_test_publishable_key', sanitize_text_field( $_POST['agentic_stripe_test_publishable_key'] ?? '' ) );
@@ -43,13 +43,13 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 		update_option( 'agentic_stripe_webhook_secret', sanitize_text_field( $_POST['agentic_stripe_webhook_secret'] ?? '' ) );
 	}
 
-	// Handle cache clear
+	// Handle cache clear.
 	if ( isset( $_POST['agentic_clear_cache'] ) ) {
 		$cleared = \Agentic\Response_Cache::clear_all();
 		echo '<div class="notice notice-info"><p>Cleared ' . esc_html( $cleared ) . ' cached responses.</p></div>';
 	}
 
-	// Social Auth settings
+	// Social Auth settings.
 	if ( isset( $_POST['agentic_social_auth'] ) && is_array( $_POST['agentic_social_auth'] ) ) {
 		$social_auth = array();
 		foreach ( array( 'google', 'github', 'wordpress', 'twitter' ) as $provider ) {
@@ -61,11 +61,11 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 		}
 		update_option( 'agentic_social_auth', $social_auth );
 
-		// Flush rewrite rules when social auth settings change
+		// Flush rewrite rules when social auth settings change.
 		flush_rewrite_rules();
 	}
 
-	// Handle system check completion flag
+	// Handle system check completion flag.
 	if ( isset( $_POST['agentic_system_check_done'] ) ) {
 		update_option( 'agentic_system_check_done', true );
 	}
@@ -73,18 +73,18 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 	echo '<div class="notice notice-success"><p>Settings saved successfully.</p></div>';
 }
 
-// Get current values
+// Get current values.
 $llm_provider = get_option( 'agentic_llm_provider', 'openai' );
 $api_key      = get_option( 'agentic_llm_api_key', '' );
 $model        = get_option( 'agentic_model', 'gpt-4o' );
 $agent_mode   = get_option( 'agentic_agent_mode', 'supervised' );
 
-// Cache settings
+// Cache settings.
 $cache_enabled = get_option( 'agentic_response_cache_enabled', true );
 $cache_ttl     = get_option( 'agentic_response_cache_ttl', 3600 );
 $cache_stats   = \Agentic\Response_Cache::get_stats();
 
-// Security settings
+// Security settings.
 $security_enabled = get_option( 'agentic_security_enabled', true );
 $rate_limit_auth  = get_option( 'agentic_rate_limit_authenticated', 30 );
 $rate_limit_anon  = get_option( 'agentic_rate_limit_anonymous', 10 );
@@ -337,7 +337,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 		</div>
 
 		<?php
-		// Show last check results if available
+		// Show last check results if available.
 		$last_check = \Agentic\System_Checker::get_last_check();
 		if ( $last_check ) :
 			$time_ago = human_time_diff( $last_check['timestamp'], time() );
@@ -630,7 +630,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 
 		<?php if ( defined( 'AGENTIC_IS_MARKETPLACE' ) && AGENTIC_IS_MARKETPLACE ) : ?>
 			<?php
-			// Stripe settings
+			// Stripe settings.
 			$stripe_test_mode      = get_option( 'agentic_stripe_test_mode', true );
 			$stripe_test_pk        = get_option( 'agentic_stripe_test_publishable_key', '' );
 			$stripe_test_sk        = get_option( 'agentic_stripe_test_secret_key', '' );
@@ -797,7 +797,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			if (data.success) {
 				result.innerHTML = '<p style="color: #22c55e; margin: 0;"><span class="dashicons dashicons-yes-alt" style="vertical-align: -2px;"></span> ✓ ' + data.message + ' Saving...</p>';
 				
-				// Save via AJAX without page refresh
+				// Save via AJAX without page refresh.
 				const saveResponse = await fetch(window.location.href, {
 					method: 'POST',
 					headers: {
@@ -816,7 +816,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 				
 				if (saveResponse.ok) {
 					result.innerHTML = '<p style="color: #22c55e; margin: 0;"><span class="dashicons dashicons-yes-alt" style="vertical-align: -2px;"></span> ✓ ' + data.message + ' Settings saved!</p>';
-					// Update the "API key is set" indicator
+					// Update the "API key is set" indicator.
 					const setIndicator = btn.parentElement.querySelector('p:last-child');
 					if (!setIndicator || !setIndicator.querySelector('.dashicons-yes-alt')) {
 						const indicator = document.createElement('p');

@@ -18,10 +18,10 @@ if ( ! current_user_can( 'manage_options' ) ) {
 
 if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_settings_nonce' ) ) {
 	// Core settings.
-	update_option( 'agentic_llm_provider', sanitize_text_field( $_POST['agentic_llm_provider'] ?? 'openai' ) );
-	update_option( 'agentic_llm_api_key', sanitize_text_field( $_POST['agentic_llm_api_key'] ?? '' ) );
-	update_option( 'agentic_model', sanitize_text_field( $_POST['agentic_model'] ?? 'gpt-4o' ) );
-	update_option( 'agentic_agent_mode', sanitize_text_field( $_POST['agentic_agent_mode'] ?? 'supervised' ) );
+	update_option( 'agentic_llm_provider', sanitize_text_field( wp_unslash( $_POST['agentic_llm_provider'] ?? 'openai' ) ) );
+	update_option( 'agentic_llm_api_key', sanitize_text_field( wp_unslash( $_POST['agentic_llm_api_key'] ?? '' ) ) );
+	update_option( 'agentic_model', sanitize_text_field( wp_unslash( $_POST['agentic_model'] ?? 'gpt-4o' ) ) );
+	update_option( 'agentic_agent_mode', sanitize_text_field( wp_unslash( $_POST['agentic_agent_mode'] ?? 'supervised' ) ) );
 
 	// Cache settings.
 	update_option( 'agentic_response_cache_enabled', isset( $_POST['agentic_response_cache_enabled'] ) );
@@ -36,11 +36,11 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 	// Stripe settings (only on marketplace site).
 	if ( defined( 'AGENTIC_IS_MARKETPLACE' ) && AGENTIC_IS_MARKETPLACE ) {
 		update_option( 'agentic_stripe_test_mode', isset( $_POST['agentic_stripe_test_mode'] ) );
-		update_option( 'agentic_stripe_test_publishable_key', sanitize_text_field( $_POST['agentic_stripe_test_publishable_key'] ?? '' ) );
-		update_option( 'agentic_stripe_test_secret_key', sanitize_text_field( $_POST['agentic_stripe_test_secret_key'] ?? '' ) );
-		update_option( 'agentic_stripe_live_publishable_key', sanitize_text_field( $_POST['agentic_stripe_live_publishable_key'] ?? '' ) );
-		update_option( 'agentic_stripe_live_secret_key', sanitize_text_field( $_POST['agentic_stripe_live_secret_key'] ?? '' ) );
-		update_option( 'agentic_stripe_webhook_secret', sanitize_text_field( $_POST['agentic_stripe_webhook_secret'] ?? '' ) );
+		update_option( 'agentic_stripe_test_publishable_key', sanitize_text_field( wp_unslash( $_POST['agentic_stripe_test_publishable_key'] ?? '' ) ) );
+		update_option( 'agentic_stripe_test_secret_key', sanitize_text_field( wp_unslash( $_POST['agentic_stripe_test_secret_key'] ?? '' ) ) );
+		update_option( 'agentic_stripe_live_publishable_key', sanitize_text_field( wp_unslash( $_POST['agentic_stripe_live_publishable_key'] ?? '' ) ) );
+		update_option( 'agentic_stripe_live_secret_key', sanitize_text_field( wp_unslash( $_POST['agentic_stripe_live_secret_key'] ?? '' ) ) );
+		update_option( 'agentic_stripe_webhook_secret', sanitize_text_field( wp_unslash( $_POST['agentic_stripe_webhook_secret'] ?? '' ) ) );
 	}
 
 	// Handle cache clear.
@@ -54,8 +54,8 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 		$social_auth = array();
 		foreach ( array( 'google', 'github', 'wordpress', 'twitter' ) as $provider ) {
 			$social_auth[ $provider ] = array(
-				'client_id'     => sanitize_text_field( $_POST['agentic_social_auth'][ $provider ]['client_id'] ?? '' ),
-				'client_secret' => sanitize_text_field( $_POST['agentic_social_auth'][ $provider ]['client_secret'] ?? '' ),
+				'client_id'     => isset( $_POST['agentic_social_auth'][ $provider ]['client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['agentic_social_auth'][ $provider ]['client_id'] ) ) : '',
+				'client_secret' => isset( $_POST['agentic_social_auth'][ $provider ]['client_secret'] ) ? sanitize_text_field( wp_unslash( $_POST['agentic_social_auth'][ $provider ]['client_secret'] ) ) : '',
 				'enabled'       => ! empty( $_POST['agentic_social_auth'][ $provider ]['enabled'] ),
 			);
 		}
@@ -573,7 +573,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 				<?php $settings = $social_auth_options[ $provider_key ] ?? array(); ?>
 			<div style="background: #fff; border: 1px solid #ccd0d4; border-radius: 4px; padding: 15px; margin-bottom: 15px;">
 				<h3 style="display: flex; align-items: center; gap: 8px; margin: 0 0 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-					<?php echo $provider_info['icon']; ?>
+					<?php echo wp_kses_post( $provider_info['icon'] ); ?>
 					<?php echo esc_html( $provider_info['name'] ); ?>
 				</h3>
 				
@@ -810,7 +810,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 						'agentic_model': model,
 						'agentic_agent_mode': document.getElementById('agentic_agent_mode').value,
 						'_wpnonce': '<?php echo esc_js( wp_create_nonce( 'agentic_settings_nonce' ) ); ?>',
-						'_wp_http_referer': '<?php echo esc_js( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ); ?>'
+					'_wp_http_referer': '<?php echo esc_js( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ) ); ?>'
 					})
 				});
 				

@@ -64,7 +64,9 @@ Yes! Agents follow a simple structure similar to WordPress plugins. Create an ag
 
 = Where should I install my custom agents? =
 
-Install custom agents in `wp-content/agents/` directory (not inside the plugin folder). This ensures your agents survive plugin updates. The plugin comes with 10 bundled agents in `wp-content/plugins/agentic-plugin/library/` that update with the plugin, but your custom agents in `wp-content/agents/` will never be touched during updates.
+Install custom agents in `wp-content/agents/` directory (not inside the plugin folder). This ensures your agents survive plugin updates. 
+
+The plugin comes with 10 bundled agents in `wp-content/plugins/agentic-plugin/library/` that update with the plugin, but your custom agents in `wp-content/agents/` will never be touched during updates.
 
 = Is this production ready? =
 
@@ -81,18 +83,11 @@ Only when using cloud AI providers. Local model support is available for privacy
 == Changelog ==
 
 = 1.0.0 =
-* **Production Release** - First stable release with complete agent licensing system
-* Per-agent licensing for premium agents (separate from core plugin)
-* License management UI (Agentic → Licenses page)
+* **Production Release** - First stable release
 * Automatic update checking via daily WordPress cron
-* 7-day grace period for expired licenses
 * Comprehensive error handling (expired, activation limit, mismatch, invalid)
-* JavaScript license key prompts with validation
-* License deactivation on agent deletion
-* Enhanced license storage (8-field schema)
-* API integration: /licenses/validate, /licenses/deactivate, /agents/{slug}/version
 * Complete marketplace API documentation for developers
-* All components ready for premium agent marketplace
+* All components ready for agent marketplace
 
 = 1.0.0-beta =
 * **Beta Release** - Production-ready release candidate
@@ -126,13 +121,13 @@ Only when using cloud AI providers. Local model support is available for privacy
 == Upgrade Notice ==
 
 = 1.0.0 =
-First stable release! Complete per-agent licensing system for premium agents. Smooth upgrade from beta - no database migrations required.
+First stable release! Smooth upgrade from beta - no database migrations required.
 
 = 1.0.0-beta =
-First beta release! Production-ready with WordPress.org compliance. Major improvements to code quality and security.
+First beta release! Production-ready. Major improvements to code quality and security.
 
 = 0.1.3-alpha =
-Major naming changes: Plugin renamed from "Agentic Core" to "Agentic Plugin". Namespace simplified. System Requirements Checker added.
+Major naming changes: Namespace simplified. System Requirements Checker added.
 
 = 0.1.2-alpha =
 Async job queue system added for long-running tasks. No breaking changes.

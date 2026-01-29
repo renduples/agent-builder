@@ -508,9 +508,9 @@ class Marketplace_Client {
 
 			// Handle error responses
 			if ( isset( $verification['error'] ) ) {
-				$error       = $verification['error'];
-				$error_code  = $error['code'] ?? 'unknown_error';
-				$error_data  = array(
+				$error      = $verification['error'];
+				$error_code = $error['code'] ?? 'unknown_error';
+				$error_data = array(
 					'message' => $error['message'] ?? __( 'License validation failed', 'agentic-plugin' ),
 					'code'    => $error_code,
 				);
@@ -538,9 +538,9 @@ class Marketplace_Client {
 						break;
 
 					case 'activation_limit_reached':
-						$error_data['activations']  = $error['activations'] ?? array();
-						$error_data['upgrade_url']  = $error['upgrade_url'] ?? '';
-						$error_data['manage_url']   = $error['manage_url'] ?? '';
+						$error_data['activations'] = $error['activations'] ?? array();
+						$error_data['upgrade_url'] = $error['upgrade_url'] ?? '';
+						$error_data['manage_url']  = $error['manage_url'] ?? '';
 						wp_send_json_error( $error_data );
 						break;
 

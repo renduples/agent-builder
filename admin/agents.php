@@ -31,41 +31,41 @@ $error   = '';
 if ( $action && $slug && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'agentic_agent_action' ) ) {
 	$registry = Agentic_Agent_Registry::get_instance();
 
-	switch ( $action ) {
-		case 'activate':
-			$result = $registry->activate_agent( $slug );
-			if ( is_wp_error( $result ) ) {
-				$error = $result->get_error_message();
-			} else {
-				$agents_data = $registry->get_installed_agents( true );
-				$agent_name  = $agents_data[ $slug ]['name'] ?? $slug;
-				$chat_url    = admin_url( 'admin.php?page=agentic-chat&agent=' . $slug );
-				$message     = sprintf(
-					__( '%1$s activated. <a href="%2$s">Chat with this agent now →</a>', 'agentic-plugin' ),
-					esc_html( $agent_name ),
-					esc_url( $chat_url )
-				);
-			}
-			break;
+switch ( $action ) {
+	case 'activate':
+		$result = $registry->activate_agent( $slug );
+		if ( is_wp_error( $result ) ) {
+			$error = $result->get_error_message();
+		} else {
+			$agents_data = $registry->get_installed_agents( true );
+			$agent_name  = $agents_data[ $slug ]['name'] ?? $slug;
+			$chat_url    = admin_url( 'admin.php?page=agentic-chat&agent=' . $slug );
+			$message     = sprintf(
+				__( '%1$s activated. <a href="%2$s">Chat with this agent now →</a>', 'agentic-plugin' ),
+				esc_html( $agent_name ),
+				esc_url( $chat_url )
+			);
+		}
+		break;
 
-		case 'deactivate':
-			$result = $registry->deactivate_agent( $slug );
-			if ( is_wp_error( $result ) ) {
-				$error = $result->get_error_message();
-			} else {
-				$message = __( 'Agent deactivated.', 'agentic-plugin' );
-			}
-			break;
+	case 'deactivate':
+		$result = $registry->deactivate_agent( $slug );
+		if ( is_wp_error( $result ) ) {
+			$error = $result->get_error_message();
+		} else {
+			$message = __( 'Agent deactivated.', 'agentic-plugin' );
+		}
+		break;
 
-		case 'delete':
-			$result = $registry->delete_agent( $slug );
-			if ( is_wp_error( $result ) ) {
-				$error = $result->get_error_message();
-			} else {
+	case 'delete':
+		$result = $registry->delete_agent( $slug );
+		if ( is_wp_error( $result ) ) {
+			$error = $result->get_error_message();
+		} else {
 			// Deactivate license if agent had one
-			$marketplace = new \Agentic\Marketplace_Client();
+			$marketplace            = new \Agentic\Marketplace_Client();
 			$marketplace_reflection = new \ReflectionClass( $marketplace );
-			$deactivate_method = $marketplace_reflection->getMethod( 'deactivate_agent_license' );
+			$deactivate_method      = $marketplace_reflection->getMethod( 'deactivate_agent_license' );
 			$deactivate_method->setAccessible( true );
 			$deactivate_method->invoke( $marketplace, $slug );
 
@@ -104,7 +104,7 @@ if ( $action && $slug && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'agentic_agen
 				$error = __( 'No update available for this agent.', 'agentic-plugin' );
 			}
 			break;
-	}
+		}
 }
 
 $registry = Agentic_Agent_Registry::get_instance();

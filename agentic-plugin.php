@@ -1,19 +1,23 @@
 <?php
 /**
  * Plugin Name: Agentic Plugin
- * Plugin URI: https://agentic-plugin.com
+ * Plugin URI: https://github.com/renduples/agentic-plugin
  * Description: AI agent marketplace for WordPress - imagine it, build it, monetize it.
  * Version: 1.0.0
  * Requires at least: 6.4
  * Requires PHP: 8.1
- * Author: Agentic-Plugin.com
- * Author URI: https://github.com/renduples/agentic-plugin
+ * Author: Agentic Plugin
+ * Author URI: https://agentic-plugin.com
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: agentic-plugin
  * Domain Path: /languages
  *
- * @package Agentic_Plugin
+ * @package  Agentic_Plugin
+ * @category Core
+ * @author   Agentic Plugin
+ * @license  GPL-2.0-or-later
+ * @link     https://github.com/renduples/agentic-plugin
  */
 
 declare(strict_types=1);
@@ -38,6 +42,7 @@ define( 'AGENTIC_PLUGIN_FILE', __FILE__ );
  * @since 0.1.0
  */
 final class Plugin {
+
 
 	/**
 	 * Plugin instance
@@ -214,7 +219,7 @@ final class Plugin {
 	/**
 	 * Add Agentic menu to admin bar
 	 *
-	 * @param \WP_Admin_Bar $wp_admin_bar Admin bar instance.
+	 * @param  \WP_Admin_Bar $wp_admin_bar Admin bar instance.
 	 * @return void
 	 */
 	public function admin_bar_menu( \WP_Admin_Bar $wp_admin_bar ): void {
@@ -355,26 +360,26 @@ final class Plugin {
 	 * @return void
 	 */
 	private function load_components(): void {
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-openai-client.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-audit-log.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-tools.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-controller.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-rest-api.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-approval-queue.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-registry.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-chat-security.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-response-cache.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-shortcodes.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-openai-client.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-audit-log.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-tools.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-controller.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-rest-api.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-approval-queue.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-registry.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-chat-security.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-response-cache.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-shortcodes.php';
 
 		// System requirements checker.
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-system-checker.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-system-checker.php';
 
 		// License management.
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-license-manager.php';
-		require_once AGENTIC_PLUGIN_DIR . 'includes/license-ajax-handlers.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-license-manager.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/license-ajax-handlers.php';
 
 		// Marketplace components
-		require_once AGENTIC_PLUGIN_DIR . 'includes/class-marketplace-client.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-marketplace-client.php';
 
 		// Initialize components.
 		new REST_API();
@@ -395,7 +400,7 @@ final class Plugin {
 	/**
 	 * Handle chat API request
 	 *
-	 * @param \WP_REST_Request $request Request object.
+	 * @param  \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response
 	 */
 	public function handle_chat( \WP_REST_Request $request ): \WP_REST_Response {
@@ -417,7 +422,7 @@ final class Plugin {
 	/**
 	 * Get agent system status
 	 *
-	 * @param \WP_REST_Request $request Request object.
+	 * @param  \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response
 	 */
 	public function get_status( \WP_REST_Request $request ): \WP_REST_Response {
@@ -435,7 +440,7 @@ final class Plugin {
 	/**
 	 * Get available capabilities
 	 *
-	 * @param \WP_REST_Request $request Request object.
+	 * @param  \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response
 	 */
 	public function get_capabilities( \WP_REST_Request $request ): \WP_REST_Response {
@@ -624,7 +629,7 @@ final class Plugin {
 	/**
 	 * Render chat interface on the agent-chat page
 	 *
-	 * @param string $content Page content.
+	 * @param  string $content Page content.
 	 * @return string Modified content.
 	 */
 	public function render_chat_interface( string $content ): string {
@@ -865,7 +870,7 @@ final class Plugin {
             KEY memory_key (memory_key)
         ) $charset_collate;";
 
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		include_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql_audit );
 		dbDelta( $sql_queue );
 		dbDelta( $sql_memory );

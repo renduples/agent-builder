@@ -236,9 +236,10 @@ Start with these quick wins:
 4. **Publish your agent** (10 min) – Submit to marketplace
 
 Reference guides:
-- [Roadmap Overview](https://agentic-plugin.com/roadmap/)
-- [Use Cases](https://agentic-plugin.com/roadmap/use-cases/)
-- [Security & Guardrails](https://agentic-plugin.com/roadmap/security-guardrails/)
+- [Roadmap Overview](https://github.com/renduples/agentic-plugin/wiki/Roadmap)
+- [Use Cases](https://github.com/renduples/agentic-plugin/wiki/Use-Cases)
+- [Architecture](https://github.com/renduples/agentic-plugin/wiki/Architecture)
+- [WordPress Core AI](https://github.com/renduples/agentic-plugin/wiki/WordPress-Core-AI)
 
 ---
 

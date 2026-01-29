@@ -19,17 +19,17 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentic-plugin' ) );
 }
 
-$action  = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
-$slug    = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
-$message = '';
-$error   = '';
+$agent_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
+$slug         = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
+$message      = '';
+$agent_error  = '';
 
-if ( 'install' === $action && $slug && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'agentic_install_agent' ) ) {
+if ( 'install' === $agent_action && $slug && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'agentic_install_agent' ) ) {
 	$registry = Agentic_Agent_Registry::get_instance();
 	$result   = $registry->install_agent( $slug );
 
 	if ( is_wp_error( $result ) ) {
-		$error = $result->get_error_message();
+		$agent_error = $result->get_error_message();
 	} else {
 		$message = __( 'Agent installed successfully.', 'agentic-plugin' );
 	}
@@ -39,14 +39,14 @@ $registry   = Agentic_Agent_Registry::get_instance();
 $categories = $registry->get_agent_categories();
 
 // Get search/filter params.
-$search   = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
-$category = isset( $_GET['category'] ) ? sanitize_text_field( wp_unslash( $_GET['category'] ) ) : '';
-$tab      = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'featured';
+$search_term = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+$category    = isset( $_GET['category'] ) ? sanitize_text_field( wp_unslash( $_GET['category'] ) ) : '';
+$current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : '';
 
 // Fetch library agents.
 $library = $registry->get_library_agents(
 	array(
-		'search'   => $search,
+		'search'   => $search_term,
 		'category' => $category,
 	)
 );
@@ -67,9 +67,9 @@ $library = $registry->get_library_agents(
 		</div>
 	<?php endif; ?>
 
-	<?php if ( $error ) : ?>
+	<?php if ( $agent_error ) : ?>
 		<div class="notice notice-error is-dismissible">
-			<p><?php echo esc_html( $error ); ?></p>
+			<p><?php echo esc_html( $agent_error ); ?></p>
 		</div>
 	<?php endif; ?>
 
@@ -77,21 +77,21 @@ $library = $registry->get_library_agents(
 	<ul class="filter-links">
 		<li>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&tab=featured' ) ); ?>"
-				class="<?php echo ( $tab === 'featured' && empty( $category ) ) ? 'current' : ''; ?>">
+				class="<?php echo ( '' === $current_tab && empty( $category ) ) ? 'current' : ''; ?>">
 				<?php esc_html_e( 'Featured', 'agentic-plugin' ); ?>
 			</a>
 		</li>
 		<li>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&tab=popular' ) ); ?>"
-				class="<?php echo $tab === 'popular' ? 'current' : ''; ?>">
+				class="<?php echo 'popular' === $current_tab ? 'current' : ''; ?>">
 				<?php esc_html_e( 'Popular', 'agentic-plugin' ); ?>
 			</a>
 		</li>
-		<?php foreach ( $categories as $cat => $count ) : ?>
+		<?php foreach ( $categories as $cat_name => $count ) : ?>
 			<li>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&category=' . urlencode( $cat ) ) ); ?>"
-					class="<?php echo $category === $cat ? 'current' : ''; ?>">
-					<?php echo esc_html( $cat ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&category=' . urlencode( $cat_name ) ) ); ?>"
+					class="<?php echo $category === $cat_name ? 'current' : ''; ?>">
+					<?php echo esc_html( $cat_name ); ?>
 					<span class="count">(<?php echo esc_html( $count ); ?>)</span>
 				</a>
 			</li>
@@ -198,8 +198,9 @@ $library = $registry->get_library_agents(
 								<span class="agent-caps" title="<?php echo esc_attr( implode( ', ', $agent['capabilities'] ) ); ?>">
 									<?php
 									printf(
+										/* translators: %d: Number of capabilities */
 										esc_html( _n( '%d capability', '%d capabilities', count( $agent['capabilities'] ), 'agentic-plugin' ) ),
-										count( $agent['capabilities'] )
+										esc_html( count( $agent['capabilities'] ) )
 									);
 									?>
 								</span>
@@ -208,8 +209,8 @@ $library = $registry->get_library_agents(
 					</div>
 					<?php if ( ! empty( $agent['tags'] ) ) : ?>
 						<div class="plugin-card-tags">
-							<?php foreach ( $agent['tags'] as $tag ) : ?>
-								<span class="agent-tag"><?php echo esc_html( $tag ); ?></span>
+							<?php foreach ( $agent['tags'] as $agent_tag ) : ?>
+								<span class="agent-tag"><?php echo esc_html( $agent_tag ); ?></span>
 							<?php endforeach; ?>
 						</div>
 					<?php endif; ?>
@@ -223,8 +224,9 @@ $library = $registry->get_library_agents(
 					<span class="displaying-num">
 						<?php
 						printf(
+							/* translators: %s: Number of agents */
 							esc_html( _n( '%s agent', '%s agents', $library['total'], 'agentic-plugin' ) ),
-							number_format_i18n( $library['total'] )
+							esc_html( number_format_i18n( $library['total'] ) )
 						);
 						?>
 					</span>

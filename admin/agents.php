@@ -23,15 +23,15 @@ if ( ! current_user_can( 'manage_options' ) ) {
 $marketplace_client = new \Agentic\Marketplace_Client();
 $available_updates  = $marketplace_client->get_available_updates();
 
-$action  = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
-$slug    = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
-$message = '';
-$error   = '';
+$agent_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
+$slug         = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
+$message      = '';
+$agent_error  = '';
 
-if ( $action && $slug && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'agentic_agent_action' ) ) {
+if ( $agent_action && $slug && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'agentic_agent_action' ) ) {
 	$registry = Agentic_Agent_Registry::get_instance();
 
-switch ( $action ) {
+switch ( $agent_action ) {
 	case 'activate':
 		$result = $registry->activate_agent( $slug );
 		if ( is_wp_error( $result ) ) {
@@ -40,8 +40,10 @@ switch ( $action ) {
 			$agents_data = $registry->get_installed_agents( true );
 			$agent_name  = $agents_data[ $slug ]['name'] ?? $slug;
 			$chat_url    = admin_url( 'admin.php?page=agentic-chat&agent=' . $slug );
-			$message     = sprintf(
-				__( '%1$s activated. <a href="%2$s">Chat with this agent now →</a>', 'agentic-plugin' ),
+			/* translators: 1: Agent name, 2: Chat URL */
+
+			$message = sprintf(
+				__( \'%1$s activated. <a href="%2$s">Chat with this agent now →</a>', 'agentic-plugin' ),
 				esc_html( $agent_name ),
 				esc_url( $chat_url )
 			);
@@ -149,9 +151,9 @@ if ( $search ) {
 		</div>
 	<?php endif; ?>
 
-	<?php if ( $error ) : ?>
+	<?php if ( $agent_error ) : ?>
 		<div class="notice notice-error is-dismissible">
-			<p><?php echo esc_html( $error ); ?></p>
+			<p><?php echo esc_html( $agent_error ); ?></p>
 		</div>
 	<?php endif; ?>
 

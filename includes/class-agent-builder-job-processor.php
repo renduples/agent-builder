@@ -25,66 +25,65 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 	 * @return array Job result data.
 	 * @throws \Exception If job execution fails.
 	 */
-	public function execute( array $request_data, callable $progress_callback ): array {
-		$progress_callback( 5, 'Initializing agent builder...' );
+public function execute( array $request_data, callable $progress_callback ): array {
+	$progress_callback( 5, 'Initializing agent builder...' );
 
-		// Get the agent builder agent.
-		$registry = Agent_Registry::get_instance();
-		$agent    = $registry->get_agent_instance( 'agent-builder' );
+	// Get the agent builder agent.
+	$registry = Agent_Registry::get_instance();
+	$agent    = $registry->get_agent_instance( 'agent-builder' );
 
-		if ( ! $agent ) {
-			throw new \Exception( 'Agent Builder agent not found' );
-		}
+	if ( ! $agent ) {
+		throw new \Exception( 'Agent Builder agent not found' );
+	}
 
-		$progress_callback( 10, 'Loading conversation history...' );
+	$progress_callback( 10, 'Loading conversation history...' );
 
-		// Build message array from history.
-		$messages = array();
+	// Build message array from history.
+	$messages = array();
 
-		// Add system prompt.
-		$messages[] = array(
-			'role'    => 'system',
-			'content' => $agent->get_system_prompt(),
-		);
+	// Add system prompt.
+	$messages[] = array(
+		'role'    => 'system',
+		'content' => $agent->get_system_prompt(),
+	);
 
-		// Add history if provided.
-		if ( ! empty( $request_data['history'] ) ) {
-			foreach ( $request_data['history'] as $entry ) {
-				if ( isset( $entry['role'], $entry['content'] ) ) {
-					$messages[] = array(
-						'role'    => $entry['role'],
-						'content' => $entry['content'],
-					);
-				}
+	// Add history if provided.
+	if ( ! empty( $request_data['history'] ) ) {
+		foreach ( $request_data['history'] as $entry ) {
+			if ( isset( $entry['role'], $entry['content'] ) ) {
+				$messages[] = array(
+					'role'    => $entry['role'],
+					'content' => $entry['content'],
+				);
 			}
 		}
+	}
 
-		// Add current message.
-		$messages[] = array(
-			'role'    => 'user',
-			'content' => $request_data['message'],
-		);
+	// Add current message.
+	$messages[] = array(
+		'role'    => 'user',
+		'content' => $request_data['message'],
+	);
 
-		$progress_callback( 20, 'Analyzing request...' );
+	$progress_callback( 20, 'Analyzing request...' );
 
-		// Create LLM client.
-		$llm = new LLM_Client();
+	// Create LLM client.
+	$llm = new LLM_Client();
 
-		if ( ! $llm->is_configured() ) {
-			throw new \Exception( 'LLM API is not configured. Please add your API key in settings.' );
-		}
+	if ( ! $llm->is_configured() ) {
+		throw new \Exception( 'LLM API is not configured. Please add your API key in settings.' );
+	}
 
-		// Get tools.
-		$tools = $agent->get_tools();
+	// Get tools.
+	$tools = $agent->get_tools();
 
-		$progress_callback( 30, 'Generating agent specification...' );
+	$progress_callback( 30, 'Generating agent specification...' );
 
-		// Make initial LLM call.
-		$llm_response = $llm->chat( $messages, $tools );
+	// Make initial LLM call.
+	$llm_response = $llm->chat( $messages, $tools );
 
-		if ( is_wp_error( $llm_response ) ) {
-			throw new \Exception( 'LLM request failed: ' . $llm_response->get_error_message() );
-		}
+	if ( is_wp_error( $llm_response ) ) {
+		throw new \Exception( 'LLM request failed: ' . esc_html( $llm_response->get_error_message() ) );
 
 		// Extract message from response.
 		$choice = $llm_response['choices'][0]['message'] ?? array();
@@ -111,7 +110,7 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 			// Execute each tool call.
 			foreach ( $choice['tool_calls'] as $tool_call ) {
 				$tool_name = $tool_call['function']['name'];
-				$tool_args = json_decode( $tool_call['function']['arguments'], true ) ?: array();
+				$tool_args = json_decode( $tool_call['function']['arguments'], true ) ? json_decode( $tool_call['function']['arguments'], true ) : array();
 
 				// Execute tool through the agent.
 				$tool_result = $agent->execute_tool( $tool_name, $tool_args );

@@ -62,7 +62,7 @@ switch ( $agent_action ) {
 	case 'delete':
 		$result = $registry->delete_agent( $slug );
 		if ( is_wp_error( $result ) ) {
-			$error = $result->get_error_message();
+			$agent_error = $result->get_error_message();
 		} else {
 			// Deactivate license if agent had one.
 			$marketplace            = new \Agentic\Marketplace_Client();
@@ -85,7 +85,7 @@ switch ( $agent_action ) {
 				$result = $registry->install_agent( $slug );
 
 				if ( is_wp_error( $result ) ) {
-					$error = $result->get_error_message();
+					$agent_error = $result->get_error_message();
 				} else {
 					// Reactivate if was active.
 					if ( $was_active ) {
@@ -103,10 +103,11 @@ switch ( $agent_action ) {
 					);
 				}
 			} else {
-				$error = __( 'No update available for this agent.', 'agentic-plugin' );
+				$agent_error = __( 'No update available for this agent.', 'agentic-plugin' );
 			}
 			break;
 		}
+	}
 }
 
 $registry = Agentic_Agent_Registry::get_instance();

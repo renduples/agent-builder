@@ -26,7 +26,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Marketplace_Client {
 
 	/**
-	 * Marketplace API base URL
+	 * Marketplace API base URL.
+	 *
+	 * @var string
 	 */
 	private string $api_base;
 

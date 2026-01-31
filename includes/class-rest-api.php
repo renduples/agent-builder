@@ -142,8 +142,8 @@ class REST_API {
 	 */
 	public function handle_chat( \WP_REST_Request $request ): \WP_REST_Response {
 		$message    = $request->get_param( 'message' );
-		$session_id = $request->get_param( 'session_id' ) ?: wp_generate_uuid4();
-		$history    = $request->get_param( 'history' ) ?: array();
+		$session_id = $request->get_param( 'session_id' ) ? $request->get_param( 'session_id' ) : wp_generate_uuid4();
+		$history    = $request->get_param( 'history' ) ? $request->get_param( 'history' ) : array();
 		$user_id    = get_current_user_id();
 
 		// Security check FIRST - fast, in-memory scan.
@@ -163,7 +163,7 @@ class REST_API {
 		}
 
 		// Get agent ID for caching.
-		$agent_id = $request->get_param( 'agent_id' ) ?: 'default';
+		$agent_id = $request->get_param( 'agent_id' ) ? $request->get_param( 'agent_id' ) : 'default';
 
 		// Check cache BEFORE calling LLM (saves tokens).
 		if ( \Agentic\Response_Cache::should_cache( $message, $history ) ) {

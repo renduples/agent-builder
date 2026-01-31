@@ -1,5 +1,5 @@
 === Agentic Plugin ===
-Contributors: agentic-plugin
+Contributors: @agenticplugin
 Tags: openai, chatgpt, gpt, anthropic, claude, llm, ai, agents, chatbot, automation, marketplace, plugins
 Requires at least: 6.4
 Tested up to: 6.7
@@ -8,18 +8,16 @@ Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-The marketplace for AI agents on WordPress. Imagine->Build->Sell
+Build AI Agents in WordPress without writing code
 
 == Description ==
 
-Agentic Plugin brings an agent ecosystem to WordPress just like plugins and themes, but for AI capabilities:
+The Agentic Plugin brings an agent ecosystem to WordPress just like plugins and themes, but for AI capabilities:
 
-* **Install agents from the marketplace** — Browse and install community-built agents with one click
+* **Marketplace** — Browse and install community-built agents with one click
 * **Activate and deactivate** — Control which agents run on your site, just like plugins
-* **Build and sell your own** — Create agents and share or sell them to the community
-* **Purchase premium agents** — Access powerful agents from trusted developers
 
-= Agent Types =
+= Agent Categories =
 
 * **Content Agents**: Draft posts, optimize SEO, generate alt text, translate content
 * **Admin Agents**: Monitor security, manage backups, optimize performance

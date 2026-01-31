@@ -448,7 +448,7 @@ class Agentic_Agent_Registry {
 			return true;
 		} catch ( \Throwable $e ) {
 			return new WP_Error(
-				'load_error',
+				'load_error', /* translators: %s: Error message */
 				sprintf( __( 'Error loading agent: %s', 'agentic-plugin' ), $e->getMessage() )
 			);
 		}
@@ -845,7 +845,7 @@ class Agentic_Agent_Registry {
 		$id = $agent->get_id();
 
 		if ( isset( $this->agent_instances[ $id ] ) ) {
-			return false; // Already registered
+			return false; // Already registered.
 		}
 
 		$this->agent_instances[ $id ] = $agent;

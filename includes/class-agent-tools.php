@@ -74,8 +74,8 @@ class Agent_Tools {
 		$clean = ltrim( str_replace( '..', '', $path ), '/\\' );
 
 		return (
-			$clean === 'plugins' ||
-			$clean === 'themes' ||
+			'plugins' === $clean ||
+			'themes' === $clean ||
 			str_starts_with( $clean, 'plugins/' ) ||
 			str_starts_with( $clean, 'themes/' )
 		);
@@ -703,7 +703,7 @@ class Agent_Tools {
 		$full_path = $this->repo_path . '/' . $path;
 
 		// Generate branch name.
-		$timestamp   = date( 'Ymd-His' );
+		$timestamp   = gmdate( 'Ymd-His' );
 		$path_slug   = preg_replace( '/[^a-z0-9]+/', '-', strtolower( basename( $path, '.' . pathinfo( $path, PATHINFO_EXTENSION ) ) ) );
 		$branch_name = "agent/{$path_slug}-{$timestamp}";
 
@@ -776,7 +776,7 @@ class Agent_Tools {
 			'message'        => "Code change committed to branch '{$branch_name}'. Please review and merge.",
 			'review_command' => "git diff {$current_branch}...{$branch_name}",
 			'merge_command'  => "git checkout {$current_branch} && git merge {$branch_name}",
-			'pr_url'         => $github_pr_url ?: null,
+			'pr_url'         => $github_pr_url ? $github_pr_url : null,
 		);
 	}
 

@@ -1,4 +1,4 @@
-# 🤖 Agentic Plugin – The marketplace for AI agents on WordPress. Imagine->Build->Sell
+# 🤖 Build AI Agents in WordPress without writing code
 
 [![WordPress Plugin](https://img.shields.io/badge/WordPress-6.4+-blue)](https://wordpress.org)
 [![PHP 8.1+](https://img.shields.io/badge/PHP-8.1+-purple)](https://www.php.net)
@@ -7,15 +7,15 @@
 
 ---
 
-## 🚀 What is Agentic Plugin?
+## 🚀 What is the Agentic Plugin?
 
-The Agentic Plugin transforms WordPress into an AI friendly platform allowing you to quickly build AI agents that handle repetitive tasks, create content, manage commerce, and more.
+The Agentic Plugin brings an agent ecosystem to WordPress just like plugins and themes, but for AI capabilities.
 
-If you've built a plugin or theme, you already know the process. Now harness AI reasoning to solve WordPress problems at scale.
+If you've built a plugin or theme before, you already know the process. Now harness AI reasoning to solve WordPress problems at scale.
 
-### Why Agentic Matters
+### Why the Agentic Plugin Matters
 
-- **500K+ WordPress sites** waiting for AI-powered agents that enhance Wordpress
+- **500K+ WordPress sites** waiting for AI-powered agents to enhance Wordpress
 - **Open-source community** – Transparent, collaborative, GPL v2 licensed
 
 ---

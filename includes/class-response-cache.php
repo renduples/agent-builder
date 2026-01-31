@@ -87,7 +87,7 @@ class Response_Cache {
 	 */
 	public static function get_ttl(): int {
 		$ttl = (int) get_option( 'agentic_response_cache_ttl', self::DEFAULT_TTL );
-		return min( max( $ttl, 60 ), self::MAX_TTL ); // Between 1 min and 24 hours
+		return min( max( $ttl, 60 ), self::MAX_TTL ); // Between 1 min and 24 hours.
 	}
 
 	/**
@@ -272,7 +272,7 @@ class Response_Cache {
 		// Store with timestamp.
 		$cache_data              = $response;
 		$cache_data['cached_at'] = time();
-		unset( $cache_data['cached'], $cache_data['cache_hit'] ); // Clean up
+		unset( $cache_data['cached'], $cache_data['cache_hit'] ); // Clean up.
 
 		$result = set_transient( $key, $cache_data, $ttl );
 
@@ -334,7 +334,7 @@ class Response_Cache {
 			wp_cache_flush_group( 'agentic_responses' );
 		}
 
-		return (int) ( $count / 2 ); // Divide by 2 (transient + timeout)
+		return (int) ( $count / 2 ); // Divide by 2 (transient + timeout).
 	}
 
 	/**

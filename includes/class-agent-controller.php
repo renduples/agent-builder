@@ -234,7 +234,7 @@ class Agent_Controller {
 			++$iterations;
 
 			// Pass empty tools array if no tools defined.
-			$result = $this->llm->chat( $messages, $tools ?: null );
+			$result = $this->llm->chat( $messages, $tools ? $tools : null );
 
 			if ( is_wp_error( $result ) ) {
 				return array(

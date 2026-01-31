@@ -43,7 +43,7 @@ switch ( $agent_action ) {
 			/* translators: 1: Agent name, 2: Chat URL */
 
 			$message = sprintf(
-				__( \'%1$s activated. <a href="%2$s">Chat with this agent now →</a>', 'agentic-plugin' ),
+			__( '%1$s activated. <a href="%2$s">Chat with this agent now →</a>', 'agentic-plugin' ),
 				esc_html( $agent_name ),
 				esc_url( $chat_url )
 			);

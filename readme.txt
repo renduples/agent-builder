@@ -1,6 +1,7 @@
 === Agentic Plugin ===
-Contributors: @agenticplugin
-Tags: xai, openai, chatgpt, gpt, anthropic, claude, llm, ai, agents, chatbot, automation, plugins
+Contributors: agenticplugin
+Donate link: https://agentic-plugin.com/donate
+Tags: ai, agents, llm, automation, chatbot
 Requires at least: 6.4
 Tested up to: 6.7
 Requires PHP: 8.1
@@ -8,145 +9,115 @@ Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Build AI Agents without writing code. Describe the AI agent you want and let WordPress build it for you.
+Build and manage AI agents directly in WordPress — no coding required. Describe what you want, and let AI create powerful automations for content, admin, e-commerce, and more.
 
 == Description ==
 
-The Agentic Plugin brings an ecosystem to WordPress just like plugins and themes, but for AI capabilities.
+Agentic Plugin turns WordPress into an AI-agent ecosystem — similar to how plugins and themes extend your site, but powered by large language models (LLMs).
 
-If you've built a plugin or theme before, you already know the process. Now harness AI reasoning to solve WordPress problems at scale.
+Describe your desired AI agent in natural language, and the plugin builds it for you. Install, activate, and manage agents just like regular plugins. Browse a growing library of community agents or create your own.
 
-With this plugin you will be able to build most of your AI Agents without writing code.
-
-* **Marketplace** — Browse and install community-built agents with one click
-* **Activate and deactivate** — Control which agents run on your site, just like plugins
+Key benefits:
+- No-code agent creation via chat interface
+- Multi-provider support: OpenAI, Anthropic (Claude), local models (Ollama), and more
+- Plugin-style management: install, activate, deactivate, delete
+- Built-in safeguards: audit logs, human-in-the-loop approvals, rate limiting, cost controls
+- Extensible: developers can build custom agents with tools and share them
 
 = Agent Categories =
-
-* **Content Agents**: Draft posts, optimize SEO, generate alt text, translate content
-* **Admin Agents**: Monitor security, manage backups, optimize performance
-* **E-commerce Agents**: Manage products, optimize pricing, handle inventory
-* **Frontend Agents**: Chat with visitors, moderate comments, handle support
-* **Developer Agents**: Generate code, debug issues, build themes and plugins
-* **Marketing Agents**: Create campaigns, generate platform-optimized content, and manage multi-channel presence.
-
-= Key Features =
-
-* Plugin like Agent management interface (install, activate, deactivate, delete)
-* Multiple AI provider support (OpenAI, Anthropic, local models)
-* Comprehensive audit logging
-* Human-in-the-loop approval workflow
-* Rate limiting and cost controls
-* Open source core with commercial ecosystem support
+- **Content** — Drafting, SEO optimization, translation, alt text generation
+- **Admin** — Security monitoring, backups, performance tuning
+- **E-commerce** — Product management, pricing optimization, inventory
+- **Frontend** — Visitor chat, comment moderation, support
+- **Developer** — Code generation, debugging, theme/plugin building
+- **Marketing** — Campaigns, multi-platform content
 
 = Requirements =
-
-* WordPress 6.4 or higher
-* PHP 8.1 or higher
-* MySQL 8.0 or MariaDB 10.6
+- WordPress 6.4+
+- PHP 8.1+
+- MySQL 8.0 / MariaDB 10.6+
 
 == Installation ==
 
-1. Download the latest version from: https://github.com/renduples/agentic-plugin/releases/latest/download/agentic-plugin.zip
-2. Upload via Plugins → Add New → Upload Plugin
-3. Activate the plugin through the 'Plugins' menu
-4. Go to 'Agentic → Settings' to add your API key
-5. Go to 'Agentic → Agents' to browse and install agents
-6. Activate agents to enable their capabilities
+1. Search for "Agentic Plugin" in **Plugins → Add New** and install it (or upload the ZIP via **Add New → Upload Plugin**).
+2. Activate the plugin.
+3. Go to **Agentic → Settings** in the WordPress admin menu.
+4. Enter your AI provider API key (OpenAI, Anthropic, etc.) or configure local models.
+5. Visit **Agentic → Agents** to browse/install pre-built agents.
+6. Activate any agent to enable its features on your site.
 
 == Frequently Asked Questions ==
 
-= How is this different from regular plugins? =
+= How does this differ from regular WordPress plugins? =
+Agents are AI-powered automations that follow a standardized structure. They register tools the LLM can call, integrate with approval workflows, and are managed like plugins (activate/deactivate/delete).
 
-Agents are like plugins but specifically designed for AI-powered automation. They follow a standard structure, can register tools for AI models to use, and integrate with the Agentic approval and audit system.
+= Can I create my own agents? =
+Yes. Create an `agent.php` file with standard headers, register tools/functions, and place it in `wp-content/agents/`. The plugin auto-discovers them. Share your agents with the community!
 
-= Can I build my own agents? =
+= Where do custom agents go? =
+Place custom agents in `wp-content/agents/` (outside the plugin folder). This keeps them safe during updates. Bundled demo agents live in the plugin's `library/` folder.
 
-Yes! Agents follow a simple structure similar to WordPress plugins. Create an agent.php file with headers, register your tools, and share with the community.
+= Is my data sent to external AI services? =
+Only if using cloud providers (OpenAI, Anthropic, etc.). Use local models via Ollama for full privacy. All external calls are logged and rate-limited.
 
-= Where should I install my custom agents? =
+= Is it production-ready? =
+Version 1.1.0+ is stable with strong security (no exec(), nonces, escaping), GDPR-compliant uninstall, and audit logging. Test thoroughly on staging first.
 
-Install custom agents in `wp-content/agents/` directory (not inside the plugin folder). This ensures your agents survive plugin updates. 
+= Which AI providers work? =
+xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More coming soon.
 
-The plugin comes with 10 bundled agents in `wp-content/plugins/agentic-plugin/library/` that update with the plugin, but your custom agents in `wp-content/agents/` will never be touched during updates.
+== Screenshots ==
 
-= Is this production ready? =
-
-Agentic Plugin is currently in beta. The core functionality is stable and ready for testing in production environments. We recommend thorough testing before deploying on critical sites.
-
-= Which AI providers are supported? =
-
-Currently supports OpenAI, Anthropic (Claude), and local models via Ollama.
-
-= Is my data sent to external services? =
-
-Only when using cloud AI providers. Local model support is available for privacy-sensitive deployments.
+1. Intuitive chat interface for describing and building new AI agents.
+2. Agent library screen — browse, install, and manage your agents with one click.
+3. Settings page to configure your preferred AI provider, API keys, rate limits, and approvals.
+4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
 
 = 1.1.0 - 2026-02-01 =
-Code quality and WordPress.org compliance release.
-* Added complete uninstall handler for GDPR compliance (cleans up all plugin data on deletion).
-* Added phpcs.xml configuration for consistent coding standards across the project.
-* Added VS Code settings for WordPress Coding Standards integration.
-* Improved: All PHP files now have complete header blocks (@package, @author, @license, @since, PHP version).
-* Improved: File naming compliance (class-openai-client.php renamed to class-llm-client.php, class-agent-registry.php renamed to class-agentic-agent-registry.php).
-* Fixed SQL query formatting issues in class-job-manager.php that caused phpcbf corruption.
-* Fixed all unused parameter warnings with proper phpcs:ignore annotations.
-* Fixed nonce verification warnings for read-only filter parameters.
-* Fixed reserved keyword parameter ($match renamed to $pattern) in class-chat-security.php.
-* Removed Python helper scripts (fix-comments.py, fix-standards.py, fix-remaining.py) - no longer needed.
+* Added full GDPR-compliant uninstall handler (deletes options, tables, transients, user meta, crons).
+* Added phpcs.xml and VS Code settings for WordPress Coding Standards.
+* Improved: Complete @package/@since/@license headers in all PHP files.
+* Improved: Renamed classes/files for better naming consistency (e.g., class-llm-client.php).
+* Fixed: SQL formatting, unused parameters, nonce ignores, reserved keywords.
+* Removed: Obsolete Python fix scripts.
 
 = 1.0.1 - 2026-01-30 =
-Patch release with minor fixes.
-* Fixed minor PHPCS compliance issues.
-* Improved documentation updates.
+* Fixed remaining PHPCS issues.
+* Improved documentation and inline comments.
 
 = 1.0.0 - 2026-01-28 =
-Production-ready release, fully prepared for WordPress.org submission.
-* Added full internationalization support (Spanish, French, German translations ready).
-* Improved: Complete compliance with WordPress Coding Standards (WPCS) - 7,246 auto-fixes applied.
-* Security: Hardened codebase - removed all exec() calls and related vulnerabilities.
-* Improved: Simplified namespace to "Agentic" for cleaner code organization.
-* Added System Requirements Checker for better compatibility diagnostics.
-* Improved: Version synchronization and plugin renaming to "Agentic Plugin" for brand consistency.
+* Added full i18n support (Spanish, French, German .po/.mo files).
+* Achieved full WordPress Coding Standards compliance (7,246 auto-fixes).
+* Security: Removed all exec() and potential vulnerabilities.
+* Simplified namespace to "Agentic".
+* Added System Requirements Checker.
+* Brand consistency updates ("Agentic Plugin").
 
 = 0.1.3-alpha - 2026-01-28 =
-Focus on stability and naming consistency.
-* Added System Requirements Checker module.
-* Improved: Namespace simplified to Agentic.
-* Improved: Plugin renamed to "Agentic Plugin" (previous internal names deprecated).
-* Improved: Version synchronization across files and docs.
+* Added System Requirements Checker.
+* Simplified namespace and plugin naming.
 
 = 0.1.2-alpha - 2026-01-15 =
-Introduction of background processing capabilities.
-* Added Async Job Queue System for reliable background tasks.
-* Added real-time progress tracking for long-running operations.
-* Added Job management API for developers and future extensions.
-* Improved: Background processing infrastructure to prevent timeouts on large sites.
+* Introduced Async Job Queue for background tasks.
+* Added real-time progress tracking and job management API.
 
 = 0.1.0-alpha - 2026-01-01 =
-Initial public alpha release - foundation of the Agentic ecosystem.
-* Added core no-code AI agent builder.
-* Added 10 pre-built community agents (Content, SEO, E-commerce, etc.).
-* Added admin dashboard for agent management and configuration.
-* Added multi-LLM support (OpenAI, Anthropic, Google Gemini, xAI Grok, local Ollama).
-* Added secure human-in-the-loop approval workflow and audit trails.
-* Added marketplace foundation (agent sharing and monetization prep).
+* Initial public alpha.
+* Core no-code agent builder.
+* 10 bundled agents.
+* Admin dashboard and multi-LLM support.
+* Human-in-the-loop approvals and audit trails.
+* Marketplace foundation.
 
 == Upgrade Notice ==
 
 = 1.1.0 =
-Code quality release. GDPR-compliant uninstall handler added. No breaking changes.
+Important: GDPR-compliant uninstall added. No data loss or breaking changes. Recommended update for all users.
 
 = 1.0.0 =
-First stable release. Smooth upgrade from beta - no database migrations required.
+First stable release. Smooth upgrade — no migrations needed. Full standards compliance and security hardening.
 
-= 0.1.3-alpha =
-Major naming changes: Namespace simplified. System Requirements Checker added.
-
-= 0.1.2-alpha =
-Async job queue system added for long-running tasks. No breaking changes.
-
-= 0.1.0-alpha =
-Initial alpha release. Not recommended for production use.
+= 0.1.x-alpha =
+Early development versions. Upgrade to 1.0.0+ for stability, i18n, and security fixes.

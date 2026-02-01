@@ -23,6 +23,11 @@ Welcome to the Agent Builder documentation. For assistance please email support@
 - [Security Policy](Security)
 - [Agent Licensing for Developers](Agent-Licensing-for-Developers) - Build, monetize, and track revenue
 
+### Developer Revenue
+
+- [Agent Licensing for Developers](Agent-Licensing-for-Developers) - Complete guide to monetizing agents
+- [Revenue API Brief](https://github.com/renduples/agent-builder/blob/main/.github/REVENUE_API_BRIEF.md) - API endpoints for revenue dashboard
+
 ### Features & Systems
 
 - [Async Jobs System](Async-Jobs)
@@ -41,8 +46,10 @@ Welcome to the Agent Builder documentation. For assistance please email support@
 ## 🔗 Quick Links
 
 - [GitHub Repository](https://github.com/renduples/agent-builder)
-- [WordPress.org Plugin Page](https://wordpress.org/plugins/agentic-plugin/) (pending approval)
+- [WordPress.org Plugin Page](https://wordpress.org/plugins/agent-builder/) (pending approval)
 - [Official Website](https://agentic-plugin.com)
+- [Agent Marketplace](https://agentic-plugin.com/agents/)
+- [Developer Registration](https://agentic-plugin.com/developer/register/)
 
 ## 📝 Notes for Contributors
 

@@ -299,8 +299,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	if (apiKeyFromUrl && urlParams.get('tab') === 'developer') {
 		// User just registered and returned with API key
-		if (updateApiKeyForm && updateApiKeyInput) {
-			// Show the update form with pre-filled key
+		// Check if we have an existing API key or not
+		const hasExistingKey = document.getElementById('agentic-update-api-key-btn') !== null;
+		
+		if (hasExistingKey && updateApiKeyForm && updateApiKeyInput) {
+			// User already has a key - show update form with pre-filled key
 			updateApiKeyForm.style.display = 'block';
 			updateApiKeyInput.value = apiKeyFromUrl;
 			updateApiKeyInput.focus();
@@ -311,11 +314,47 @@ document.addEventListener('DOMContentLoaded', function() {
 				const notice = document.createElement('div');
 				notice.className = 'notice notice-info inline';
 				notice.style.cssText = 'padding: 12px; margin: 15px 0;';
-				notice.innerHTML = '<p style="margin: 0;"><strong>Welcome back!</strong> Your new developer API key has been pre-filled below. Click "Save" to connect your account.</p>';
+				notice.innerHTML = '<p style="margin: 0;"><strong>Welcome back!</strong> Your new developer API key has been pre-filled below. Click "Save" to update your account.</p>';
 				devTabContent.parentNode.insertBefore(notice, devTabContent);
 			}
-			
-			// Clean URL (remove api-key parameter)
+		} else {
+			// No existing key - save the new one directly
+			(async () => {
+				try {
+					const response = await fetch('/wp-admin/admin-ajax.php', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+						},
+						body: new URLSearchParams({
+							action: 'agentic_save_developer_api_key',
+							api_key: apiKeyFromUrl,
+							nonce: agenticMarketplace?.nonce || ''
+						})
+					});
+
+					const data = await response.json();
+
+					if (data.success) {
+						// Clean URL first to avoid re-triggering
+						const cleanUrl = new URL(window.location);
+						cleanUrl.searchParams.delete('api-key');
+						window.history.replaceState({}, '', cleanUrl);
+						
+						// Show success and reload
+						alert('Your developer account has been connected successfully!');
+						window.location.reload();
+					} else {
+						alert('Failed to save API key: ' + (data.data?.message || 'Unknown error'));
+					}
+				} catch (error) {
+					alert('Error saving API key: ' + error.message);
+				}
+			})();
+		}
+		
+		// Clean URL (remove api-key parameter) - only if not saving automatically
+		if (updateApiKeyForm) {
 			const cleanUrl = new URL(window.location);
 			cleanUrl.searchParams.delete('api-key');
 			window.history.replaceState({}, '', cleanUrl);

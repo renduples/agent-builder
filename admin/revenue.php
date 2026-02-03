@@ -54,7 +54,10 @@ $marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketplace/v1';
 			<div class="connect-card">
 				<span class="dashicons dashicons-chart-bar"></span>
 				<h2><?php esc_html_e( 'Connect to Marketplace', 'agent-builder' ); ?></h2>
-				<p><?php esc_html_e( 'Link your marketplace developer account to view your agent submissions, installs, and revenue.', 'agent-builder' ); ?></p>
+				<p>
+					<?php esc_html_e( 'To earn revenue from your AI Agents, register a free developer account.', 'agent-builder' ); ?>
+					<a href="https://agentic-plugin.com/agent-licensing-for-developers/" target="_blank"><?php esc_html_e( 'Learn more', 'agent-builder' ); ?></a>.
+				</p>
 				<div class="connect-actions">
 					<a href="<?php echo esc_url( $register_url ); ?>" class="button button-primary button-hero" target="_blank">
 						<?php esc_html_e( 'Register as Developer', 'agent-builder' ); ?>

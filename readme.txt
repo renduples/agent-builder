@@ -75,6 +75,10 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 
 == Changelog ==
 
+= 1.1.2 - 2026-02-02 =
+* Fixed: Automatic API key saving when returning from marketplace registration
+* Improved: Revenue page messaging with link to licensing documentation
+
 = 1.1.1 - 2026-02-02 =
 * Added marketplace dashboard stats widget with latest/popular agents and developer revenue.
 * Added plugin license validation system (Free/Pro/Enterprise tiers).

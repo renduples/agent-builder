@@ -53,9 +53,6 @@ jobs:
           cd build
           zip -r ../agent-builder.zip agent-builder
           cd ..
-          
-          # Also create versioned zip
-          cp agent-builder.zip agent-builder-${{ steps.version.outputs.VERSION }}.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -77,6 +74,5 @@ jobs:
             See [documentation](https://agentic-plugin.com/) for setup instructions.
           files: |
             agent-builder.zip
-            agent-builder-${{ steps.version.outputs.VERSION }}.zip
           draft: false
           prerelease: false

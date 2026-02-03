@@ -23,36 +23,39 @@ jobs:
       - name: Create plugin zip
         run: |
           # Create a clean directory for the plugin
-          mkdir -p build/agentic-plugin
+          mkdir -p build/agent-builder
           
           # Copy plugin files (exclude dev/test files)
-          cp agentic-plugin.php build/agentic-plugin/
-          cp readme.txt build/agentic-plugin/
-          cp -r admin build/agentic-plugin/
-          cp -r assets build/agentic-plugin/
-          cp -r includes build/agentic-plugin/
-          cp -r library build/agentic-plugin/
-          cp -r templates build/agentic-plugin/
+          cp agent-builder.php build/agent-builder/
+          cp readme.txt build/agent-builder/
+          cp uninstall.php build/agent-builder/
+          cp -r admin build/agent-builder/
+          cp -r assets build/agent-builder/
+          cp -r includes build/agent-builder/
+          cp -r library build/agent-builder/
+          cp -r templates build/agent-builder/
+          cp -r languages build/agent-builder/
           
           # Copy vendor if exists (for production dependencies)
           if [ -d "vendor" ]; then
-            cp -r vendor build/agentic-plugin/
+            cp -r vendor build/agent-builder/
           fi
           
           # Remove dev files from the build
-          find build/agentic-plugin -name ".git*" -type f -delete
-          find build/agentic-plugin -name ".DS_Store" -type f -delete
-          find build/agentic-plugin -name "*.log" -type f -delete
-          find build/agentic-plugin -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true
-          find build/agentic-plugin -type d -name "node_modules" -exec rm -rf {} + 2>/dev/null || true
+          find build/agent-builder -name ".git*" -type f -delete
+          find build/agent-builder -name ".DS_Store" -type f -delete
+          find build/agent-builder -name "*.log" -type f -delete
+          find build/agent-builder -name "CLAUDE.md" -type f -delete
+          find build/agent-builder -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true
+          find build/agent-builder -type d -name "node_modules" -exec rm -rf {} + 2>/dev/null || true
           
           # Create the zip
           cd build
-          zip -r ../agentic-plugin.zip agentic-plugin
+          zip -r ../agent-builder.zip agent-builder
           cd ..
           
           # Also create versioned zip
-          cp agentic-plugin.zip agentic-plugin-${{ steps.version.outputs.VERSION }}.zip
+          cp agent-builder.zip agent-builder-${{ steps.version.outputs.VERSION }}.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -62,18 +65,18 @@ jobs:
             ## Agent Builder v${{ steps.version.outputs.VERSION }}
             
             ### Installation
-            1. Download `agentic-plugin.zip`
+            1. Download `agent-builder.zip`
             2. In WordPress admin, go to Plugins → Add New → Upload Plugin
             3. Upload the zip file and activate
             
             ### WP-CLI Installation
             ```bash
-            wp plugin install https://github.com/renduples/agent-builder/releases/latest/download/agentic-plugin.zip --activate
+            wp plugin install https://github.com/renduples/agent-builder/releases/latest/download/agent-builder.zip --activate
             ```
             
             See [documentation](https://agentic-plugin.com/) for setup instructions.
           files: |
-            agentic-plugin.zip
-            agentic-plugin-${{ steps.version.outputs.VERSION }}.zip
+            agent-builder.zip
+            agent-builder-${{ steps.version.outputs.VERSION }}.zip
           draft: false
           prerelease: false

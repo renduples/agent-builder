@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,14 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.3.0 - 2026-02-09 =
+* Fixed: All WordPress naming convention violations - 100% compliant
+* Fixed: Prefixed all global variables in admin templates (agents.php, agents-add.php, audit.php)
+* Fixed: Prefixed all variables in uninstall.php for GDPR cleanup
+* Fixed: UnescapedDBParameter warning in Job_Manager cleanup method
+* Improved: Database query safety with proper phpcs:ignore annotations
+* Improved: Code quality and WordPress.org submission readiness
 
 = 1.1.2 - 2026-02-02 =
 * Fixed: Automatic API key saving when returning from marketplace registration

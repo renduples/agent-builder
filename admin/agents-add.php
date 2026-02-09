@@ -32,10 +32,10 @@ $agentic_agent_error  = '';
 
 if ( 'install' === $agentic_agent_action && $agentic_slug && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'agentic_install_agent' ) ) {
 	$agentic_registry = Agentic_Agent_Registry::get_instance();
-	$result           = $agentic_registry->install_agent( $agentic_slug );
+	$agentic_result   = $agentic_registry->install_agent( $agentic_slug );
 
-	if ( is_wp_error( $result ) ) {
-		$agentic_agent_error = $result->get_error_message();
+	if ( is_wp_error( $agentic_result ) ) {
+		$agentic_agent_error = $agentic_result->get_error_message();
 	} else {
 		$agentic_message = __( 'Agent installed successfully.', 'agent-builder' );
 	}

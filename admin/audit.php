@@ -96,42 +96,42 @@ $agentic_stats = $agentic_audit->get_stats( 'month' );
 				</tr>
 			</thead>
 			<tbody>
-				<?php foreach ( $agentic_logs as $entry ) : ?>
+				<?php foreach ( $agentic_logs as $agentic_entry ) : ?>
 				<tr>
 					<td>
-						<span title="<?php echo esc_attr( $entry['created_at'] ); ?>">
-							<?php echo esc_html( human_time_diff( strtotime( $entry['created_at'] ) ) ); ?> ago
+						<span title="<?php echo esc_attr( $agentic_entry['created_at'] ); ?>">
+							<?php echo esc_html( human_time_diff( strtotime( $agentic_entry['created_at'] ) ) ); ?> ago
 						</span>
 					</td>
-					<td><?php echo esc_html( $entry['agent_id'] ); ?></td>
-					<td><code><?php echo esc_html( $entry['action'] ); ?></code></td>
+					<td><?php echo esc_html( $agentic_entry['agent_id'] ); ?></td>
+					<td><code><?php echo esc_html( $agentic_entry['action'] ); ?></code></td>
 					<td>
-						<?php if ( $entry['target_type'] ) : ?>
-							<?php echo esc_html( $entry['target_type'] ); ?>
-							<?php if ( $entry['target_id'] ) : ?>
-								<small>(<?php echo esc_html( $entry['target_id'] ); ?>)</small>
+						<?php if ( $agentic_entry['target_type'] ) : ?>
+							<?php echo esc_html( $agentic_entry['target_type'] ); ?>
+							<?php if ( $agentic_entry['target_id'] ) : ?>
+								<small>(<?php echo esc_html( $agentic_entry['target_id'] ); ?>)</small>
 							<?php endif; ?>
 						<?php else : ?>
 							-
 						<?php endif; ?>
 					</td>
-					<td><?php echo esc_html( number_format( (int) ( $entry['tokens_used'] ?? 0 ) ) ); ?></td>
-					<td>$<?php echo esc_html( number_format( (float) ( $entry['cost'] ?? 0 ), 6 ) ); ?></td>
+					<td><?php echo esc_html( number_format( (int) ( $agentic_entry['tokens_used'] ?? 0 ) ) ); ?></td>
+					<td>$<?php echo esc_html( number_format( (float) ( $agentic_entry['cost'] ?? 0 ), 6 ) ); ?></td>
 					<td>
 						<?php
-						if ( $entry['user_id'] ) {
-							$agentic_user = get_user_by( 'id', $entry['user_id'] );
-							echo esc_html( $agentic_user ? $agentic_user->display_name : 'User #' . $entry['user_id'] );
+						if ( $agentic_entry['user_id'] ) {
+							$agentic_user = get_user_by( 'id', $agentic_entry['user_id'] );
+							echo esc_html( $agentic_user ? $agentic_user->display_name : 'User #' . $agentic_entry['user_id'] );
 						} else {
 							echo '-';
 						}
 						?>
 					</td>
 					<td>
-						<?php if ( $entry['details'] ) : ?>
+						<?php if ( $agentic_entry['details'] ) : ?>
 							<details>
 								<summary>View</summary>
-								<pre style="max-width: 400px; overflow: auto; font-size: 11px; background: #f5f5f5; padding: 5px;"><?php echo esc_html( $entry['details'] ); ?></pre>
+								<pre style="max-width: 400px; overflow: auto; font-size: 11px; background: #f5f5f5; padding: 5px;"><?php echo esc_html( $agentic_entry['details'] ); ?></pre>
 							</details>
 						<?php else : ?>
 							-

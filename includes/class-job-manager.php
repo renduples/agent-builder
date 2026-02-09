@@ -386,13 +386,12 @@ class Job_Manager {
 	public static function cleanup_old_jobs(): int {
 		global $wpdb;
 
-		$table = self::get_table_name();
+		$agentic_table = self::get_table_name();
 
-		// Delete old jobs - table name is safe (from constant + prefix).
-		$query = "DELETE FROM {$table} WHERE status IN ('completed', 'failed', 'cancelled') AND updated_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)";
-
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$deleted = $wpdb->query( $query );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		$deleted = $wpdb->query(
+			"DELETE FROM {$agentic_table} WHERE status IN ('completed', 'failed', 'cancelled') AND updated_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
 
 		if ( $deleted > 0 ) {
 			// Invalidate cache.

@@ -39,26 +39,26 @@ if ( $agentic_agent_action && $agentic_slug && isset( $_GET['_wpnonce'] ) && wp_
 
 	switch ( $agentic_agent_action ) {
 		case 'activate':
-			$result = $agentic_registry->activate_agent( $agentic_slug );
-			if ( is_wp_error( $result ) ) {
-					$agentic_agent_error = $result->get_error_message();
+			$agentic_result = $agentic_registry->activate_agent( $agentic_slug );
+			if ( is_wp_error( $agentic_result ) ) {
+					$agentic_agent_error = $agentic_result->get_error_message();
 			} else {
 				$agentic_agents_data = $agentic_registry->get_installed_agents( true );
-				$agent_name          = $agentic_agents_data[ $agentic_slug ]['name'] ?? $agentic_slug;
-				$page_slug           = 'agent-builder' === $agentic_slug ? 'agent-builder' : 'agentic-chat';
-				$chat_url            = admin_url( 'admin.php?page=' . $page_slug . '&agent=' . $agentic_slug );
+				$agentic_agent_name  = $agentic_agents_data[ $agentic_slug ]['name'] ?? $agentic_slug;
+				$agentic_page_slug   = 'agent-builder' === $agentic_slug ? 'agent-builder' : 'agentic-chat';
+				$agentic_chat_url    = admin_url( 'admin.php?page=' . $agentic_page_slug . '&agent=' . $agentic_slug );
 				$agentic_message     = sprintf(
 				/* translators: 1: agent name, 2: chat URL */
 					__( '%1$s activated. <a href="%2$s">Chat with this agent now →</a>', 'agent-builder' ),
-					esc_html( $agent_name ),
-					esc_url( $chat_url )
+					esc_html( $agentic_agent_name ),
+					esc_url( $agentic_chat_url )
 				);
 			}
 			break;
 
 		case 'deactivate':
-			$result = $agentic_registry->deactivate_agent( $agentic_slug );
-			if ( is_wp_error( $result ) ) {
+			$agentic_result = $agentic_registry->deactivate_agent( $agentic_slug );
+			if ( is_wp_error( $agentic_result ) ) {
 				$agentic_agent_error = $result->get_error_message();
 			} else {
 				$agentic_message = __( 'Agent deactivated.', 'agent-builder' );
@@ -66,35 +66,35 @@ if ( $agentic_agent_action && $agentic_slug && isset( $_GET['_wpnonce'] ) && wp_
 			break;
 
 		case 'delete':
-			$result = $agentic_registry->delete_agent( $agentic_slug );
-			if ( is_wp_error( $result ) ) {
-				$agentic_agent_error = $result->get_error_message();
+			$agentic_result = $agentic_registry->delete_agent( $agentic_slug );
+			if ( is_wp_error( $agentic_result ) ) {
+				$agentic_agent_error = $agentic_result->get_error_message();
 			} else {
 				// Deactivate license if agent had one.
-				$marketplace            = new \Agentic\Marketplace_Client();
-				$marketplace_reflection = new \ReflectionClass( $marketplace );
-				$deactivate_method      = $marketplace_reflection->getMethod( 'deactivate_agent_license' );
-				$deactivate_method->setAccessible( true );
-				$deactivate_method->invoke( $marketplace, $agentic_slug );
+				$agentic_marketplace            = new \Agentic\Marketplace_Client();
+				$agentic_marketplace_reflection = new \ReflectionClass( $agentic_marketplace );
+				$agentic_deactivate_method      = $agentic_marketplace_reflection->getMethod( 'deactivate_agent_license' );
+				$agentic_deactivate_method->setAccessible( true );
+				$agentic_deactivate_method->invoke( $agentic_marketplace, $agentic_slug );
 
 				// Download and install the update.
 				if ( isset( $agentic_available_updates[ $agentic_slug ] ) ) {
-					$update_data = $agentic_available_updates[ $agentic_slug ];
-					$was_active  = $agentic_registry->is_agent_active( $agentic_slug );
+					$agentic_update_data = $agentic_available_updates[ $agentic_slug ];
+					$agentic_was_active  = $agentic_registry->is_agent_active( $agentic_slug );
 
 					// Deactivate if active.
-					if ( $was_active ) {
+					if ( $agentic_was_active ) {
 						$agentic_registry->deactivate_agent( $agentic_slug );
 					}
 
 					// Install the update (replaces files).
-					$result = $agentic_registry->install_agent( $agentic_slug );
+					$agentic_result = $agentic_registry->install_agent( $agentic_slug );
 
-					if ( is_wp_error( $result ) ) {
-						$agentic_agent_error = $result->get_error_message();
+					if ( is_wp_error( $agentic_result ) ) {
+						$agentic_agent_error = $agentic_result->get_error_message();
 					} else {
 						// Reactivate if was active.
-						if ( $was_active ) {
+						if ( $agentic_was_active ) {
 							$agentic_registry->activate_agent( $agentic_slug );
 						}
 

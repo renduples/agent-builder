@@ -39,8 +39,8 @@ $agentic_options_to_delete = array(
 	'agentic_agent_configs',
 );
 
-foreach ( $agentic_options_to_delete as $option ) {
-	delete_option( $option );
+foreach ( $agentic_options_to_delete as $agentic_option ) {
+	delete_option( $agentic_option );
 }
 
 /**
@@ -53,9 +53,9 @@ $agentic_tables_to_drop = array(
 	$wpdb->prefix . 'agentic_approval_queue',
 );
 
-foreach ( $agentic_tables_to_drop as $table ) {
+foreach ( $agentic_tables_to_drop as $agentic_table ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
-	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table ) );
+	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $agentic_table ) );
 }
 
 /**
@@ -86,9 +86,9 @@ $agentic_cron_hooks = array(
 	'agentic_license_check',
 );
 
-foreach ( $agentic_cron_hooks as $hook ) {
-	$agentic_timestamp = wp_next_scheduled( $hook );
+foreach ( $agentic_cron_hooks as $agentic_hook ) {
+	$agentic_timestamp = wp_next_scheduled( $agentic_hook );
 	if ( $agentic_timestamp ) {
-		wp_unschedule_event( $agentic_timestamp, $hook );
+		wp_unschedule_event( $agentic_timestamp, $agentic_hook );
 	}
 }

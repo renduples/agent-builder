@@ -42,8 +42,8 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 
 	// Handle cache clear.
 	if ( isset( $_POST['agentic_clear_cache'] ) ) {
-		$cleared = \Agentic\Response_Cache::clear_all();
-		echo '<div class="notice notice-info"><p>Cleared ' . esc_html( $cleared ) . ' cached responses.</p></div>';
+		$agentic_cleared = \Agentic\Response_Cache::clear_all();
+		echo '<div class="notice notice-info"><p>Cleared ' . esc_html( $agentic_cleared ) . ' cached responses.</p></div>';
 	}
 
 
@@ -56,21 +56,21 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 }
 
 // Get current values.
-$llm_provider = get_option( 'agentic_llm_provider', 'openai' );
-$api_key      = get_option( 'agentic_llm_api_key', '' );
-$model        = get_option( 'agentic_model', 'gpt-4o' );
-$agent_mode   = get_option( 'agentic_agent_mode', 'supervised' );
+$agentic_llm_provider_val = get_option( 'agentic_llm_provider', 'openai' );
+$agentic_api_key_val      = get_option( 'agentic_llm_api_key', '' );
+$agentic_model_val        = get_option( 'agentic_model', 'gpt-4o' );
+$agentic_agent_mode_val   = get_option( 'agentic_agent_mode', 'supervised' );
 
 // Cache settings.
-$cache_enabled = get_option( 'agentic_response_cache_enabled', true );
-$cache_ttl     = get_option( 'agentic_response_cache_ttl', 3600 );
-$cache_stats   = \Agentic\Response_Cache::get_stats();
+$agentic_cache_enabled = get_option( 'agentic_response_cache_enabled', true );
+$agentic_cache_ttl     = get_option( 'agentic_response_cache_ttl', 3600 );
+$agentic_cache_stats   = \Agentic\Response_Cache::get_stats();
 
 // Security settings.
-$security_enabled = get_option( 'agentic_security_enabled', true );
-$rate_limit_auth  = get_option( 'agentic_rate_limit_authenticated', 30 );
-$rate_limit_anon  = get_option( 'agentic_rate_limit_anonymous', 10 );
-$allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
+$agentic_security_enabled = get_option( 'agentic_security_enabled', true );
+$agentic_rate_limit_auth  = get_option( 'agentic_rate_limit_authenticated', 30 );
+$agentic_rate_limit_anon  = get_option( 'agentic_rate_limit_anonymous', 10 );
+$agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 ?>
 <div class="wrap">
 	<h1>Agentic Settings</h1>
@@ -79,22 +79,22 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 	</p>
 
 	<?php
-	$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'general';
+	$agentic_active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'general';
 	?>
 
 	<h2 class="nav-tab-wrapper">
-		<a href="?page=agentic-settings&tab=general" class="nav-tab <?php echo 'general' === $active_tab ? 'nav-tab-active' : ''; ?>">General</a>
-		<a href="?page=agentic-settings&tab=developer" class="nav-tab <?php echo 'developer' === $active_tab ? 'nav-tab-active' : ''; ?>">Developer</a>
-		<a href="?page=agentic-settings&tab=cache" class="nav-tab <?php echo 'cache' === $active_tab ? 'nav-tab-active' : ''; ?>">Cache</a>
-		<a href="?page=agentic-settings&tab=security" class="nav-tab <?php echo 'security' === $active_tab ? 'nav-tab-active' : ''; ?>">Security</a>
-		<a href="?page=agentic-settings&tab=permissions" class="nav-tab <?php echo 'permissions' === $active_tab ? 'nav-tab-active' : ''; ?>">Permissions</a>
+		<a href="?page=agentic-settings&tab=general" class="nav-tab <?php echo 'general' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">General</a>
+		<a href="?page=agentic-settings&tab=developer" class="nav-tab <?php echo 'developer' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">Developer</a>
+		<a href="?page=agentic-settings&tab=cache" class="nav-tab <?php echo 'cache' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">Cache</a>
+		<a href="?page=agentic-settings&tab=security" class="nav-tab <?php echo 'security' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">Security</a>
+		<a href="?page=agentic-settings&tab=permissions" class="nav-tab <?php echo 'permissions' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">Permissions</a>
 	</h2>
 
 	<form method="post" action="">
 		<?php wp_nonce_field( 'agentic_settings_nonce' ); ?>
-		<input type="hidden" name="tab" value="<?php echo esc_attr( $active_tab ); ?>" />
+		<input type="hidden" name="tab" value="<?php echo esc_attr( $agentic_active_tab ); ?>" />
 
-		<?php if ( 'general' === $active_tab ) : ?>
+		<?php if ( 'general' === $agentic_active_tab ) : ?>
 		<h2>API Configuration</h2>
 		<p>Configure your AI provider and model settings.</p>
 
@@ -105,11 +105,11 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 				</th>
 				<td>
 					<select name="agentic_llm_provider" id="agentic_llm_provider">
-						<option value="openai" <?php selected( $llm_provider, 'openai' ); ?>>OpenAI</option>
-						<option value="anthropic" <?php selected( $llm_provider, 'anthropic' ); ?>>Anthropic (Claude)</option>
-						<option value="xai" <?php selected( $llm_provider, 'xai' ); ?>>xAI (Grok)</option>
-						<option value="google" <?php selected( $llm_provider, 'google' ); ?>>Google (Gemini)</option>
-						<option value="mistral" <?php selected( $llm_provider, 'mistral' ); ?>>Mistral AI</option>
+						<option value="openai" <?php selected( $agentic_llm_provider_val, 'openai' ); ?>>OpenAI</option>
+						<option value="anthropic" <?php selected( $agentic_llm_provider_val, 'anthropic' ); ?>>Anthropic (Claude)</option>
+						<option value="xai" <?php selected( $agentic_llm_provider_val, 'xai' ); ?>>xAI (Grok)</option>
+						<option value="google" <?php selected( $agentic_llm_provider_val, 'google' ); ?>>Google (Gemini)</option>
+						<option value="mistral" <?php selected( $agentic_llm_provider_val, 'mistral' ); ?>>Mistral AI</option>
 					</select>
 					<a href="#" id="agentic-get-api-key" class="button" target="_blank" style="margin-left: 8px;">
 						<span class="dashicons dashicons-external" style="margin-right: 4px; vertical-align: -2px;"></span>Get API Key
@@ -135,7 +135,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 						type="password" 
 						name="agentic_llm_api_key" 
 						id="agentic_llm_api_key" 
-						value="<?php echo esc_attr( $api_key ); ?>" 
+						value="<?php echo esc_attr( $agentic_api_key_val ); ?>" 
 						class="regular-text"
 					/>
 					<button type="button" id="agentic-test-api" class="button" style="margin-left: 8px;">Test</button>
@@ -143,7 +143,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 						<!-- Updated dynamically based on provider -->
 					</p>
 					<div id="agentic-test-result" style="margin-top: 8px;"></div>
-					<?php if ( ! empty( $api_key ) ) : ?>
+					<?php if ( ! empty( $agentic_api_key_val ) ) : ?>
 						<p><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> API key is set</p>
 					<?php endif; ?>
 				</td>
@@ -154,7 +154,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 					<label for="agentic_model">Model</label>
 				</th>
 				<td>
-					<select name="agentic_model" id="agentic_model" data-current-model="<?php echo esc_attr( $model ); ?>">
+					<select name="agentic_model" id="agentic_model" data-current-model="<?php echo esc_attr( $agentic_model_val ); ?>">
 						<!-- Options populated dynamically based on provider -->
 					</select>
 					<p class="description" id="agentic-model-help">
@@ -169,9 +169,9 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 				</th>
 				<td>
 					<select name="agentic_agent_mode" id="agentic_agent_mode">
-						<option value="disabled" <?php selected( $agent_mode, 'disabled' ); ?>>Disabled</option>
-						<option value="supervised" <?php selected( $agent_mode, 'supervised' ); ?>>Supervised (Recommended)</option>
-						<option value="autonomous" <?php selected( $agent_mode, 'autonomous' ); ?>>Autonomous</option>
+						<option value="disabled" <?php selected( $agentic_agent_mode_val, 'disabled' ); ?>>Disabled</option>
+						<option value="supervised" <?php selected( $agentic_agent_mode_val, 'supervised' ); ?>>Supervised (Recommended)</option>
+						<option value="autonomous" <?php selected( $agentic_agent_mode_val, 'autonomous' ); ?>>Autonomous</option>
 					</select>
 					<p class="description" id="agentic-agent-mode-help">
 						<!-- Help text updated dynamically -->
@@ -180,12 +180,12 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			</tr>
 		</table>
 
-		<?php elseif ( 'developer' === $active_tab ) : ?>
-			<?php $developer_api_key = get_option( 'agentic_developer_api_key', '' ); ?>
+		<?php elseif ( 'developer' === $agentic_active_tab ) : ?>
+			<?php $agentic_developer_api_key = get_option( 'agentic_developer_api_key', '' ); ?>
 		<h2><?php esc_html_e( 'Developer Settings', 'agent-builder' ); ?></h2>
 		<p><?php esc_html_e( 'Connect to the Agent Marketplace to sell your agents and track revenue.', 'agent-builder' ); ?></p>
 		
-			<?php if ( ! empty( $developer_api_key ) ) : ?>
+			<?php if ( ! empty( $agentic_developer_api_key ) ) : ?>
 			<div class="notice notice-success inline" style="padding: 12px; margin: 15px 0;">
 				<p style="margin: 0; display: flex; align-items: center; gap: 8px;">
 					<span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span>
@@ -197,7 +197,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 				<tr>
 					<th scope="row"><?php esc_html_e( 'API Key', 'agent-builder' ); ?></th>
 					<td>
-						<code style="font-size: 14px; background: #f0f0f1; padding: 8px 12px; border-radius: 3px;"><?php echo esc_html( substr( $developer_api_key, 0, 8 ) . '...' . substr( $developer_api_key, -4 ) ); ?></code>
+						<code style="font-size: 14px; background: #f0f0f1; padding: 8px 12px; border-radius: 3px;"><?php echo esc_html( substr( $agentic_developer_api_key, 0, 8 ) . '...' . substr( $agentic_developer_api_key, -4 ) ); ?></code>
 						<button type="button" class="button" id="agentic-update-api-key-btn" style="margin-left: 10px;">
 							<?php esc_html_e( 'Update Key', 'agent-builder' ); ?>
 						</button>
@@ -271,7 +271,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			</p>
 		</div>
 
-		<?php elseif ( 'cache' === $active_tab ) : ?>
+		<?php elseif ( 'cache' === $agentic_active_tab ) : ?>
 		<h2>Response Caching</h2>
 		<p>Cache identical queries to save tokens and reduce latency.</p>
 		
@@ -287,7 +287,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 							name="agentic_response_cache_enabled" 
 							id="agentic_response_cache_enabled" 
 							value="1"
-							<?php checked( $cache_enabled ); ?>
+							<?php checked( $agentic_cache_enabled ); ?>
 						/>
 						Cache identical messages to avoid repeated LLM calls
 					</label>
@@ -303,12 +303,12 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 				</th>
 				<td>
 					<select name="agentic_response_cache_ttl" id="agentic_response_cache_ttl">
-						<option value="900" <?php selected( $cache_ttl, 900 ); ?>>15 minutes</option>
-						<option value="1800" <?php selected( $cache_ttl, 1800 ); ?>>30 minutes</option>
-						<option value="3600" <?php selected( $cache_ttl, 3600 ); ?>>1 hour (Recommended)</option>
-						<option value="7200" <?php selected( $cache_ttl, 7200 ); ?>>2 hours</option>
-						<option value="21600" <?php selected( $cache_ttl, 21600 ); ?>>6 hours</option>
-						<option value="86400" <?php selected( $cache_ttl, 86400 ); ?>>24 hours</option>
+						<option value="900" <?php selected( $agentic_cache_ttl, 900 ); ?>>15 minutes</option>
+						<option value="1800" <?php selected( $agentic_cache_ttl, 1800 ); ?>>30 minutes</option>
+						<option value="3600" <?php selected( $agentic_cache_ttl, 3600 ); ?>>1 hour (Recommended)</option>
+						<option value="7200" <?php selected( $agentic_cache_ttl, 7200 ); ?>>2 hours</option>
+						<option value="21600" <?php selected( $agentic_cache_ttl, 21600 ); ?>>6 hours</option>
+						<option value="86400" <?php selected( $agentic_cache_ttl, 86400 ); ?>>24 hours</option>
 					</select>
 					<p class="description">
 						How long to keep cached responses before they expire.
@@ -320,8 +320,8 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 				<th scope="row">Cache Statistics</th>
 				<td>
 					<p>
-						<strong>Cached entries:</strong> <?php echo esc_html( $cache_stats['entry_count'] ); ?><br>
-						<strong>Status:</strong> <?php echo $cache_stats['enabled'] ? '<span style="color: #22c55e;">Active</span>' : '<span style="color: #b91c1c;">Disabled</span>'; ?>
+						<strong>Cached entries:</strong> <?php echo esc_html( $agentic_cache_stats['entry_count'] ); ?><br>
+						<strong>Status:</strong> <?php echo $agentic_cache_stats['enabled'] ? '<span style="color: #22c55e;">Active</span>' : '<span style="color: #b91c1c;">Disabled</span>'; ?>
 					</p>
 					<label>
 						<input type="checkbox" name="agentic_clear_cache" value="1" />
@@ -331,7 +331,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			</tr>
 		</table>
 
-		<?php elseif ( 'security' === $active_tab ) : ?>
+		<?php elseif ( 'security' === $agentic_active_tab ) : ?>
 		<h2>Security Settings</h2>
 		<p>Protect against prompt injection and abuse.</p>
 
@@ -347,7 +347,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 							name="agentic_security_enabled" 
 							id="agentic_security_enabled" 
 							value="1"
-							<?php checked( $security_enabled ); ?>
+							<?php checked( $agentic_security_enabled ); ?>
 						/>
 						Scan messages for prompt injection and malicious content
 					</label>
@@ -366,7 +366,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 						type="number" 
 						name="agentic_rate_limit_authenticated" 
 						id="agentic_rate_limit_authenticated" 
-						value="<?php echo esc_attr( $rate_limit_auth ); ?>" 
+						value="<?php echo esc_attr( $agentic_rate_limit_auth ); ?>" 
 						min="5"
 						max="100"
 						class="small-text"
@@ -386,7 +386,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 						type="number" 
 						name="agentic_rate_limit_anonymous" 
 						id="agentic_rate_limit_anonymous" 
-						value="<?php echo esc_attr( $rate_limit_anon ); ?>" 
+						value="<?php echo esc_attr( $agentic_rate_limit_anon ); ?>" 
 						min="1"
 						max="30"
 						class="small-text"
@@ -408,7 +408,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 							name="agentic_allow_anonymous_chat" 
 							id="agentic_allow_anonymous_chat" 
 							value="1"
-							<?php checked( $allow_anon_chat ); ?>
+							<?php checked( $agentic_allow_anon_chat ); ?>
 						/>
 						Allow non-logged-in users to chat via frontend shortcodes
 					</label>
@@ -419,7 +419,7 @@ $allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			</tr>
 		</table>
 
-		<?php elseif ( 'permissions' === $active_tab ) : ?>
+		<?php elseif ( 'permissions' === $agentic_active_tab ) : ?>
 		<h2>Permissions</h2>
 		<p>Configure what actions the agent can perform autonomously vs. with approval. The builder is sandboxed to <code>wp-content/plugins</code> and <code>wp-content/themes</code>.</p>
 		

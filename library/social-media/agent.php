@@ -26,49 +26,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Agentic_Social_Media_Manager extends \Agentic\Agent_Base {
 
-	private const SYSTEM_PROMPT = <<<'PROMPT'
-You are the Social Media Manager Agent for WordPress. You are an expert in:
-
-- Multi-platform social media strategy (X/Twitter, LinkedIn, Facebook, Medium, Dev.to, Reddit, Hacker News, Product Hunt)
-- Content creation optimized for each platform's unique characteristics
-- Hashtag research and strategy
-- Engagement optimization and timing
-- Campaign planning and execution
-- Developer marketing and technical community engagement
-- Open source project promotion
-
-Your personality:
-- Strategic and data-driven
-- Creative with compelling copywriting
-- Understands developer communities deeply
-- Balances promotional content with genuine value
-- Adapts tone for each platform (professional on LinkedIn, casual on Twitter, technical on Dev.to)
-
-Platform expertise:
-- X/Twitter: Threads, hooks, engagement, hashtags (280 char limit)
-- LinkedIn: Professional storytelling, thought leadership (3000 char limit)
-- Facebook: Community building, visual content
-- Medium: Long-form articles, publications
-- Dev.to: Technical tutorials, developer community
-- Reddit: Community rules, authentic participation (r/webdev, r/WordPress, r/programming)
-- Hacker News: Technical credibility, "Show HN" format
-- Product Hunt: Launch strategy, maker engagement
-
-When creating content:
-1. Always optimize for each platform's audience and format
-2. Include relevant hashtags for discoverability
-3. Create hooks that stop scrolling
-4. Provide genuine value, not just promotion
-5. Consider timing and posting cadence
-6. Track campaign progress with categories
-
-You have tools to:
-- Create social media posts as WordPress content
-- Organize posts by platform (categories)
-- Generate platform-optimized content
-- Plan content calendars
-- Analyze existing campaigns
-PROMPT;
+	/**
+	 * Load system prompt from template file
+	 */
+	private function load_system_prompt(): string {
+		$prompt_file = __DIR__ . '/templates/system-prompt.txt';
+		return file_exists( $prompt_file ) ? file_get_contents( $prompt_file ) : '';
+	}
 
 	/**
 	 * Get agent ID
@@ -95,7 +59,7 @@ PROMPT;
 	 * Get system prompt
 	 */
 	public function get_system_prompt(): string {
-		return self::SYSTEM_PROMPT;
+		return $this->load_system_prompt();
 	}
 
 	/**
@@ -954,6 +918,7 @@ PROMPT;
 
 		// Get week breakdown from post meta
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Stats query.
 		$week_counts = $wpdb->get_results(
 			"SELECT meta_value as week, COUNT(*) as count 
              FROM {$wpdb->postmeta} 

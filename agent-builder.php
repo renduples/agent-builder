@@ -1,9 +1,11 @@
 <?php
 /**
+ * Main plugin file.
+ *
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
  * Description:       Build AI agents without writing code. Describe the AI agent you want and let WordPress build it for you.
- * Version:           1.1.2
+ * Version:           1.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agent Builder Team
@@ -12,7 +14,6 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       agent-builder
  * Domain Path:       /languages
- * Update URI:        https://github.com/renduples/agent-builder
  *
  * @package Agent_Builder
  */
@@ -90,14 +91,14 @@ final class Plugin {
 	/**
 	 * Load plugin textdomain
 	 *
+	 * Since WordPress 4.6, translations are automatically loaded for plugins hosted on WordPress.org.
+	 * This function is kept for backward compatibility but is no longer needed.
+	 *
 	 * @return void
 	 */
 	public function load_textdomain(): void {
-		load_plugin_textdomain(
-			'agent-builder',
-			false,
-			dirname( AGENTIC_PLUGIN_BASENAME ) . '/languages'
-		);
+		// Translations are automatically loaded by WordPress for plugins on WordPress.org.
+		// No action needed since WordPress 4.6+.
 	}
 
 	/**
@@ -201,6 +202,15 @@ final class Plugin {
 			'manage_options',
 			'agentic-approvals',
 			array( $this, 'render_approvals_page' )
+		);
+
+		add_submenu_page(
+			'agent-builder',
+			__( 'Security Log', 'agent-builder' ),
+			__( 'Security Log', 'agent-builder' ),
+			'manage_options',
+			'agentic-security-log',
+			array( $this, 'render_security_log_page' )
 		);
 
 		add_submenu_page(
@@ -385,6 +395,15 @@ final class Plugin {
 	 */
 	public function render_approvals_page(): void {
 		include AGENTIC_PLUGIN_DIR . 'admin/approvals.php';
+	}
+
+	/**
+	 * Render security log page
+	 *
+	 * @return void
+	 */
+	public function render_security_log_page(): void {
+		include AGENTIC_PLUGIN_DIR . 'admin/security-log.php';
 	}
 
 	/**
@@ -748,6 +767,9 @@ final class Plugin {
 
 		// Create jobs table.
 		Job_Manager::create_table();
+
+		// Create security log table.
+		Security_Log::create_table();
 	}
 }
 
@@ -755,6 +777,7 @@ final class Plugin {
 require_once AGENTIC_PLUGIN_DIR . 'includes/class-job-manager.php';
 require_once AGENTIC_PLUGIN_DIR . 'includes/interface-job-processor.php';
 require_once AGENTIC_PLUGIN_DIR . 'includes/class-jobs-api.php';
+require_once AGENTIC_PLUGIN_DIR . 'includes/class-security-log.php';
 
 Job_Manager::init();
 Jobs_API::init();

@@ -25,7 +25,7 @@ global $wpdb;
 /**
  * Delete all plugin options.
  */
-$options_to_delete = array(
+$agentic_options_to_delete = array(
 	'agentic_plugin_settings',
 	'agentic_plugin_version',
 	'agentic_license_key',
@@ -39,21 +39,21 @@ $options_to_delete = array(
 	'agentic_agent_configs',
 );
 
-foreach ( $options_to_delete as $option ) {
+foreach ( $agentic_options_to_delete as $option ) {
 	delete_option( $option );
 }
 
 /**
  * Drop custom database tables.
  */
-$tables_to_drop = array(
+$agentic_tables_to_drop = array(
 	$wpdb->prefix . 'agentic_jobs',
 	$wpdb->prefix . 'agentic_audit_log',
 	$wpdb->prefix . 'agentic_response_cache',
 	$wpdb->prefix . 'agentic_approval_queue',
 );
 
-foreach ( $tables_to_drop as $table ) {
+foreach ( $agentic_tables_to_drop as $table ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
 	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table ) );
 }
@@ -80,15 +80,15 @@ $wpdb->query(
 /**
  * Clear any scheduled cron events.
  */
-$cron_hooks = array(
+$agentic_cron_hooks = array(
 	'agentic_cleanup_jobs',
 	'agentic_process_queue',
 	'agentic_license_check',
 );
 
-foreach ( $cron_hooks as $hook ) {
-	$timestamp = wp_next_scheduled( $hook );
-	if ( $timestamp ) {
-		wp_unschedule_event( $timestamp, $hook );
+foreach ( $agentic_cron_hooks as $hook ) {
+	$agentic_timestamp = wp_next_scheduled( $hook );
+	if ( $agentic_timestamp ) {
+		wp_unschedule_event( $agentic_timestamp, $hook );
 	}
 }

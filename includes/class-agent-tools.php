@@ -374,10 +374,7 @@ class Agent_Tools {
 			);
 		}
 
-		$content = file_get_contents( $full_path );
-		$size    = filesize( $full_path );
-
-		// Limit content size.
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local files.
 		if ( $size > 100000 ) {
 			$content = substr( $content, 0, 100000 ) . "\n\n[Content truncated - file too large]";
 		}
@@ -480,8 +477,7 @@ class Agent_Tools {
 					if ( strpos( $file->getPathname(), 'vendor/' ) !== false || strpos( $file->getPathname(), 'node_modules/' ) !== false ) {
 						continue;
 					}
-
-					$content = file_get_contents( $file->getPathname() );
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local files.					$content = file_get_contents( $file->getPathname() );
 					if ( preg_match( "/{$pattern}/i", $content, $matches, PREG_OFFSET_CAPTURE ) ) {
 						$relative_path = str_replace( trailingslashit( $this->repo_path ), '', $file->getPathname() );
 						$line_number   = substr_count( substr( $content, 0, $matches[0][1] ), "\n" ) + 1;
@@ -658,10 +654,14 @@ class Agent_Tools {
 		$full_path = $this->repo_path . '/' . $path;
 
 		// Backup existing content.
-		$backup = file_exists( $full_path ) ? file_get_contents( $full_path ) : null;
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local files.
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
 
-		// Write new content.
-		$result = file_put_contents( $full_path, $content );
+		$result = $wp_filesystem->put_contents( $full_path, $content, FS_CHMOD_FILE );
 
 		if ( false === $result ) {
 			return array( 'error' => 'Failed to write file' );
@@ -726,13 +726,19 @@ class Agent_Tools {
 			return array( 'error' => 'Failed to create git branch: ' . $branch_name );
 		}
 
-		// Write the file.
+		// Write the file using WP_Filesystem.
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
 		$dir = dirname( $full_path );
-		if ( ! is_dir( $dir ) ) {
-			mkdir( $dir, 0755, true );
+		if ( ! $wp_filesystem->is_dir( $dir ) ) {
+			$wp_filesystem->mkdir( $dir, FS_CHMOD_DIR );
 		}
 
-		if ( file_put_contents( $full_path, $content ) === false ) {
+		if ( ! $wp_filesystem->put_contents( $full_path, $content, FS_CHMOD_FILE ) ) {
 			// Checkout back to original branch.
 			$this->git_exec( 'git checkout ' . escapeshellarg( $current_branch ) );
 			$this->git_exec( 'git branch -D ' . escapeshellarg( $branch_name ) );

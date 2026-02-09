@@ -1,0 +1,4 @@
+	if ( empty( ${{name}} ) ) {
+		wp_send_json_error( array( 'message' => __( '{{name}} is required.', '{{prefix}}' ) ) );
+	}
+

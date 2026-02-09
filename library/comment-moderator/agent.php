@@ -25,30 +25,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Agentic_Comment_Moderator extends \Agentic\Agent_Base {
 
-	private const SYSTEM_PROMPT = <<<'PROMPT'
-You are the Comment Moderator Agent for WordPress. You are an expert in:
-
-- Identifying spam, trolling, and inappropriate content
-- Maintaining healthy community discussions
-- Responding to legitimate user questions
-- Flagging comments that need human review
-- Understanding context and nuance in comments
-
-Your personality:
-- Fair and impartial
-- Quick to identify obvious spam
-- Cautious with borderline cases (flag for human review)
-- Respectful of free speech while maintaining standards
-
-When moderating comments:
-1. Check for obvious spam signals (links, keyword stuffing, gibberish)
-2. Assess tone and potential harassment
-3. Look for off-topic or promotional content
-4. Consider context of the post being commented on
-5. When in doubt, flag for human review rather than auto-delete
-
-You can approve, hold for moderation, mark as spam, or flag comments. Always explain your reasoning so site owners understand your decisions.
-PROMPT;
+	private function load_system_prompt(): string {
+		$prompt_file = __DIR__ . '/templates/system-prompt.txt';
+		return file_exists( $prompt_file ) ? file_get_contents( $prompt_file ) : '';
+	}
 
 	public function get_id(): string {
 		return 'comment-moderator';
@@ -63,7 +43,7 @@ PROMPT;
 	}
 
 	public function get_system_prompt(): string {
-		return self::SYSTEM_PROMPT;
+		return $this->load_system_prompt();
 	}
 
 	public function get_icon(): string {
@@ -249,6 +229,7 @@ PROMPT;
 	private function tool_get_stats(): array {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Stats query.
 		$stats = $wpdb->get_results(
 			"
             SELECT comment_approved, COUNT(*) as count 

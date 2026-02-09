@@ -18,6 +18,11 @@ declare(strict_types=1);
 
 namespace Agentic;
 
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Job Manager class
  */
@@ -27,6 +32,16 @@ class Job_Manager {
 	 * Table name
 	 */
 	private const TABLE_NAME = 'agentic_jobs';
+
+	/**
+	 * Cache group
+	 */
+	private const CACHE_GROUP = 'agentic_jobs';
+
+	/**
+	 * Cache expiration (5 minutes)
+	 */
+	private const CACHE_EXPIRATION = 300;
 
 	/**
 	 * Job statuses
@@ -119,6 +134,7 @@ class Job_Manager {
 			$args['request_data']['_processor'] = $args['processor'];
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom table insert.
 		$wpdb->insert(
 			self::get_table_name(),
 			array(
@@ -138,6 +154,9 @@ class Job_Manager {
 		// Schedule async processing.
 		wp_schedule_single_event( time(), 'agentic_process_job', array( $job_id ) );
 
+		// Invalidate list cache.
+		self::invalidate_list_cache();
+
 		return $job_id;
 	}
 
@@ -148,11 +167,18 @@ class Job_Manager {
 	 * @return object|null
 	 */
 	public static function get_job( string $job_id ): ?object {
+		$cache_key = 'job_' . $job_id;
+		$cached    = wp_cache_get( $cache_key, self::CACHE_GROUP );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
 		global $wpdb;
 
 		$table = self::get_table_name();
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query with caching.
 		$job = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %s", $job_id ) );
 
 		if ( ! $job ) {
@@ -164,6 +190,8 @@ class Job_Manager {
 		if ( $job->response_data ) {
 			$job->response_data = json_decode( $job->response_data, true );
 		}
+
+		wp_cache_set( $cache_key, $job, self::CACHE_GROUP, self::CACHE_EXPIRATION );
 
 		return $job;
 	}
@@ -185,6 +213,7 @@ class Job_Manager {
 			$data['response_data'] = wp_json_encode( $data['response_data'] );
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table update.
 		$result = $wpdb->update(
 			self::get_table_name(),
 			$data,
@@ -192,6 +221,12 @@ class Job_Manager {
 			null,
 			array( '%s' )
 		);
+
+		if ( false !== $result ) {
+			// Invalidate cache.
+			wp_cache_delete( 'job_' . $job_id, self::CACHE_GROUP );
+			self::invalidate_list_cache();
+		}
 
 		return false !== $result;
 	}
@@ -298,11 +333,19 @@ class Job_Manager {
 	 * @return array
 	 */
 	public static function get_user_jobs( int $user_id, string $status = '', int $limit = 50 ): array {
+		$cache_key = 'user_jobs_' . $user_id . '_' . $status . '_' . $limit;
+		$cached    = wp_cache_get( $cache_key, self::CACHE_GROUP );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
 		global $wpdb;
 
 		$table = self::get_table_name();
 
 		if ( $status ) {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query with caching.
 			$jobs = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT * FROM {$table} WHERE user_id = %d AND status = %s ORDER BY created_at DESC LIMIT %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -312,6 +355,7 @@ class Job_Manager {
 				)
 			);
 		} else {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query with caching.
 			$jobs = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT * FROM {$table} WHERE user_id = %d ORDER BY created_at DESC LIMIT %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -329,6 +373,8 @@ class Job_Manager {
 			}
 		}
 
+		wp_cache_set( $cache_key, $jobs, self::CACHE_GROUP, self::CACHE_EXPIRATION );
+
 		return $jobs;
 	}
 
@@ -342,28 +388,37 @@ class Job_Manager {
 
 		$table = self::get_table_name();
 
-		// Delete completed/failed jobs older than 24 hours.
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$deleted = $wpdb->query(
-			"DELETE FROM {$table}
-            WHERE status IN ('completed', 'failed', 'cancelled') 
-            AND updated_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)"
-		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// Delete old jobs - table name is safe (from constant + prefix).
+		$query = "DELETE FROM {$table} WHERE status IN ('completed', 'failed', 'cancelled') AND updated_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$deleted = $wpdb->query( $query );
+
+		if ( $deleted > 0 ) {
+			// Invalidate cache.
+			self::invalidate_list_cache();
+		}
+
 		return (int) $deleted;
 	}
 
 	/**
 	 * Get job statistics
 	 *
-	 * @param int $user_id Optional user ID filter.
-	 * @return array
+	 * @param int $user_id Optional user ID to filter stats.
+	 * @return array Job statistics
 	 */
 	public static function get_stats( int $user_id = 0 ): array {
+		$cache_key = 'stats_' . $user_id;
+		$cached    = wp_cache_get( $cache_key, self::CACHE_GROUP );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
 		global $wpdb;
 
 		$table = self::get_table_name();
-
 		$where = $user_id ? $wpdb->prepare( 'WHERE user_id = %d', $user_id ) : '';
 
 		$sql  = 'SELECT ';
@@ -374,15 +429,28 @@ class Job_Manager {
 		$sql .= "SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed ";
 		$sql .= 'FROM ' . $table . ' ' . $where;
 
-	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table stats with caching.
 		$stats = $wpdb->get_row( $sql, ARRAY_A );
 
-		return $stats ? $stats : array(
+		$result = $stats ? $stats : array(
 			'total'      => 0,
 			'pending'    => 0,
 			'processing' => 0,
 			'completed'  => 0,
 			'failed'     => 0,
 		);
+
+		wp_cache_set( $cache_key, $result, self::CACHE_GROUP, self::CACHE_EXPIRATION );
+
+		return $result;
+	}
+
+	/**
+	 * Invalidate all list and stats cache
+	 *
+	 * @return void
+	 */
+	private static function invalidate_list_cache(): void {
+		wp_cache_flush_group( self::CACHE_GROUP );
 	}
 }

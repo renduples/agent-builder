@@ -370,43 +370,42 @@ class Chat_Security {
 		 * @param string $pattern  What triggered the block.
 		 */
 	private static function log_blocked( string $message, int $user_id, string $type, string $pattern = '' ): void {
-		$log_entry = sprintf(
-			'[Agentic Security] BLOCKED - User: %d, IP: %s, Type: %s, Match: %s, Message: %s',
-			$user_id,
-			self::get_client_ip(),
-			$type,
-			substr( $pattern, 0, 50 ),
-			substr( $message, 0, 100 )
-		);
-
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Security logging is intentional.
-		error_log( $log_entry );
+		// Log to database.
+		if ( class_exists( '\Agentic\Security_Log' ) ) {
+			\Agentic\Security_Log::log(
+				'blocked',
+				$user_id,
+				self::get_client_ip(),
+				$message,
+				$pattern
+			);
+		}
 
 		/**
-		 * Fires when a message is blocked by security filter.
-		 *
-		 * @param string $message  The blocked message.
-		 * @param int    $user_id  User ID (0 for anonymous).
-		 * @param string $type     Block type.
-		 * @param string $match    Pattern that matched.
-		 */
+			 * Fires when a message is blocked by security filter.
+			 *
+			 * @param string $message  The blocked message.
+			 * @param int    $user_id  User ID (0 for anonymous).
+			 * @param string $type     Block type.
+			 * @param string $match    Pattern that matched.
+			 */
 		do_action( 'agentic_security_blocked', $message, $user_id, $type, $match );
 	}
 
-		/**
-		 * Log rate limit hit.
-		 *
-		 * @param int $user_id User ID.
-		 */
+	/**
+	 * Log rate limit hit.
+	 *
+	 * @param int $user_id User ID.
+	 */
 	private static function log_rate_limited( int $user_id ): void {
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Security logging is intentional.
-		error_log(
-			sprintf(
-				'[Agentic Security] RATE LIMITED - User: %d, IP: %s',
+		// Log to database.
+		if ( class_exists( '\Agentic\Security_Log' ) ) {
+			\Agentic\Security_Log::log(
+				'rate_limited',
 				$user_id,
 				self::get_client_ip()
-			)
-		);
+			);
+		}
 
 		/**
 		 * Fires when a user hits the rate limit.
@@ -417,21 +416,24 @@ class Chat_Security {
 		do_action( 'agentic_security_rate_limited', $user_id, self::get_client_ip() );
 	}
 
-		/**
-		 * Log PII warning.
-		 *
-		 * @param int   $user_id User ID.
-		 * @param array $types   PII types detected.
-		 */
+	/**
+	 * Log PII warning.
+	 *
+	 * @param int   $user_id User ID.
+	 * @param array $types   PII types detected.
+	 */
 	private static function log_pii_warning( int $user_id, array $types ): void {
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Security logging is intentional.
-		error_log(
-			sprintf(
-				'[Agentic Security] PII WARNING - User: %d, Types: %s',
+		// Log to database.
+		if ( class_exists( '\Agentic\Security_Log' ) ) {
+			\Agentic\Security_Log::log(
+				'pii_warning',
 				$user_id,
-				implode( ', ', $types )
-			)
-		);
+				self::get_client_ip(),
+				'',
+				'',
+				$types
+			);
+		}
 
 		/**
 		 * Fires when PII is detected in a message.
@@ -442,11 +444,11 @@ class Chat_Security {
 		do_action( 'agentic_security_pii_detected', $user_id, $types );
 	}
 
-		/**
-		 * Add custom ban phrases at runtime.
-		 *
-		 * @param array<string> $phrases Additional phrases to ban.
-		 */
+	/**
+	 * Add custom ban phrases at runtime.
+	 *
+	 * @param array<string> $phrases Additional phrases to ban.
+	 */
 	public static function add_ban_phrases( array $phrases ): void {
 		// This would require making BAN_PHRASES non-const.
 		// For now, use the filter hook instead.
@@ -458,11 +460,11 @@ class Chat_Security {
 		);
 	}
 
-		/**
-		 * Get all ban phrases (allows filtering).
-		 *
-		 * @return array<string> Ban phrases.
-		 */
+	/**
+	 * Get all ban phrases (allows filtering).
+	 *
+	 * @return array<string> Ban phrases.
+	 */
 	public static function get_ban_phrases(): array {
 		/**
 		 * Filter the list of banned phrases.
@@ -472,12 +474,12 @@ class Chat_Security {
 		return apply_filters( 'agentic_security_ban_phrases', self::BAN_PHRASES );
 	}
 
-		/**
-		 * Sanitize message by removing detected PII.
-		 *
-		 * @param string $message Message to sanitize.
-		 * @return string Sanitized message.
-		 */
+	/**
+	 * Sanitize message by removing detected PII.
+	 *
+	 * @param string $message Message to sanitize.
+	 * @return string Sanitized message.
+	 */
 	public static function sanitize_pii( string $message ): string {
 		foreach ( self::PII_PATTERNS as $type => $pattern ) {
 			$replacement = '[' . strtoupper( $type ) . '_REDACTED]';

@@ -1,0 +1,9 @@
+
+	add_submenu_page(
+		'{{menu_slug}}',
+		__( '{{sub_page_title}}', '{{prefix}}' ),
+		__( '{{sub_menu_title}}', '{{prefix}}' ),
+		'manage_options',
+		'{{sub_menu_slug}}',
+		'{{prefix}}_render_{{sub_menu_slug}}_page'
+	);

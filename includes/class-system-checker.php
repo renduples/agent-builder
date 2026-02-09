@@ -166,6 +166,7 @@ class System_Checker {
 	 * @return \WP_REST_Response
 	 */
 	public static function test_timeout(): \WP_REST_Response {
+		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Required for timeout testing.
 		set_time_limit( 120 );
 		$start = time();
 		sleep( 90 ); // Sleep for 90 seconds.

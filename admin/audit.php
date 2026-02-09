@@ -24,16 +24,16 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 
 
-$audit = new Audit_Log();
+$agentic_audit = new Audit_Log();
 
 // Filter parameters (read-only display, no nonce needed).
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter.
-$agent_filter = sanitize_text_field( wp_unslash( $_GET['agent'] ?? '' ) );
+$agentic_agent_filter = sanitize_text_field( wp_unslash( $_GET['agent'] ?? '' ) );
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter.
-$action_filter = sanitize_text_field( wp_unslash( $_GET['action'] ?? '' ) );
+$agentic_action_filter = sanitize_text_field( wp_unslash( $_GET['action'] ?? '' ) );
 
-$logs  = $audit->get_recent( 100, $agent_filter ? $agent_filter : null, $action_filter ? $action_filter : null );
-$stats = $audit->get_stats( 'month' );
+$agentic_logs  = $agentic_audit->get_recent( 100, $agentic_agent_filter ? $agentic_agent_filter : null, $agentic_action_filter ? $agentic_action_filter : null );
+$agentic_stats = $agentic_audit->get_stats( 'month' );
 ?>
 <div class="wrap">
 	<h1>Agent Audit Log</h1>
@@ -41,13 +41,13 @@ $stats = $audit->get_stats( 'month' );
 
 	<div class="agentic-stats-bar" style="display: flex; gap: 20px; margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 4px;">
 		<div>
-			<strong>Actions (30 days):</strong> <?php echo esc_html( number_format( (int) ( $stats['total_actions'] ?? 0 ) ) ); ?>
+			<strong>Actions (30 days):</strong> <?php echo esc_html( number_format( (int) ( $agentic_stats['total_actions'] ?? 0 ) ) ); ?>
 		</div>
 		<div>
-			<strong>Tokens Used:</strong> <?php echo esc_html( number_format( (int) ( $stats['total_tokens'] ?? 0 ) ) ); ?>
+			<strong>Tokens Used:</strong> <?php echo esc_html( number_format( (int) ( $agentic_stats['total_tokens'] ?? 0 ) ) ); ?>
 		</div>
 		<div>
-			<strong>Estimated Cost:</strong> $<?php echo esc_html( number_format( (float) ( $stats['total_cost'] ?? 0 ), 4 ) ); ?>
+			<strong>Estimated Cost:</strong> $<?php echo esc_html( number_format( (float) ( $agentic_stats['total_cost'] ?? 0 ), 4 ) ); ?>
 		</div>
 	</div>
 
@@ -56,28 +56,28 @@ $stats = $audit->get_stats( 'month' );
 		
 		<select name="agent">
 			<option value="">All Agents</option>
-			<option value="developer_agent" <?php selected( $agent_filter, 'developer_agent' ); ?>>Developer Agent</option>
-			<option value="human" <?php selected( $agent_filter, 'human' ); ?>>Human Actions</option>
+			<option value="developer_agent" <?php selected( $agentic_agent_filter, 'developer_agent' ); ?>>Developer Agent</option>
+			<option value="human" <?php selected( $agentic_agent_filter, 'human' ); ?>>Human Actions</option>
 		</select>
 
 		<select name="action">
 			<option value="">All Actions</option>
-			<option value="chat_start" <?php selected( $action_filter, 'chat_start' ); ?>>Chat Start</option>
-			<option value="chat_complete" <?php selected( $action_filter, 'chat_complete' ); ?>>Chat Complete</option>
-			<option value="chat_error" <?php selected( $action_filter, 'chat_error' ); ?>>Chat Error</option>
-			<option value="tool_call" <?php selected( $action_filter, 'tool_call' ); ?>>Tool Call</option>
-			<option value="create_comment" <?php selected( $action_filter, 'create_comment' ); ?>>Create Comment</option>
-			<option value="update_documentation" <?php selected( $action_filter, 'update_documentation' ); ?>>Update Documentation</option>
-			<option value="request_code_change" <?php selected( $action_filter, 'request_code_change' ); ?>>Request Code Change</option>
+			<option value="chat_start" <?php selected( $agentic_action_filter, 'chat_start' ); ?>>Chat Start</option>
+			<option value="chat_complete" <?php selected( $agentic_action_filter, 'chat_complete' ); ?>>Chat Complete</option>
+			<option value="chat_error" <?php selected( $agentic_action_filter, 'chat_error' ); ?>>Chat Error</option>
+			<option value="tool_call" <?php selected( $agentic_action_filter, 'tool_call' ); ?>>Tool Call</option>
+			<option value="create_comment" <?php selected( $agentic_action_filter, 'create_comment' ); ?>>Create Comment</option>
+			<option value="update_documentation" <?php selected( $agentic_action_filter, 'update_documentation' ); ?>>Update Documentation</option>
+			<option value="request_code_change" <?php selected( $agentic_action_filter, 'request_code_change' ); ?>>Request Code Change</option>
 		</select>
 
 		<button type="submit" class="button">Filter</button>
-		<?php if ( $agent_filter || $action_filter ) : ?>
+		<?php if ( $agentic_agent_filter || $agentic_action_filter ) : ?>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-audit' ) ); ?>" class="button">Clear</a>
 		<?php endif; ?>
 	</form>
 
-	<?php if ( empty( $logs ) ) : ?>
+	<?php if ( empty( $agentic_logs ) ) : ?>
 		<div class="notice notice-info">
 			<p>No audit log entries found.</p>
 		</div>
@@ -96,7 +96,7 @@ $stats = $audit->get_stats( 'month' );
 				</tr>
 			</thead>
 			<tbody>
-				<?php foreach ( $logs as $entry ) : ?>
+				<?php foreach ( $agentic_logs as $entry ) : ?>
 				<tr>
 					<td>
 						<span title="<?php echo esc_attr( $entry['created_at'] ); ?>">
@@ -120,8 +120,8 @@ $stats = $audit->get_stats( 'month' );
 					<td>
 						<?php
 						if ( $entry['user_id'] ) {
-							$user = get_user_by( 'id', $entry['user_id'] );
-							echo esc_html( $user ? $user->display_name : 'User #' . $entry['user_id'] );
+							$agentic_user = get_user_by( 'id', $entry['user_id'] );
+							echo esc_html( $agentic_user ? $agentic_user->display_name : 'User #' . $entry['user_id'] );
 						} else {
 							echo '-';
 						}

@@ -23,51 +23,51 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
 }
 
-$audit         = new Audit_Log();
-$stats         = $audit->get_stats( 'week' );
-$llm           = new LLM_Client();
-$is_configured = $llm->is_configured();
-$provider      = $llm->get_provider();
-$model         = $llm->get_model();
+$agentic_audit         = new Audit_Log();
+$agentic_stats         = $agentic_audit->get_stats( 'week' );
+$agentic_llm           = new LLM_Client();
+$agentic_is_configured = $agentic_llm->is_configured();
+$agentic_provider      = $agentic_llm->get_provider();
+$agentic_model         = $agentic_llm->get_model();
 
 // Get actual count of activated agents.
-$active_agents = get_option( 'agentic_active_agents', array() );
-$active_count  = is_array( $active_agents ) ? count( $active_agents ) : 0;
+$agentic_active_agents = get_option( 'agentic_active_agents', array() );
+$agentic_active_count  = is_array( $agentic_active_agents ) ? count( $agentic_active_agents ) : 0;
 
 // Check plugin license status.
-$plugin_license_key = get_option( 'agentic_plugin_license_key', '' );
-$license_status     = 'free'; // Default to free tier.
-$license_display    = 'Free';
+$agentic_plugin_license_key = get_option( 'agentic_plugin_license_key', '' );
+$agentic_license_status     = 'free'; // Default to free tier.
+$agentic_license_display    = 'Free';
 
-if ( ! empty( $plugin_license_key ) ) {
+if ( ! empty( $agentic_plugin_license_key ) ) {
 	// Check license status via marketplace API.
-	$response = wp_remote_get(
+	$agentic_response = wp_remote_get(
 		'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/licenses/status',
 		array(
 			'timeout' => 5,
 			'headers' => array(
-				'Authorization' => 'Bearer ' . $plugin_license_key,
+				'Authorization' => 'Bearer ' . $agentic_plugin_license_key,
 			),
 		)
 	);
 
-	if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
-		$data = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( isset( $data['success'] ) && $data['success'] && isset( $data['license']['status'] ) ) {
-			$license_status = $data['license']['status'];
-			$tier           = $data['license']['tier'] ?? 'pro';
-			
-			if ( 'active' === $license_status ) {
-				$license_display = '<span style="color: #00a32a; font-weight: 600;">● ' . ucfirst( $tier ) . '</span>';
-			} elseif ( 'grace_period' === $license_status ) {
-				$license_display = '<span style="color: #dba617; font-weight: 600;">⚠ ' . ucfirst( $tier ) . ' (Expiring)</span>';
+	if ( ! is_wp_error( $agentic_response ) && 200 === wp_remote_retrieve_response_code( $agentic_response ) ) {
+		$agentic_data = json_decode( wp_remote_retrieve_body( $agentic_response ), true );
+		if ( isset( $agentic_data['success'] ) && $agentic_data['success'] && isset( $agentic_data['license']['status'] ) ) {
+			$agentic_license_status = $agentic_data['license']['status'];
+			$agentic_tier           = $agentic_data['license']['tier'] ?? 'pro';
+
+			if ( 'active' === $agentic_license_status ) {
+				$agentic_license_display = '<span style="color: #00a32a; font-weight: 600;">● ' . ucfirst( $agentic_tier ) . '</span>';
+			} elseif ( 'grace_period' === $agentic_license_status ) {
+				$agentic_license_display = '<span style="color: #dba617; font-weight: 600;">⚠ ' . ucfirst( $agentic_tier ) . ' (Expiring)</span>';
 			} else {
-				$license_display = '<span style="color: #d63638;">✕ Expired</span> <a href="https://agentic-plugin.com/pricing/" target="_blank">Renew</a>';
+				$agentic_license_display = '<span style="color: #d63638;">✕ Expired</span> <a href="https://agentic-plugin.com/pricing/" target="_blank">Renew</a>';
 			}
 		}
 	}
 } else {
-	$license_display = 'Free <a href="https://agentic-plugin.com/pricing/" target="_blank" style="font-size: 12px;">(Upgrade)</a>';
+	$agentic_license_display = 'Free <a href="https://agentic-plugin.com/pricing/" target="_blank" style="font-size: 12px;">(Upgrade)</a>';
 }
 ?>
 <div class="wrap agentic-admin">
@@ -85,19 +85,19 @@ if ( ! empty( $plugin_license_key ) ) {
 			<table class="widefat">
 				<tr>
 					<td><strong>License</strong></td>
-					<td><?php echo wp_kses_post( $license_display ); ?></td>
+					<td><?php echo wp_kses_post( $agentic_license_display ); ?></td>
 				</tr>
 				<tr>
 					<td><strong>AI Provider</strong></td>
-					<td><?php echo $is_configured ? esc_html( strtoupper( $provider ) ) . ' (Connected)' : '<a href="' . esc_url( admin_url( 'admin.php?page=agentic-settings' ) ) . '">Configure now</a>'; ?></td>
+					<td><?php echo $agentic_is_configured ? esc_html( strtoupper( $agentic_provider ) ) . ' (Connected)' : '<a href="' . esc_url( admin_url( 'admin.php?page=agentic-settings' ) ) . '">Configure now</a>'; ?></td>
 				</tr>
 				<tr>
 					<td><strong>Model</strong></td>
 					<td>
 						<?php
-						if ( $is_configured ) {
-							$mode = ucfirst( get_option( 'agentic_agent_mode', 'supervised' ) );
-							echo esc_html( $model ) . ' <span style="color: #646970;">(' . esc_html( $mode ) . ')</span>';
+						if ( $agentic_is_configured ) {
+							$agentic_mode = ucfirst( get_option( 'agentic_agent_mode', 'supervised' ) );
+							echo esc_html( $agentic_model ) . ' <span style="color: #646970;">(' . esc_html( $agentic_mode ) . ')</span>';
 						} else {
 							echo 'None';
 						}
@@ -112,19 +112,19 @@ if ( ! empty( $plugin_license_key ) ) {
 			<table class="widefat">
 				<tr>
 					<td><strong>Total Actions</strong></td>
-					<td><?php echo esc_html( number_format( (int) ( $stats['total_actions'] ?? 0 ) ) ); ?></td>
+					<td><?php echo esc_html( number_format( (int) ( $agentic_stats['total_actions'] ?? 0 ) ) ); ?></td>
 				</tr>
 				<tr>
 					<td><strong>Tokens Used</strong></td>
-					<td><?php echo esc_html( number_format( (int) ( $stats['total_tokens'] ?? 0 ) ) ); ?></td>
+					<td><?php echo esc_html( number_format( (int) ( $agentic_stats['total_tokens'] ?? 0 ) ) ); ?></td>
 				</tr>
 				<tr>
 					<td><strong>Estimated Cost</strong></td>
-					<td>$<?php echo esc_html( number_format( (float) ( $stats['total_cost'] ?? 0 ), 4 ) ); ?></td>
+					<td>$<?php echo esc_html( number_format( (float) ( $agentic_stats['total_cost'] ?? 0 ), 4 ) ); ?></td>
 				</tr>
 				<tr>
 					<td><strong>Active Agents</strong></td>
-					<td><?php echo esc_html( $active_count ); ?></td>
+					<td><?php echo esc_html( $agentic_active_count ); ?></td>
 				</tr>
 			</table>
 		</div>
@@ -133,38 +133,38 @@ if ( ! empty( $plugin_license_key ) ) {
 			<h2>Marketplace</h2>
 			<?php
 			// Fetch marketplace stats from API.
-			$marketplace_stats = array(
-				'latest_agent'   => array(
+			$agentic_marketplace_stats = array(
+				'latest_agent'  => array(
 					'name' => 'N/A',
 					'url'  => '',
 				),
-				'popular_agent'  => array(
+				'popular_agent' => array(
 					'name' => 'N/A',
 					'url'  => '',
 				),
-				'user_sales'     => 0,
-				'user_revenue'   => 0.00,
+				'user_sales'    => 0,
+				'user_revenue'  => 0.00,
 			);
 
 			// Get developer API key for user-specific stats.
-			$dev_api_key = get_option( 'agentic_developer_api_key', '' );
+			$agentic_dev_api_key = get_option( 'agentic_developer_api_key', '' );
 
-			$request_args = array( 'timeout' => 5 );
-			if ( ! empty( $dev_api_key ) ) {
-				$request_args['headers'] = array(
-					'Authorization' => 'Bearer ' . $dev_api_key,
+			$agentic_request_args = array( 'timeout' => 5 );
+			if ( ! empty( $agentic_dev_api_key ) ) {
+				$agentic_request_args['headers'] = array(
+					'Authorization' => 'Bearer ' . $agentic_dev_api_key,
 				);
 			}
 
-			$response = wp_remote_get(
+			$agentic_response = wp_remote_get(
 				'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/stats/dashboard',
-				$request_args
+				$agentic_request_args
 			);
 
-			if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
-				$data = json_decode( wp_remote_retrieve_body( $response ), true );
-				if ( isset( $data['success'] ) && $data['success'] ) {
-					$marketplace_stats = array_merge( $marketplace_stats, $data['stats'] ?? array() );
+			if ( ! is_wp_error( $agentic_response ) && 200 === wp_remote_retrieve_response_code( $agentic_response ) ) {
+				$agentic_data = json_decode( wp_remote_retrieve_body( $agentic_response ), true );
+				if ( isset( $agentic_data['success'] ) && $agentic_data['success'] ) {
+					$agentic_marketplace_stats = array_merge( $agentic_marketplace_stats, $agentic_data['stats'] ?? array() );
 				}
 			}
 			?>
@@ -173,10 +173,10 @@ if ( ! empty( $plugin_license_key ) ) {
 					<td><strong>New Agent</strong></td>
 					<td>
 						<?php
-						if ( ! empty( $marketplace_stats['latest_agent']['url'] ) ) {
-							echo '<a href="' . esc_url( $marketplace_stats['latest_agent']['url'] ) . '" target="_blank">' . esc_html( $marketplace_stats['latest_agent']['name'] ) . '</a>';
+						if ( ! empty( $agentic_marketplace_stats['latest_agent']['url'] ) ) {
+							echo '<a href="' . esc_url( $agentic_marketplace_stats['latest_agent']['url'] ) . '" target="_blank">' . esc_html( $agentic_marketplace_stats['latest_agent']['name'] ) . '</a>';
 						} else {
-							echo esc_html( $marketplace_stats['latest_agent']['name'] );
+							echo esc_html( $agentic_marketplace_stats['latest_agent']['name'] );
 						}
 						?>
 					</td>
@@ -185,33 +185,33 @@ if ( ! empty( $plugin_license_key ) ) {
 					<td><strong>Popular Agent</strong></td>
 					<td>
 						<?php
-						if ( ! empty( $marketplace_stats['popular_agent']['url'] ) ) {
-							echo '<a href="' . esc_url( $marketplace_stats['popular_agent']['url'] ) . '" target="_blank">' . esc_html( $marketplace_stats['popular_agent']['name'] ) . '</a>';
+						if ( ! empty( $agentic_marketplace_stats['popular_agent']['url'] ) ) {
+							echo '<a href="' . esc_url( $agentic_marketplace_stats['popular_agent']['url'] ) . '" target="_blank">' . esc_html( $agentic_marketplace_stats['popular_agent']['name'] ) . '</a>';
 						} else {
-							echo esc_html( $marketplace_stats['popular_agent']['name'] );
+							echo esc_html( $agentic_marketplace_stats['popular_agent']['name'] );
 						}
 						?>
 					</td>
 				</tr>
 				<tr>
 					<td><strong>Agent Sales</strong></td>
-					<td><?php echo esc_html( number_format( (int) $marketplace_stats['user_sales'] ) ); ?></td>
+					<td><?php echo esc_html( number_format( (int) $agentic_marketplace_stats['user_sales'] ) ); ?></td>
 				</tr>
 				<tr>
 					<td><strong>Total Revenue</strong></td>
-					<td>$<?php echo esc_html( number_format( (float) $marketplace_stats['user_revenue'], 2 ) ); ?></td>
+					<td>$<?php echo esc_html( number_format( (float) $agentic_marketplace_stats['user_revenue'], 2 ) ); ?></td>
 				</tr>
 			</table>
 			<p style="margin-top: 15px;">
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-revenue' ) ); ?>" class="button button-primary">
-					<?php echo ( $marketplace_stats['user_revenue'] > 0 ) ? 'View Revenue' : 'Earn Revenue'; ?>
+					<?php echo ( $agentic_marketplace_stats['user_revenue'] > 0 ) ? 'View Revenue' : 'Earn Revenue'; ?>
 				</a>
 			</p>
 		</div>
 
 		<div class="agentic-card">
 			<h2>Quick Actions</h2>
-			<?php if ( ! $is_configured ) : ?>
+			<?php if ( ! $agentic_is_configured ) : ?>
 				<p>
 					<span class="dashicons dashicons-no-alt" style="color: #b91c1c; vertical-align: -2px;" title="Set up an AI provider and API key to enable the chatbot."></span>
 					Chatbot offline
@@ -220,7 +220,7 @@ if ( ! empty( $plugin_license_key ) ) {
 				</p>
 			<?php endif; ?>
 			<p>
-				<?php if ( $is_configured ) : ?>
+				<?php if ( $agentic_is_configured ) : ?>
 					<a href="<?php echo esc_url( home_url( '/agent-chat/' ) ); ?>" class="button button-primary" target="_blank">
 						Open Chat Interface
 					</a>
@@ -241,8 +241,8 @@ if ( ! empty( $plugin_license_key ) ) {
 				</a>
 			</div>
 			<?php
-			$recent = $audit->get_recent( 10 );
-			if ( empty( $recent ) ) :
+			$agentic_recent = $agentic_audit->get_recent( 10 );
+			if ( empty( $agentic_recent ) ) :
 				?>
 				<p>No agent activity recorded yet.</p>
 			<?php else : ?>
@@ -256,17 +256,17 @@ if ( ! empty( $plugin_license_key ) ) {
 						</tr>
 					</thead>
 					<tbody>
-						<?php foreach ( $recent as $entry ) : ?>
+						<?php foreach ( $agentic_recent as $agentic_entry ) : ?>
 						<tr>
 							<td>
 								<?php
-								$timestamp = strtotime( $entry['created_at'] );
-								echo esc_html( wp_date( 'M j, Y g:i a', $timestamp ) );
+								$agentic_timestamp = strtotime( $agentic_entry['created_at'] );
+								echo esc_html( wp_date( 'M j, Y g:i a', $agentic_timestamp ) );
 								?>
 							</td>
-							<td><?php echo esc_html( $entry['agent_id'] ); ?></td>
-							<td><?php echo esc_html( $entry['action'] ); ?></td>
-							<td><?php echo esc_html( $entry['target_type'] ); ?></td>
+							<td><?php echo esc_html( $agentic_entry['agent_id'] ); ?></td>
+							<td><?php echo esc_html( $agentic_entry['action'] ); ?></td>
+							<td><?php echo esc_html( $agentic_entry['target_type'] ); ?></td>
 						</tr>
 						<?php endforeach; ?>
 					</tbody>

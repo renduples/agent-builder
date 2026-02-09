@@ -18,24 +18,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$user = wp_get_current_user();
+$agentic_user = wp_get_current_user();
 
 // Get accessible agents.
-$registry = Agentic_Agent_Registry::get_instance();
-$agents   = $registry->get_accessible_instances();
+$agentic_registry = Agentic_Agent_Registry::get_instance();
+$agentic_agents   = $agentic_registry->get_accessible_instances();
 
 // Default to first available agent or passed agent_id.
 // Check URL parameter first, then fall back to first agent.
-$default_agent_id = isset( $_GET['agent'] ) ? sanitize_key( $_GET['agent'] ) : '';
-$current_agent    = null;
-$current_agent_id = '';
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No form submission, just URL parameter for agent selection.
+$agentic_default_agent_id = isset( $_GET['agent'] ) ? sanitize_key( $_GET['agent'] ) : '';
+$agentic_current_agent    = null;
+$agentic_current_agent_id = '';
 
-if ( $default_agent_id && isset( $agents[ $default_agent_id ] ) ) {
-	$current_agent    = $agents[ $default_agent_id ];
-	$current_agent_id = $default_agent_id;
-} elseif ( ! empty( $agents ) ) {
-	$current_agent    = reset( $agents );
-	$current_agent_id = $current_agent->get_id();
+if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent_id ] ) ) {
+	$agentic_current_agent    = $agentic_agents[ $agentic_default_agent_id ];
+	$agentic_current_agent_id = $agentic_default_agent_id;
+} elseif ( ! empty( $agentic_agents ) ) {
+	$agentic_current_agent    = reset( $agentic_agents );
+	$agentic_current_agent_id = $agentic_current_agent->get_id();
 }
 ?>
 <script>
@@ -73,28 +74,28 @@ if ( $default_agent_id && isset( $agents[ $default_agent_id ] ) ) {
 	}
 })();
 </script>
-<div id="agentic-chat" class="agentic-chat-container" data-agent-id="<?php echo esc_attr( $current_agent_id ); ?>">
+<div id="agentic-chat" class="agentic-chat-container" data-agent-id="<?php echo esc_attr( $agentic_current_agent_id ); ?>">
 	<div class="agentic-chat-header">
 		<div class="agentic-agent-info">
-			<?php if ( count( $agents ) > 1 ) : ?>
+			<?php if ( count( $agentic_agents ) > 1 ) : ?>
 			<div class="agentic-agent-selector">
 				<select id="agentic-agent-select" class="agentic-agent-dropdown">
 				<?php
 				// Sort agents by name (case-insensitive).
-				$sorted_agents = $agents;
+				$agentic_sorted_agents = $agentic_agents;
 				uasort(
-					$sorted_agents,
+					$agentic_sorted_agents,
 					function ( $a, $b ) {
 						return strcasecmp( $a->get_name(), $b->get_name() );
 					}
 				);
 				?>
-				<?php foreach ( $sorted_agents as $agent ) : ?>
-						<option value="<?php echo esc_attr( $agent->get_id() ); ?>" 
-								data-icon="<?php echo esc_attr( $agent->get_icon() ); ?>"
-								data-welcome="<?php echo esc_attr( $agent->get_welcome_message() ); ?>"
-								<?php selected( $agent->get_id(), $current_agent_id ); ?>>
-							<?php echo esc_html( $agent->get_icon() . ' ' . $agent->get_name() ); ?>
+				<?php foreach ( $agentic_sorted_agents as $agentic_agent ) : ?>
+						<option value="<?php echo esc_attr( $agentic_agent->get_id() ); ?>" 
+								data-icon="<?php echo esc_attr( $agentic_agent->get_icon() ); ?>"
+								data-welcome="<?php echo esc_attr( $agentic_agent->get_welcome_message() ); ?>"
+								<?php selected( $agentic_agent->get_id(), $agentic_current_agent_id ); ?>>
+							<?php echo esc_html( $agentic_agent->get_icon() . ' ' . $agentic_agent->get_name() ); ?>
 						</option>
 					<?php endforeach; ?>
 					<option value="load-more" data-action="load-more">➕ Load more . . .</option>
@@ -102,19 +103,19 @@ if ( $default_agent_id && isset( $agents[ $default_agent_id ] ) ) {
 			</div>
 			<?php else : ?>
 			<div class="agentic-agent-avatar">
-				<?php echo esc_html( $current_agent ? $current_agent->get_icon() : '🤖' ); ?>
+				<?php echo esc_html( $agentic_current_agent ? $agentic_current_agent->get_icon() : '🤖' ); ?>
 			</div>
 			<?php endif; ?>
 			<div class="agentic-agent-details">
-				<?php if ( $current_agent ) : ?>
+				<?php if ( $agentic_agentic_current_agent ) : ?>
 					<div class="agentic-agent-meta">
-						Version <?php echo esc_html( $current_agent->get_version() ?? '1.0.0' ); ?>
+						Version <?php echo esc_html( $agentic_current_agent->get_version() ?? '1.0.0' ); ?>
 						<span class="agent-meta-separator">|</span>
-						By <?php echo esc_html( $current_agent->get_author() ?? 'Unknown' ); ?>
+						By <?php echo esc_html( $agentic_current_agent->get_author() ?? 'Unknown' ); ?>
 						<span class="agent-meta-separator">|</span>
-						<?php echo esc_html( ucfirst( $current_agent->get_category() ) ); ?>
+						<?php echo esc_html( ucfirst( $agentic_current_agent->get_category() ) ); ?>
 						<span class="agent-meta-separator">|</span>
-						Capabilities: <?php echo esc_html( implode( ', ', $current_agent->get_required_capabilities() ) ); ?>
+						Capabilities: <?php echo esc_html( implode( ', ', $agentic_current_agent->get_required_capabilities() ) ); ?>
 					</div>
 				<?php endif; ?>
 			</div>
@@ -131,20 +132,20 @@ if ( $default_agent_id && isset( $agents[ $default_agent_id ] ) ) {
 	</div>
 
 	<div id="agentic-messages" class="agentic-chat-messages">
-		<?php if ( $current_agent ) : ?>
+		<?php if ( $agentic_current_agent ) : ?>
 		<div class="agentic-message agentic-message-agent">
-			<div class="agentic-message-avatar"><?php echo esc_html( $current_agent->get_icon() ); ?></div>
+			<div class="agentic-message-avatar"><?php echo esc_html( $agentic_current_agent->get_icon() ); ?></div>
 			<div class="agentic-message-content">
-				<?php echo wp_kses_post( nl2br( $current_agent->get_welcome_message() ) ); ?>
+				<?php echo wp_kses_post( nl2br( $agentic_current_agent->get_welcome_message() ) ); ?>
 				
 				<?php
-				$prompts = $current_agent->get_suggested_prompts();
-				if ( ! empty( $prompts ) ) :
+				$agentic_prompts = $agentic_current_agent->get_suggested_prompts();
+				if ( ! empty( $agentic_prompts ) ) :
 					?>
 				<div class="agentic-suggested-prompts">
-					<?php foreach ( $prompts as $prompt ) : ?>
-						<button class="agentic-prompt-btn" data-prompt="<?php echo esc_attr( $prompt ); ?>">
-							<?php echo esc_html( $prompt ); ?>
+					<?php foreach ( $agentic_prompts as $agentic_prompt ) : ?>
+						<button class="agentic-prompt-btn" data-prompt="<?php echo esc_attr( $agentic_prompt ); ?>">
+							<?php echo esc_html( $agentic_prompt ); ?>
 						</button>
 					<?php endforeach; ?>
 				</div>
@@ -194,7 +195,7 @@ if ( $default_agent_id && isset( $agents[ $default_agent_id ] ) ) {
 		<?php endif; ?>
 	</div>
 
-	<?php if ( $current_agent ) : ?>
+	<?php if ( $agentic_current_agent ) : ?>
 	<div class="agentic-chat-input-container">
 		<div class="agentic-typing-indicator" id="agentic-typing" style="display: none;">
 			<span></span>
@@ -206,7 +207,7 @@ if ( $default_agent_id && isset( $agents[ $default_agent_id ] ) ) {
 			<textarea 
 				id="agentic-input" 
 				class="agentic-chat-input" 
-				placeholder="Ask <?php echo esc_attr( $current_agent->get_name() ); ?> a question..."
+				placeholder="Ask <?php echo esc_attr( $agentic_current_agent->get_name() ); ?> a question..."
 				rows="1"
 			></textarea>
 			<button type="submit" class="agentic-send-btn" id="agentic-send">

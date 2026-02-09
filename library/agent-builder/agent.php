@@ -30,54 +30,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Agentic_Agent_Builder extends \Agentic\Agent_Base {
 
-	private const SYSTEM_PROMPT = <<<'PROMPT'
-You are the Agent Builder, a meta-agent that creates new Agents. You are an expert in:
-
-- Agent Builder architecture and Agent_Base class
-- WordPress plugin development and coding standards
-- AI tool/function design patterns
-- System prompt engineering
-- PHP 8.1+ best practices
-
-Your role:
-1. Help users design and create new agents from natural language descriptions
-2. Generate compliant agent code that follows the Agent Builder patterns
-3. Create well-designed tools with proper parameter schemas
-4. Write effective system prompts that define agent behavior
-5. Ensure all code follows WordPress coding standards (WPCS)
-
-When creating an agent, you must:
-1. ANALYZE the requirements to understand what the agent should do
-2. DESIGN the tools needed (3-10 tools is typical)
-3. GENERATE the agent class extending \Agentic\Agent_Base
-4. WRITE an effective system prompt for the agent's LLM interactions
-5. CREATE supporting documentation
-
-Agent Architecture Requirements:
-- Must extend \Agentic\Agent_Base
-- Must implement: get_id(), get_name(), get_description(), get_system_prompt()
-- Should implement: get_tools(), execute_tool(), get_icon(), get_category()
-- Should implement: get_welcome_message(), get_suggested_prompts(), get_required_capabilities()
-- Tools follow OpenAI function calling schema
-- Tool execution uses match expression for routing
-
-Categories: Content, Admin, E-commerce, Frontend, Developer, Marketing
-
-Code Quality:
-- Follow WPCS naming: snake_case for functions, Title_Case for classes
-- All user input must be sanitized (sanitize_text_field, absint, wp_kses_post, etc.)
-- Check capabilities before sensitive operations
-- Return structured arrays from tool handlers
-- Use heredoc for system prompts
-- Include proper PHPDoc comments
-
-You have tools to:
-- Analyze requirements and suggest agent design
-- Generate complete agent code
-- Validate generated agents
-- Create agents in the library
-- List existing agents for reference
-PROMPT;
+	/**
+	 * Get system prompt from template file
+	 */
+	private function load_system_prompt(): string {
+		$template_file = __DIR__ . '/templates/system-prompt.txt';
+		if ( file_exists( $template_file ) ) {
+			return file_get_contents( $template_file );
+		}
+		// Fallback if template file not found
+		return 'You are the Agent Builder agent.';
+	}
 
 	/**
 	 * Get agent ID
@@ -104,7 +67,7 @@ PROMPT;
 	 * Get system prompt
 	 */
 	public function get_system_prompt(): string {
-		return self::SYSTEM_PROMPT;
+		return $this->load_system_prompt();
 	}
 
 	/**
@@ -913,147 +876,138 @@ PROMPT;
 		$welcome_features = $this->generate_welcome_features( $tools );
 
 		// Current date
-		$date = date( 'Y-m-d' );
+		$date = wp_date( 'Y-m-d' );
 
-		$code = <<<PHP
-<?php
-/**
- * Agent Name: {$name}
- * Version: 1.0.0
- * Description: {$description}
- * Author: Agentic Community
- * Author URI: https://agentic-plugin.com
- * Category: {$category}
- * Tags: {$tags}
- * Capabilities: {$caps_str}
- * Icon: {$icon}
- * Requires PHP: 8.1
- * Requires at least: 6.4
- * License: GPL v2
- * Generated: {$date}
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
-
-/**
- * {$name} Agent
- *
- * {$description}
- */
-class {$class_name} extends \\Agentic\\Agent_Base {
-
-    private const SYSTEM_PROMPT = <<<'PROMPT'
-You are the {$name} agent for WordPress. You specialize in:
-
-{$system_prompt_focus}
-
-Your role is to help users manage and automate tasks in this domain.
-
-When working:
-1. Always confirm destructive actions before executing
-2. Provide clear feedback on what you've done
-3. Suggest improvements when you notice issues
-4. Follow WordPress best practices
-
-You have tools to help users accomplish their goals efficiently.
-PROMPT;
-
-    /**
-     * Get agent ID
-     */
-    public function get_id(): string {
-        return '{$slug}';
-    }
-
-    /**
-     * Get agent name
-     */
-    public function get_name(): string {
-        return '{$name}';
-    }
-
-    /**
-     * Get agent description
-     */
-    public function get_description(): string {
-        return '{$description}';
-    }
-
-    /**
-     * Get system prompt
-     */
-    public function get_system_prompt(): string {
-        return self::SYSTEM_PROMPT;
-    }
-
-    /**
-     * Get agent icon
-     */
-    public function get_icon(): string {
-        return '{$icon}';
-    }
-
-    /**
-     * Get agent category
-     */
-    public function get_category(): string {
-        return '{$category}';
-    }
-
-    /**
-     * Get required capabilities
-     */
-    public function get_required_capabilities(): array {
-        return {$caps_array};
-    }
-
-    /**
-     * Get welcome message
-     */
-    public function get_welcome_message(): string {
-        return "{$icon} **{$name}**\\n\\n" .
-               "{$description}\\n\\n" .
-{$welcome_features}
-               "How can I help you today?";
-    }
-
-    /**
-     * Get suggested prompts
-     */
-    public function get_suggested_prompts(): array {
-        return {$prompts_array};
-    }
-
-    /**
-     * Get available tools
-     */
-    public function get_tools(): array {
-        return [
-{$tool_defs}
-        ];
-    }
-
-    /**
-     * Execute a tool
-     */
-    public function execute_tool( string \$tool_name, array \$arguments ): ?array {
-        return match ( \$tool_name ) {
-{$tool_match_cases}
-            default => [ 'error' => 'Unknown tool: ' . \$tool_name ],
-        };
-    }
-
-{$tool_handlers}
-}
-
-// Register the agent
-add_action( 'agentic_register_agents', function( \$registry ) {
-    \$registry->register( new {$class_name}() );
-} );
-
-PHP;
+		$code = '<?php' . "\n" .
+'/**' . "\n" .
+' * Agent Name: ' . $name . "\n" .
+' * Version: 1.0.0' . "\n" .
+' * Description: ' . $description . "\n" .
+' * Author: Agentic Community' . "\n" .
+' * Author URI: https://agentic-plugin.com' . "\n" .
+' * Category: ' . $category . "\n" .
+' * Tags: ' . $tags . "\n" .
+' * Capabilities: ' . $caps_str . "\n" .
+' * Icon: ' . $icon . "\n" .
+' * Requires PHP: 8.1' . "\n" .
+' * Requires at least: 6.4' . "\n" .
+' * License: GPL v2' . "\n" .
+' * Generated: ' . $date . "\n" .
+' */' . "\n" .
+'' . "\n" .
+'if ( ! defined( \'ABSPATH\' ) ) {' . "\n" .
+'    exit;' . "\n" .
+'}' . "\n" .
+'' . "\n" .
+'/**' . "\n" .
+' * ' . $name . ' Agent' . "\n" .
+' *' . "\n" .
+' * ' . $description . "\n" .
+' */' . "\n" .
+'class ' . $class_name . ' extends \\Agentic\\Agent_Base {' . "\n" .
+'' . "\n" .
+'    private const SYSTEM_PROMPT = \'You are the ' . addslashes($name) . ' agent for WordPress. You specialize in:' . "\n\n" .
+addslashes($system_prompt_focus) . "\n\n" .
+'Your role is to help users manage and automate tasks in this domain.' . "\n\n" .
+'When working:' . "\n" .
+'1. Always confirm destructive actions before executing' . "\n" .
+'2. Provide clear feedback on what you\'ve done' . "\n" .
+'3. Suggest improvements when you notice issues' . "\n" .
+'4. Follow WordPress best practices' . "\n\n" .
+'You have tools to help users accomplish their goals efficiently.\';' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get agent ID' . "\n" .
+'     */' . "\n" .
+'    public function get_id(): string {' . "\n" .
+'        return \'' . $slug . '\';' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get agent name' . "\n" .
+'     */' . "\n" .
+'    public function get_name(): string {' . "\n" .
+'        return \'' . addslashes($name) . '\';' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get agent description' . "\n" .
+'     */' . "\n" .
+'    public function get_description(): string {' . "\n" .
+'        return \'' . addslashes($description) . '\';' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get system prompt' . "\n" .
+'     */' . "\n" .
+'    public function get_system_prompt(): string {' . "\n" .
+'        return self::SYSTEM_PROMPT;' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get agent icon' . "\n" .
+'     */' . "\n" .
+'    public function get_icon(): string {' . "\n" .
+'        return \'' . $icon . '\';' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get agent category' . "\n" .
+'     */' . "\n" .
+'    public function get_category(): string {' . "\n" .
+'        return \'' . $category . '\';' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get required capabilities' . "\n" .
+'     */' . "\n" .
+'    public function get_required_capabilities(): array {' . "\n" .
+'        return ' . $caps_array . ';' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get welcome message' . "\n" .
+'     */'  . "\n" .
+'    public function get_welcome_message(): string {' . "\n" .
+'        return "' . $icon . ' **' . addslashes($name) . '**\\n\\n" .' . "\n" .
+'               "' . addslashes($description) . '\\n\\n" .' . "\n" .
+$welcome_features .
+'               "How can I help you today?";' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get suggested prompts' . "\n" .
+'     */' . "\n" .
+'    public function get_suggested_prompts(): array {' . "\n" .
+'        return ' . $prompts_array . ';' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Get available tools' . "\n" .
+'     */' . "\n" .
+'    public function get_tools(): array {' . "\n" .
+'        return [' . "\n" .
+$tool_defs .
+'        ];' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+'    /**' . "\n" .
+'     * Execute a tool' . "\n" .
+'     */' . "\n" .
+'    public function execute_tool( string $tool_name, array $arguments ): ?array {' . "\n" .
+'        return match ( $tool_name ) {' . "\n" .
+$tool_match_cases .
+'            default => [ \'error\' => \'Unknown tool: \' . $tool_name ],' . "\n" .
+'        };' . "\n" .
+'    }' . "\n" .
+'' . "\n" .
+$tool_handlers .
+'}' . "\n" .
+'' . "\n" .
+'// Register the agent' . "\n" .
+'add_action( \'agentic_register_agents\', function( $registry ) {' . "\n" .
+'    $registry->register( new ' . $class_name . '() );' . "\n" .
+'} );' . "\n";
 
 		return $code;
 	}
@@ -1091,22 +1045,20 @@ PHP;
 			$props_str    = implode( "\n", $props );
 			$required_str = empty( $required ) ? '[]' : '[ ' . implode( ', ', $required ) . ' ]';
 
-			$def    = <<<DEF
-            [
-                'type' => 'function',
-                'function' => [
-                    'name' => '{$name}',
-                    'description' => '{$desc}',
-                    'parameters' => [
-                        'type' => 'object',
-                        'properties' => [
-{$props_str}
-                        ],
-                        'required' => {$required_str},
-                    ],
-                ],
-            ],
-DEF;
+			$def = '            [' . "\n" .
+'                \'type\' => \'function\',' . "\n" .
+'                \'function\' => [' . "\n" .
+'                    \'name\' => \'' . $name . '\',' . "\n" .
+'                    \'description\' => \'' . addslashes($desc) . '\',' . "\n" .
+'                    \'parameters\' => [' . "\n" .
+'                        \'type\' => \'object\',' . "\n" .
+'                        \'properties\' => [' . "\n" .
+$props_str . "\n" .
+'                        ],' . "\n" .
+'                        \'required\' => ' . $required_str . ',' . "\n" .
+'                    ],' . "\n" .
+'                ],' . "\n" .
+'            ],';
 			$defs[] = $def;
 		}
 
@@ -1141,24 +1093,22 @@ DEF;
 			}
 			$params_code = implode( "\n", $param_lines );
 
-			$handler    = <<<HANDLER
-
-    /**
-     * Tool: {$name}
-     *
-     * {$desc}
-     */
-    private function {$method_name}( array \$args ): array {
-{$params_code}
-
-        // TODO: Implement {$name} logic
-
-        return [
-            'success' => true,
-            'message' => '{$name} executed successfully',
-        ];
-    }
-HANDLER;
+			$handler = "\n" .
+'    /**' . "\n" .
+'     * Tool: ' . $name . "\n" .
+'     *' . "\n" .
+'     * ' . $desc . "\n" .
+'     */' . "\n" .
+'    private function ' . $method_name . '( array $args ): array {' . "\n" .
+$params_code . "\n" .
+'' . "\n" .
+'        // TODO: Implement ' . $name . ' logic' . "\n" .
+'' . "\n" .
+'        return [' . "\n" .
+'            \'success\' => true,' . "\n" .
+'            \'message\' => \'' . addslashes($name) . ' executed successfully\',' . "\n" .
+'        ];' . "\n" .
+'    }';
 			$handlers[] = $handler;
 		}
 
@@ -1310,14 +1260,20 @@ HANDLER;
 		}
 
 		// Write agent.php
-		$result = file_put_contents( $agent_dir . '/agent.php', $agent_code );
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
+		$result = $wp_filesystem->put_contents( $agent_dir . '/agent.php', $agent_code, FS_CHMOD_FILE );
 		if ( $result === false ) {
 			return array( 'error' => 'Failed to write agent.php' );
 		}
 
 		// Write README if provided
 		if ( ! empty( $readme_content ) ) {
-			file_put_contents( $agent_dir . '/README.md', $readme_content );
+			$wp_filesystem->put_contents( $agent_dir . '/README.md', $readme_content, FS_CHMOD_FILE );
 		}
 
 		return array(
@@ -1447,52 +1403,8 @@ HANDLER;
 		$minimal = $args['minimal'] ?? false;
 
 		if ( $minimal ) {
-			$template = <<<'PHP'
-<?php
-/**
- * Agent Name: [AGENT_NAME]
- * Version: 1.0.0
- * Description: [DESCRIPTION]
- * Author: [YOUR_NAME]
- * Category: [CATEGORY]
- * Icon: 🤖
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
-
-class [CLASS_NAME] extends \Agentic\Agent_Base {
-
-    public function get_id(): string {
-        return '[SLUG]';
-    }
-
-    public function get_name(): string {
-        return '[AGENT_NAME]';
-    }
-
-    public function get_description(): string {
-        return '[DESCRIPTION]';
-    }
-
-    public function get_system_prompt(): string {
-        return 'You are a helpful agent.';
-    }
-
-    public function get_tools(): array {
-        return [];
-    }
-
-    public function execute_tool( string $tool_name, array $arguments ): ?array {
-        return null;
-    }
-}
-
-add_action( 'agentic_register_agents', function( $registry ) {
-    $registry->register( new [CLASS_NAME]() );
-} );
-PHP;
+			$template_file = __DIR__ . '/templates/minimal-agent.php.template';
+			$template = file_exists( $template_file ) ? file_get_contents( $template_file ) : '';
 		} else {
 			// Full template with examples
 			$template = file_get_contents( $this->get_library_path() . 'security-monitor/agent.php' );
@@ -1595,22 +1507,20 @@ PHP;
 		$props_str    = implode( "\n", $props_code );
 		$required_str = empty( $required ) ? '[]' : "[ '" . implode( "', '", $required ) . "' ]";
 
-		return <<<PHP
-[
-    'type' => 'function',
-    'function' => [
-        'name' => '{$name}',
-        'description' => '{$desc}',
-        'parameters' => [
-            'type' => 'object',
-            'properties' => [
-{$props_str}
-            ],
-            'required' => {$required_str},
-        ],
-    ],
-],
-PHP;
+		return '[' . "\n" .
+'    \'type\' => \'function\',' . "\n" .
+'    \'function\' => [' . "\n" .
+'        \'name\' => \'' . $name . '\',' . "\n" .
+'        \'description\' => \'' . addslashes($desc) . '\',' . "\n" .
+'        \'parameters\' => [' . "\n" .
+'            \'type\' => \'object\',' . "\n" .
+'            \'properties\' => [' . "\n" .
+$props_str . "\n" .
+'            ],' . "\n" .
+'            \'required\' => ' . $required_str . ',' . "\n" .
+'        ],' . "\n" .
+'    ],' . "\n" .
+'],';
 	}
 
 	/**
@@ -1644,20 +1554,15 @@ PHP;
 			$tools_section = "\n\nYou have these tools available:\n" . implode( "\n", $tools_list );
 		}
 
-		$prompt = <<<PROMPT
-You are the {$agent_name} agent for WordPress. You are an expert in:
-
-{$expertise}
-
-Your personality: {$personality}
-
-When working:
-1. Always confirm destructive actions before executing
-2. Provide clear feedback on what you've done
-3. Suggest improvements when you notice issues
-4. Follow WordPress best practices
-5. Be concise but thorough in explanations{$constraints_section}{$tools_section}
-PROMPT;
+		$prompt = 'You are the ' . $agent_name . ' agent for WordPress. You are an expert in:' . "\n\n" .
+$expertise . "\n\n" .
+'Your personality: ' . $personality . "\n\n" .
+'When working:' . "\n" .
+'1. Always confirm destructive actions before executing' . "\n" .
+'2. Provide clear feedback on what you\'ve done' . "\n" .
+'3. Suggest improvements when you notice issues' . "\n" .
+'4. Follow WordPress best practices' . "\n" .
+'5. Be concise but thorough in explanations' . $constraints_section . $tools_section;
 
 		return array(
 			'system_prompt' => $prompt,
@@ -1693,11 +1598,17 @@ PROMPT;
 			return array( 'error' => "Agent '{$slug}' not found" );
 		}
 
-		// Delete files and directory
+		// Delete files and directory using WP_Filesystem
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		
 		$files = glob( $agent_dir . '/*' );
 		foreach ( $files as $file ) {
 			if ( is_file( $file ) ) {
-				unlink( $file );
+				$wp_filesystem->delete( $file );
 			}
 		}
 		$subdirs = glob( $agent_dir . '/*', GLOB_ONLYDIR );
@@ -1705,7 +1616,7 @@ PROMPT;
 			// Simple recursive delete for subdirs
 			$this->recursive_rmdir( $subdir );
 		}
-		rmdir( $agent_dir );
+		$wp_filesystem->rmdir( $agent_dir );
 
 		return array(
 			'success' => true,
@@ -1718,11 +1629,21 @@ PROMPT;
 	 * Recursive directory removal
 	 */
 	private function recursive_rmdir( string $dir ): void {
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		
 		$files = glob( $dir . '/*' );
 		foreach ( $files as $file ) {
-			is_dir( $file ) ? $this->recursive_rmdir( $file ) : unlink( $file );
+			if ( is_dir( $file ) ) {
+				$this->recursive_rmdir( $file );
+			} else {
+				$wp_filesystem->delete( $file );
+			}
 		}
-		rmdir( $dir );
+		$wp_filesystem->rmdir( $dir );
 	}
 
 	/**
@@ -1737,6 +1658,7 @@ PROMPT;
 	 */
 	private function validate_php_syntax( string $code ): ?string {
 		// Basic tokenizer check
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Required for syntax validation.
 		set_error_handler(
 			function ( $errno, $errstr ) use ( &$last_error ) {
 				$last_error = $errstr;

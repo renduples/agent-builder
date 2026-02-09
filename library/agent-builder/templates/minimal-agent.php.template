@@ -1,0 +1,44 @@
+<?php
+/**
+ * Agent Name: [AGENT_NAME]
+ * Version: 1.0.0
+ * Description: [DESCRIPTION]
+ * Author: [YOUR_NAME]
+ * Category: [CATEGORY]
+ * Icon: 🤖
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
+class [CLASS_NAME] extends \Agentic\Agent_Base {
+
+    public function get_id(): string {
+        return '[SLUG]';
+    }
+
+    public function get_name(): string {
+        return '[AGENT_NAME]';
+    }
+
+    public function get_description(): string {
+        return '[DESCRIPTION]';
+    }
+
+    public function get_system_prompt(): string {
+        return 'You are a helpful agent.';
+    }
+
+    public function get_tools(): array {
+        return [];
+    }
+
+    public function execute_tool( string $tool_name, array $arguments ): ?array {
+        return null;
+    }
+}
+
+add_action( 'agentic_register_agents', function( $registry ) {
+    $registry->register( new [CLASS_NAME]() );
+} );

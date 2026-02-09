@@ -1,0 +1,11 @@
+
+/**
+ * Render {{field_id}} field.
+ */
+function {{prefix}}_render_{{field_id}}_field(): void {
+	$options = get_option( '{{prefix}}_settings' );
+	$value   = isset( $options['{{field_id}}'] ) ? $options['{{field_id}}'] : '';
+	echo '<select name="{{prefix}}_settings[{{field_id}}]">';
+	// Add options here.
+	echo '</select>';{{desc_html}}
+}

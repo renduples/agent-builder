@@ -25,35 +25,35 @@ if ( ! current_user_can( 'read' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
 }
 
-$agent_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
-$slug         = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
-$message      = '';
-$agent_error  = '';
+$agentic_agent_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
+$agentic_slug         = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
+$agentic_message      = '';
+$agentic_agent_error  = '';
 
-if ( 'install' === $agent_action && $slug && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'agentic_install_agent' ) ) {
-	$registry = Agentic_Agent_Registry::get_instance();
-	$result   = $registry->install_agent( $slug );
+if ( 'install' === $agentic_agent_action && $agentic_slug && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'agentic_install_agent' ) ) {
+	$agentic_registry = Agentic_Agent_Registry::get_instance();
+	$result           = $agentic_registry->install_agent( $agentic_slug );
 
 	if ( is_wp_error( $result ) ) {
-		$agent_error = $result->get_error_message();
+		$agentic_agent_error = $result->get_error_message();
 	} else {
-		$message = __( 'Agent installed successfully.', 'agent-builder' );
+		$agentic_message = __( 'Agent installed successfully.', 'agent-builder' );
 	}
 }
 
-$registry   = Agentic_Agent_Registry::get_instance();
-$categories = $registry->get_agent_categories();
+$agentic_registry   = Agentic_Agent_Registry::get_instance();
+$agentic_categories = $agentic_registry->get_agent_categories();
 
 // Get search/filter params.
-$search_term = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
-$category    = isset( $_GET['category'] ) ? sanitize_text_field( wp_unslash( $_GET['category'] ) ) : '';
-$current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : '';
+$agentic_search_term = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+$agentic_category    = isset( $_GET['category'] ) ? sanitize_text_field( wp_unslash( $_GET['category'] ) ) : '';
+$agentic_current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : '';
 
 // Fetch library agents.
-$library = $registry->get_library_agents(
+$agentic_library = $agentic_registry->get_library_agents(
 	array(
-		'search'   => $search_term,
-		'category' => $category,
+		'search'   => $agentic_search_term,
+		'category' => $agentic_category,
 	)
 );
 ?>
@@ -62,10 +62,10 @@ $library = $registry->get_library_agents(
 	<h1 class="wp-heading-inline"><?php esc_html_e( 'Marketplace', 'agent-builder' ); ?></h1>
 	<hr class="wp-header-end">
 
-	<?php if ( $message ) : ?>
+	<?php if ( $agentic_message ) : ?>
 		<div class="notice notice-success is-dismissible">
 			<p>
-				<?php echo esc_html( $message ); ?>
+				<?php echo esc_html( $agentic_message ); ?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents' ) ); ?>">
 					<?php esc_html_e( 'Go to Installed Agents', 'agent-builder' ); ?>
 				</a>
@@ -73,9 +73,9 @@ $library = $registry->get_library_agents(
 		</div>
 	<?php endif; ?>
 
-	<?php if ( $agent_error ) : ?>
+	<?php if ( $agentic_agent_error ) : ?>
 		<div class="notice notice-error is-dismissible">
-			<p><?php echo esc_html( $agent_error ); ?></p>
+			<p><?php echo esc_html( $agentic_agent_error ); ?></p>
 		</div>
 	<?php endif; ?>
 
@@ -83,22 +83,22 @@ $library = $registry->get_library_agents(
 	<ul class="filter-links">
 		<li>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&tab=featured' ) ); ?>"
-				class="<?php echo ( '' === $current_tab && empty( $category ) ) ? 'current' : ''; ?>">
+				class="<?php echo ( '' === $agentic_current_tab && empty( $agentic_category ) ) ? 'current' : ''; ?>">
 				<?php esc_html_e( 'Featured', 'agent-builder' ); ?>
 			</a>
 		</li>
 		<li>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&tab=popular' ) ); ?>"
-				class="<?php echo 'popular' === $current_tab ? 'current' : ''; ?>">
+				class="<?php echo 'popular' === $agentic_current_tab ? 'current' : ''; ?>">
 				<?php esc_html_e( 'Popular', 'agent-builder' ); ?>
 			</a>
 		</li>
-		<?php foreach ( $categories as $cat_name => $count ) : ?>
+		<?php foreach ( $agentic_categories as $agentic_cat_name => $agentic_count ) : ?>
 			<li>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&category=' . rawurlencode( $cat_name ) ) ); ?>"
-					class="<?php echo $category === $cat_name ? 'current' : ''; ?>">
-					<?php echo esc_html( $cat_name ); ?>
-					<span class="count">(<?php echo esc_html( $count ); ?>)</span>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&category=' . rawurlencode( $agentic_cat_name ) ) ); ?>"
+					class="<?php echo $agentic_category === $agentic_cat_name ? 'current' : ''; ?>">
+					<?php echo esc_html( $agentic_cat_name ); ?>
+					<span class="count">(<?php echo esc_html( $agentic_count ); ?>)</span>
 				</a>
 			</li>
 		<?php endforeach; ?>
@@ -112,7 +112,7 @@ $library = $registry->get_library_agents(
 				<?php esc_html_e( 'Search Agents', 'agent-builder' ); ?>
 			</label>
 			<input type="search" id="agent-search-input" name="s"
-					value="<?php echo esc_attr( $search ); ?>"
+					value="<?php echo esc_attr( $agentic_search_term ); ?>"
 					placeholder="<?php esc_attr_e( 'Search agents...', 'agent-builder' ); ?>"
 					class="wp-filter-search">
 			<input type="submit" id="search-submit" class="button hide-if-js"
@@ -122,9 +122,9 @@ $library = $registry->get_library_agents(
 
 	<br class="clear">
 
-	<?php if ( empty( $library['agents'] ) ) : ?>
+	<?php if ( empty( $agentic_library['agents'] ) ) : ?>
 		<div class="no-plugin-results">
-			<?php if ( $search ) : ?>
+			<?php if ( $agentic_search_term ) : ?>
 				<p><?php esc_html_e( 'No agents found matching your search.', 'agent-builder' ); ?></p>
 			<?php else : ?>
 				<div class="agentic-empty-library">
@@ -136,47 +136,47 @@ $library = $registry->get_library_agents(
 	<?php else : ?>
 		<!-- Agent Cards Grid -->
 		<div id="the-list" class="agentic-agent-cards">
-			<?php foreach ( $library['agents'] as $slug => $agent ) : ?>
+			<?php foreach ( $agentic_library['agents'] as $agentic_slug => $agentic_agent ) : ?>
 				<?php
-				$install_url = wp_nonce_url(
-					admin_url( 'admin.php?page=agentic-agents-add&action=install&agent=' . $slug ),
+				$agentic_install_url = wp_nonce_url(
+					admin_url( 'admin.php?page=agentic-agents-add&action=install&agent=' . $agentic_slug ),
 					'agentic_install_agent'
 				);
-				$icon        = ! empty( $agent['icon'] ) ? $agent['icon'] : '🤖';
+				$agentic_icon        = ! empty( $agentic_agent['icon'] ) ? $agentic_agent['icon'] : '🤖';
 				?>
-				<div class="plugin-card plugin-card-<?php echo esc_attr( $slug ); ?>">
+				<div class="plugin-card plugin-card-<?php echo esc_attr( $agentic_slug ); ?>">
 					<div class="plugin-card-top">
 						<div class="plugin-card-top-header">
 							<div class="agent-icon">
-								<?php echo esc_html( $icon ); ?>
+								<?php echo esc_html( $agentic_icon ); ?>
 							</div>
 							<div class="name column-name">
-								<h3><?php echo esc_html( $agent['name'] ); ?></h3>
+								<h3><?php echo esc_html( $agentic_agent['name'] ); ?></h3>
 							</div>
 						</div>
 						<p class="authors">
 							<cite>
 								<?php esc_html_e( 'By', 'agent-builder' ); ?>
-								<?php if ( ! empty( $agent['author_uri'] ) ) : ?>
-									<a href="<?php echo esc_url( $agent['author_uri'] ); ?>" target="_blank">
-										<?php echo esc_html( $agent['author'] ); ?>
+								<?php if ( ! empty( $agentic_agent['author_uri'] ) ) : ?>
+									<a href="<?php echo esc_url( $agentic_agent['author_uri'] ); ?>" target="_blank">
+										<?php echo esc_html( $agentic_agent['author'] ); ?>
 									</a>
 								<?php else : ?>
-									<?php echo esc_html( $agent['author'] ); ?>
+									<?php echo esc_html( $agentic_agent['author'] ); ?>
 								<?php endif; ?>
 							</cite>
 						</p>
 						<div class="desc column-description">
-							<p><?php echo esc_html( $agent['description'] ); ?></p>
+							<p><?php echo esc_html( $agentic_agent['description'] ); ?></p>
 						</div>
 						<div class="action-links">
-							<?php if ( $agent['installed'] ) : ?>
+							<?php if ( $agentic_agent['installed'] ) : ?>
 								<button type="button" class="button button-disabled" disabled="disabled">
 									<?php esc_html_e( 'Installed', 'agent-builder' ); ?>
 								</button>
 							<?php else : ?>
 								<a class="install-now button button-primary"
-									href="<?php echo esc_url( $install_url ); ?>">
+									href="<?php echo esc_url( $agentic_install_url ); ?>">
 									<?php esc_html_e( 'Install Now', 'agent-builder' ); ?>
 								</a>
 							<?php endif; ?>
@@ -184,34 +184,34 @@ $library = $registry->get_library_agents(
 					</div>
 					<div class="plugin-card-bottom">
 						<div class="vers column-rating">
-							<?php if ( ! empty( $agent['category'] ) ) : ?>
+							<?php if ( ! empty( $agentic_agent['category'] ) ) : ?>
 								<span class="agent-category-badge">
-									<?php echo esc_html( $agent['category'] ); ?>
+									<?php echo esc_html( $agentic_agent['category'] ); ?>
 								</span>
 							<?php endif; ?>
 						</div>
 						<div class="column-updated">
 							<strong><?php esc_html_e( 'Version:', 'agent-builder' ); ?></strong>
-							<?php echo esc_html( $agent['version'] ); ?>
+							<?php echo esc_html( $agentic_agent['version'] ); ?>
 						</div>
 						<div class="column-compatibility">
-							<?php if ( ! empty( $agent['capabilities'] ) ) : ?>
-								<span class="agent-caps" title="<?php echo esc_attr( implode( ', ', $agent['capabilities'] ) ); ?>">
+							<?php if ( ! empty( $agentic_agent['capabilities'] ) ) : ?>
+								<span class="agent-caps" title="<?php echo esc_attr( implode( ', ', $agentic_agent['capabilities'] ) ); ?>">
 									<?php
 									printf(
 										/* translators: %d: Number of capabilities */
-										esc_html( _n( '%d capability', '%d capabilities', count( $agent['capabilities'] ), 'agent-builder' ) ),
-										esc_html( count( $agent['capabilities'] ) )
+										esc_html( _n( '%d capability', '%d capabilities', count( $agentic_agent['capabilities'] ), 'agent-builder' ) ),
+										esc_html( count( $agentic_agent['capabilities'] ) )
 									);
 									?>
 								</span>
 							<?php endif; ?>
 						</div>
 					</div>
-					<?php if ( ! empty( $agent['tags'] ) ) : ?>
+					<?php if ( ! empty( $agentic_agent['tags'] ) ) : ?>
 						<div class="plugin-card-tags">
-							<?php foreach ( $agent['tags'] as $agent_tag ) : ?>
-								<span class="agent-tag"><?php echo esc_html( $agent_tag ); ?></span>
+							<?php foreach ( $agentic_agent['tags'] as $agentic_agent_tag ) : ?>
+								<span class="agent-tag"><?php echo esc_html( $agentic_agent_tag ); ?></span>
 							<?php endforeach; ?>
 						</div>
 					<?php endif; ?>
@@ -219,15 +219,15 @@ $library = $registry->get_library_agents(
 			<?php endforeach; ?>
 		</div>
 
-		<?php if ( $library['pages'] > 1 ) : ?>
+		<?php if ( $agentic_library['pages'] > 1 ) : ?>
 			<div class="tablenav bottom">
 				<div class="tablenav-pages">
 					<span class="displaying-num">
 						<?php
 						printf(
 							/* translators: %s: Number of agents */
-							esc_html( _n( '%s agent', '%s agents', $library['total'], 'agent-builder' ) ),
-							esc_html( number_format_i18n( $library['total'] ) )
+							esc_html( _n( '%s agent', '%s agents', $agentic_library['total'], 'agent-builder' ) ),
+							esc_html( number_format_i18n( $agentic_library['total'] ) )
 						);
 						?>
 					</span>

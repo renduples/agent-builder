@@ -1,0 +1,58 @@
+<?php
+/**
+ * REST API Endpoint: {{namespace}}{{route}}
+ *
+ * @package Plugin_REST_API
+ */
+
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Register REST API routes.
+ */
+function {{prefix}}_register_rest_routes(): void {
+	register_rest_route(
+		'{{namespace}}',
+		'{{route}}',
+		array(
+			'methods'             => '{{methods}}',
+			'callback'            => '{{prefix}}_rest_callback',
+			'permission_callback' => '{{prefix}}_rest_permission',
+			{{args_code}}
+		)
+	);
+}
+add_action( 'rest_api_init', '{{prefix}}_register_rest_routes' );
+
+/**
+ * Permission callback.
+ *
+ * @return bool|WP_Error True if permission granted.
+ */
+function {{prefix}}_rest_permission(): bool {
+	{{permission_code}}
+}
+
+/**
+ * REST API callback.
+ *
+ * @param WP_REST_Request $request Request object.
+ * @return WP_REST_Response|WP_Error Response object.
+ */
+function {{prefix}}_rest_callback( WP_REST_Request $request ) {
+	// Get parameters.
+	$params = $request->get_params();
+
+	// Process request here.
+
+	return rest_ensure_response(
+		array(
+			'success' => true,
+			'message' => 'Request processed successfully.',
+			'data'    => array(),
+		)
+	);
+}

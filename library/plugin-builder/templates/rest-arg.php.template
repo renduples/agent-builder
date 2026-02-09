@@ -1,0 +1,6 @@
+'{{name}}' => array(
+					'required'          => {{required}},
+					'type'              => '{{type}}',
+					'description'       => '{{description}}',
+					'sanitize_callback' => 'sanitize_text_field',
+				)

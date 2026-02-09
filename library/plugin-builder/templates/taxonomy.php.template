@@ -1,0 +1,50 @@
+<?php
+/**
+ * Custom Taxonomy: {{singular}}
+ *
+ * @package Plugin_Taxonomy
+ */
+
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Register {{singular}} taxonomy.
+ */
+function {{prefix}}_register_{{slug}}_taxonomy(): void {
+	$labels = array(
+		'name'                       => _x( '{{plural}}', 'Taxonomy general name', '{{prefix}}' ),
+		'singular_name'              => _x( '{{singular}}', 'Taxonomy singular name', '{{prefix}}' ),
+		'search_items'               => __( 'Search {{plural}}', '{{prefix}}' ),
+		'all_items'                  => __( 'All {{plural}}', '{{prefix}}' ),
+		'parent_item'                => __( 'Parent {{singular}}', '{{prefix}}' ),
+		'parent_item_colon'          => __( 'Parent {{singular}}:', '{{prefix}}' ),
+		'edit_item'                  => __( 'Edit {{singular}}', '{{prefix}}' ),
+		'update_item'                => __( 'Update {{singular}}', '{{prefix}}' ),
+		'add_new_item'               => __( 'Add New {{singular}}', '{{prefix}}' ),
+		'new_item_name'              => __( 'New {{singular}} Name', '{{prefix}}' ),
+		'menu_name'                  => __( '{{plural}}', '{{prefix}}' ),
+		'not_found'                  => __( 'No {{plural}} found.', '{{prefix}}' ),
+		'no_terms'                   => __( 'No {{plural}}', '{{prefix}}' ),
+		'items_list_navigation'      => __( '{{plural}} list navigation', '{{prefix}}' ),
+		'items_list'                 => __( '{{plural}} list', '{{prefix}}' ),
+		'back_to_items'              => __( '&larr; Back to {{plural}}', '{{prefix}}' ),
+	);
+
+	$args = array(
+		'labels'            => $labels,
+		'hierarchical'      => {{hierarchical}},
+		'public'            => true,
+		'show_ui'           => true,
+		'show_admin_column' => true,
+		'show_in_nav_menus' => true,
+		'show_tagcloud'     => true,
+		'show_in_rest'      => true,
+		'rewrite'           => array( 'slug' => '{{slug}}' ),
+	);
+
+	register_taxonomy( '{{slug}}', array( {{post_types}} ), $args );
+}
+add_action( 'init', '{{prefix}}_register_{{slug}}_taxonomy' );

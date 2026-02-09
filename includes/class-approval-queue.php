@@ -16,6 +16,11 @@ declare(strict_types=1);
 
 namespace Agentic;
 
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Manages the approval queue for agent actions requiring human oversight
  */
@@ -59,6 +64,7 @@ class Approval_Queue {
 	public function get_pending_count(): int {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query.
 		return (int) $wpdb->get_var(
 			"SELECT COUNT(*) FROM {$wpdb->prefix}agentic_approval_queue WHERE status = 'pending'"
 		);
@@ -72,6 +78,7 @@ class Approval_Queue {
 	public function get_pending(): array {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query.
 		$results = $wpdb->get_results(
 			"SELECT * FROM {$wpdb->prefix}agentic_approval_queue WHERE status = 'pending' ORDER BY created_at DESC",
 			ARRAY_A
@@ -97,6 +104,7 @@ class Approval_Queue {
 	public function add( string $agent_id, string $action, array $params, string $reasoning = '', int $expires = 7 ): int|false {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom table insert.
 		$result = $wpdb->insert(
 			$wpdb->prefix . 'agentic_approval_queue',
 			array(
@@ -122,6 +130,7 @@ class Approval_Queue {
 	public function approve( int $id ): bool {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table update.
 		return (bool) $wpdb->update(
 			$wpdb->prefix . 'agentic_approval_queue',
 			array(
@@ -142,6 +151,7 @@ class Approval_Queue {
 	public function reject( int $id ): bool {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table update.
 		return (bool) $wpdb->update(
 			$wpdb->prefix . 'agentic_approval_queue',
 			array(
@@ -161,6 +171,7 @@ class Approval_Queue {
 	public function cleanup_expired(): int {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table cleanup.
 		return $wpdb->query(
 			"DELETE FROM {$wpdb->prefix}agentic_approval_queue 
              WHERE status = 'pending' AND expires_at < NOW()"

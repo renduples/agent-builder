@@ -1,0 +1,31 @@
+<?php
+/**
+ * Uninstall Script
+ *
+ * Runs when the plugin is deleted via WordPress admin.
+ * Removes all plugin data from the database.
+ *
+ * @package Plugin_Uninstall
+ */
+
+// Exit if accessed directly or not uninstalling.
+if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+	exit;
+}
+
+// Delete options.
+{{options_code}}
+
+// Delete transients.
+{{transients_code}}
+
+// Delete user meta.
+{{user_meta_code}}
+{{cpt_code}}
+{{tables_code}}
+
+// Clear scheduled events.
+wp_clear_scheduled_hook( '{{prefix}}_cron_hook' );
+
+// Clear cache.
+wp_cache_flush();

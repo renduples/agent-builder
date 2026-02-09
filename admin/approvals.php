@@ -22,10 +22,10 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
 }
 
-$queue           = new Approval_Queue();
-$pending         = $queue->get_pending();
-$agent_mode      = get_option( 'agentic_agent_mode', 'supervised' );
-$show_empty_note = empty( $pending );
+$agentic_queue           = new Approval_Queue();
+$agentic_pending         = $agentic_queue->get_pending();
+$agentic_agent_mode      = get_option( 'agentic_agent_mode', 'supervised' );
+$agentic_show_empty_note = empty( $agentic_pending );
 ?>
 <div class="wrap agentic-admin">
 	<h1>
@@ -35,9 +35,9 @@ $show_empty_note = empty( $pending );
 
 	<p class="description">
 		Review and approve actions requested by AI agents before they are executed.
-		<?php if ( 'supervised' === $agent_mode ) : ?>
+		<?php if ( 'supervised' === $agentic_agent_mode ) : ?>
 			<strong>Mode:</strong> Supervised - Code changes require approval, documentation updates are automatic.
-		<?php elseif ( 'autonomous' === $agent_mode ) : ?>
+		<?php elseif ( 'autonomous' === $agentic_agent_mode ) : ?>
 			<strong>Mode:</strong> Autonomous - All actions execute automatically (approval queue bypassed).
 		<?php else : ?>
 			<strong>Mode:</strong> Disabled - Agents cannot make file changes.
@@ -45,7 +45,7 @@ $show_empty_note = empty( $pending );
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-settings' ) ); ?>">Change mode</a>
 	</p>
 
-	<?php if ( 'autonomous' === $agent_mode ) : ?>
+	<?php if ( 'autonomous' === $agentic_agent_mode ) : ?>
 		<div class="notice notice-warning">
 			<p>
 				<strong>Warning:</strong> Autonomous mode is enabled. Actions are executed immediately without requiring approval.
@@ -54,7 +54,7 @@ $show_empty_note = empty( $pending );
 		</div>
 	<?php endif; ?>
 
-	<?php if ( $show_empty_note ) : ?>
+	<?php if ( $agentic_show_empty_note ) : ?>
 		<div class="agentic-card" style="margin-top: 20px; padding: 30px; text-align: center;">
 			<span class="dashicons dashicons-thumbs-up" style="font-size: 48px; color: #22c55e; margin-bottom: 10px;"></span>
 			<h2 style="margin: 10px 0;">All caught up!</h2>
@@ -62,47 +62,47 @@ $show_empty_note = empty( $pending );
 		</div>
 	<?php else : ?>
 		<div style="margin-top: 20px;">
-			<?php foreach ( $pending as $item ) : ?>
+			<?php foreach ( $agentic_pending as $agentic_item ) : ?>
 				<?php
-				$action_type  = esc_html( $item['action'] );
-				$action_label = str_replace( '_', ' ', ucwords( $action_type, '_' ) );
-				$params       = $item['params'];
-				$created      = human_time_diff( strtotime( $item['created_at'] ) );
-				$expires      = human_time_diff( strtotime( $item['expires_at'] ) );
+				$agentic_action_type  = esc_html( $agentic_item['action'] );
+				$agentic_action_label = str_replace( '_', ' ', ucwords( $agentic_action_type, '_' ) );
+				$agentic_params       = $agentic_item['params'];
+				$agentic_created      = human_time_diff( strtotime( $agentic_item['created_at'] ) );
+				$agentic_expires      = human_time_diff( strtotime( $agentic_item['expires_at'] ) );
 				?>
-				<div class="agentic-approval-item" data-id="<?php echo esc_attr( $item['id'] ); ?>" style="background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 20px; margin-bottom: 15px;">
+				<div class="agentic-approval-item" data-id="<?php echo esc_attr( $agentic_item['id'] ); ?>" style="background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 20px; margin-bottom: 15px;">
 					<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
 						<div>
 							<h3 style="margin: 0 0 5px 0;">
-								<?php echo esc_html( $action_label ); ?>
+								<?php echo esc_html( $agentic_action_label ); ?>
 							</h3>
 							<p style="margin: 0; color: #666; font-size: 13px;">
-								<strong>Agent:</strong> <?php echo esc_html( $item['agent_id'] ); ?> &nbsp;•&nbsp; 
-								<strong>Requested:</strong> <?php echo esc_html( $created ); ?> ago &nbsp;•&nbsp; 
-								<strong>Expires:</strong> in <?php echo esc_html( $expires ); ?>
+								<strong>Agent:</strong> <?php echo esc_html( $agentic_item['agent_id'] ); ?> &nbsp;•&nbsp; 
+								<strong>Requested:</strong> <?php echo esc_html( $agentic_created ); ?> ago &nbsp;•&nbsp; 
+								<strong>Expires:</strong> in <?php echo esc_html( $agentic_expires ); ?>
 							</p>
 						</div>
 						<div>
-							<button class="button button-primary agentic-approve-btn" data-id="<?php echo esc_attr( $item['id'] ); ?>">
+							<button class="button button-primary agentic-approve-btn" data-id="<?php echo esc_attr( $agentic_item['id'] ); ?>">
 								<span class="dashicons dashicons-yes" style="vertical-align: -2px;"></span> Approve
 							</button>
-							<button class="button agentic-reject-btn" data-id="<?php echo esc_attr( $item['id'] ); ?>" style="margin-left: 8px;">
+							<button class="button agentic-reject-btn" data-id="<?php echo esc_attr( $agentic_item['id'] ); ?>" style="margin-left: 8px;">
 								<span class="dashicons dashicons-no" style="vertical-align: -2px;"></span> Reject
 							</button>
 						</div>
 					</div>
 
-					<?php if ( ! empty( $item['reasoning'] ) ) : ?>
+					<?php if ( ! empty( $agentic_item['reasoning'] ) ) : ?>
 						<div style="background: #f0f6fc; border-left: 4px solid #0073aa; padding: 12px; margin-bottom: 15px;">
 							<p style="margin: 0; font-weight: 600; font-size: 13px;">Agent's Reasoning:</p>
-							<p style="margin: 8px 0 0 0; font-size: 13px;"><?php echo esc_html( $item['reasoning'] ); ?></p>
+							<p style="margin: 8px 0 0 0; font-size: 13px;"><?php echo esc_html( $agentic_item['reasoning'] ); ?></p>
 						</div>
 					<?php endif; ?>
 
 					<details style="margin-top: 10px;">
 						<summary style="cursor: pointer; font-weight: 600; color: #2271b1;">View Details</summary>
 						<div style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; overflow-x: auto;">
-							<pre style="margin: 0; font-size: 12px; white-space: pre-wrap;"><?php echo esc_html( wp_json_encode( $params, JSON_PRETTY_PRINT ) ); ?></pre>
+							<pre style="margin: 0; font-size: 12px; white-space: pre-wrap;"><?php echo esc_html( wp_json_encode( $agentic_params, JSON_PRETTY_PRINT ) ); ?></pre>
 						</div>
 					</details>
 				</div>

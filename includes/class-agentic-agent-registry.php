@@ -110,9 +110,16 @@ class Agentic_Agent_Registry {
 			wp_mkdir_p( $this->agents_dir );
 
 			// Create index.php for security.
-			file_put_contents(
+			global $wp_filesystem;
+			if ( ! function_exists( 'WP_Filesystem' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+			WP_Filesystem();
+
+			$wp_filesystem->put_contents(
 				$this->agents_dir . '/index.php',
-				"<?php\n// Silence is golden.\n"
+				"<?php\n// Silence is golden.\n",
+				FS_CHMOD_FILE
 			);
 		}
 
@@ -362,12 +369,10 @@ class Agentic_Agent_Registry {
 		// Call activation hook if exists.
 		$activation_hook = 'agentic_agent_' . $slug . '_activate';
 		if ( has_action( $activation_hook ) ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook name by design.
 			do_action( $activation_hook );
 		}
 
-		// Add to active agents.
-		$active_agents   = $this->get_active_agents();
-		$active_agents[] = $slug;
 		update_option( self::ACTIVE_AGENTS_OPTION, array_unique( $active_agents ) );
 
 		// Clear cache.
@@ -407,6 +412,7 @@ class Agentic_Agent_Registry {
 		// Call deactivation hook if exists.
 		$deactivation_hook = 'agentic_agent_' . $slug . '_deactivate';
 		if ( has_action( $deactivation_hook ) ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook name by design.
 			do_action( $deactivation_hook );
 		}
 
@@ -479,13 +485,16 @@ class Agentic_Agent_Registry {
 
 				if ( is_wp_error( $result ) ) {
 					// Log error but continue loading other agents.
-					error_log(
-						sprintf(
-							'Agentic: Failed to load agent %s: %s',
-							$slug,
-							$result->get_error_message()
-						)
-					);
+					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+						// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled.
+						error_log(
+							sprintf(
+								'Agentic: Failed to load agent %s: %s',
+								$slug,
+								$result->get_error_message()
+							)
+						);
+					}
 				}
 			}
 		}
@@ -678,11 +687,9 @@ class Agentic_Agent_Registry {
 		// Call uninstall hook if exists.
 		$uninstall_hook = 'agentic_agent_' . $slug . '_uninstall';
 		if ( has_action( $uninstall_hook ) ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook name by design.
 			do_action( $uninstall_hook );
 		}
-
-		// Delete directory.
-		$result = $this->delete_directory( $agent_path );
 
 		if ( ! $result ) {
 			return new WP_Error( 'delete_failed', __( 'Failed to delete agent files.', 'agent-builder' ) );
@@ -752,6 +759,12 @@ class Agentic_Agent_Registry {
 			return false;
 		}
 
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
 		$iterator = new RecursiveIteratorIterator(
 			new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
 			RecursiveIteratorIterator::CHILD_FIRST
@@ -759,13 +772,13 @@ class Agentic_Agent_Registry {
 
 		foreach ( $iterator as $item ) {
 			if ( $item->isDir() ) {
-				rmdir( $item->getPathname() );
+				$wp_filesystem->rmdir( $item->getPathname() );
 			} else {
-				unlink( $item->getPathname() );
+				$wp_filesystem->delete( $item->getPathname() );
 			}
 		}
 
-		return rmdir( $dir );
+		return $wp_filesystem->rmdir( $dir );
 	}
 
 	/**

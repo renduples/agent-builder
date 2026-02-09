@@ -44,6 +44,7 @@ class Audit_Log {
 	): int|false {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom table insert.
 		$result = $wpdb->insert(
 			$wpdb->prefix . 'agentic_audit_log',
 			array(
@@ -92,7 +93,7 @@ class Audit_Log {
 
 		$query = 'SELECT * FROM ' . $wpdb->prefix . 'agentic_audit_log ' . $where_clause . ' ORDER BY created_at DESC LIMIT %d';
 
-	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom table query, where clause built from known safe values.
 		return $wpdb->get_results( $wpdb->prepare( $query, $params ), ARRAY_A );
 	}
 
@@ -111,6 +112,7 @@ class Audit_Log {
 			default => 1,
 		};
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table stats.
 		$stats = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT 
@@ -142,6 +144,7 @@ class Audit_Log {
 	public function cleanup( int $days = 90 ): int {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table cleanup.
 		return $wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->prefix}agentic_audit_log WHERE created_at < DATE_SUB(NOW(), INTERVAL %d DAY)",

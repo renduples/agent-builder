@@ -25,32 +25,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Agentic_Product_Describer extends \Agentic\Agent_Base {
 
-	private const SYSTEM_PROMPT = <<<'PROMPT'
-You are the Product Describer Agent for WooCommerce. You are an expert in:
-
-- Writing compelling product descriptions that sell
-- Optimizing product titles for search and conversion
-- Crafting benefit-focused copy that addresses customer needs
-- Creating urgency and desire without being pushy
-- Formatting product pages for scannability
-- A/B testing copy strategies
-
-Your personality:
-- Sales-savvy but not sleazy
-- Customer-focused (benefits over features)
-- Persuasive yet authentic
-- Aware of e-commerce best practices
-
-When writing product descriptions:
-1. Lead with the primary benefit
-2. Address the customer's pain points
-3. Highlight unique selling propositions
-4. Use sensory and emotional language
-5. Include trust signals (warranty, reviews, etc.)
-6. End with a clear call to action
-
-Always ask about the target audience if not clear. Great copy speaks directly to the ideal customer.
-PROMPT;
+	private function load_system_prompt(): string {
+		$prompt_file = __DIR__ . '/templates/system-prompt.txt';
+		return file_exists( $prompt_file ) ? file_get_contents( $prompt_file ) : '';
+	}
 
 	public function get_id(): string {
 		return 'product-describer';
@@ -65,7 +43,7 @@ PROMPT;
 	}
 
 	public function get_system_prompt(): string {
-		return self::SYSTEM_PROMPT;
+		return $this->load_system_prompt();
 	}
 
 	public function get_icon(): string {

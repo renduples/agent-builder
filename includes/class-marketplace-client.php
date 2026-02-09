@@ -364,10 +364,10 @@ class Marketplace_Client {
 	 * Render revenue page
 	 */
 	public function render_revenue_page(): void {
-		// Enqueue Chart.js for revenue charts.
+		// Enqueue Chart.js for revenue charts (local copy for WordPress.org compliance).
 		wp_enqueue_script(
 			'chartjs',
-			'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+			AGENTIC_PLUGIN_URL . 'assets/js/vendor/chart.umd.min.js',
 			array(),
 			'4.4.1',
 			true
@@ -646,7 +646,13 @@ class Marketplace_Client {
 
 		// Extract to agents directory.
 		$result = unzip_file( $temp_file, $agent_dir );
-		@unlink( $temp_file );
+
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		$wp_filesystem->delete( $temp_file );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -659,7 +665,7 @@ class Marketplace_Client {
 			if ( ! empty( $subdirs ) && file_exists( $subdirs[0] . '/agent.php' ) ) {
 				// Move contents up.
 				$this->move_directory_contents( $subdirs[0], $agent_dir );
-				@rmdir( $subdirs[0] );
+				$wp_filesystem->rmdir( $subdirs[0] );
 			} else {
 				return new \WP_Error( 'invalid_agent', __( 'Invalid agent package: agent.php not found', 'agent-builder' ) );
 			}
@@ -675,12 +681,18 @@ class Marketplace_Client {
 	 * @param string $dest   Destination directory path.
 	 */
 	private function move_directory_contents( string $source, string $dest ): void {
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
 		$files = scandir( $source );
 		foreach ( $files as $file ) {
 			if ( '.' === $file || '..' === $file ) {
 				continue;
 			}
-			rename( $source . '/' . $file, $dest . '/' . $file );
+			$wp_filesystem->move( $source . '/' . $file, $dest . '/' . $file );
 		}
 	}
 
@@ -811,7 +823,10 @@ class Marketplace_Client {
 
 		if ( is_wp_error( $response ) ) {
 			// Log error but don't block deletion.
-			error_log( 'Agentic: Failed to deactivate license for ' . $slug . ': ' . $response->get_error_message() );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled.
+				error_log( 'Agentic: Failed to deactivate license for ' . $slug . ': ' . $response->get_error_message() );
+			}
 		}
 	}
 

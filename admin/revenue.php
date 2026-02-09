@@ -21,31 +21,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Get developer API key.
-$api_key     = get_option( 'agentic_developer_api_key', '' );
-$has_api_key = ! empty( $api_key );
+$agentic_api_key     = get_option( 'agentic_developer_api_key', '' );
+$agentic_has_api_key = ! empty( $agentic_api_key );
 
 // Marketplace API base URL.
-$marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketplace/v1';
+$agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketplace/v1';
 
 ?>
 <div class="wrap agentic-revenue-page">
 	<h1 class="wp-heading-inline"><?php esc_html_e( 'Developer Revenue', 'agent-builder' ); ?></h1>
 	<hr class="wp-header-end">
 
-	<?php if ( ! $has_api_key ) : ?>
+	<?php if ( ! $agentic_has_api_key ) : ?>
 		<?php
 		// Build developer registration URL with pre-filled data.
-		$current_user = wp_get_current_user();
-		$site_url     = get_site_url();
-		$site_name    = get_bloginfo( 'name' );
-		$site_desc    = get_bloginfo( 'description' );
+		$agentic_user      = wp_get_current_user();
+		$agentic_site_url  = get_site_url();
+		$agentic_site_name = get_bloginfo( 'name' );
+		$agentic_site_desc = get_bloginfo( 'description' );
 
-		$register_url = add_query_arg(
+		$agentic_register_url = add_query_arg(
 			array(
-				'username'    => rawurlencode( $current_user->user_login ),
-				'email'       => rawurlencode( $current_user->user_email ),
-				'website'     => rawurlencode( $site_url ),
-				'description' => rawurlencode( $site_desc ),
+				'username'    => rawurlencode( $agentic_user->user_login ),
+				'email'       => rawurlencode( $agentic_user->user_email ),
+				'website'     => rawurlencode( $agentic_site_url ),
+				'description' => rawurlencode( $agentic_site_desc ),
 			),
 			'https://agentic-plugin.com/developer-register/'
 		);
@@ -59,7 +59,7 @@ $marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketplace/v1';
 					<a href="https://agentic-plugin.com/agent-licensing-for-developers/" target="_blank"><?php esc_html_e( 'Learn more', 'agent-builder' ); ?></a>.
 				</p>
 				<div class="connect-actions">
-					<a href="<?php echo esc_url( $register_url ); ?>" class="button button-primary button-hero" target="_blank">
+				<a href="<?php echo esc_url( $agentic_register_url ); ?>" class="button button-primary button-hero" target="_blank">
 						<?php esc_html_e( 'Register as Developer', 'agent-builder' ); ?>
 					</a>
 					<button type="button" class="button button-secondary button-hero" id="agentic-enter-api-key">
@@ -549,8 +549,8 @@ $marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketplace/v1';
 
 <script>
 jQuery(document).ready(function($) {
-	const apiKey = '<?php echo esc_js( $api_key ); ?>';
-	const marketplaceUrl = '<?php echo esc_js( $marketplace_url ); ?>';
+	const apiKey = '<?php echo esc_js( $agentic_api_key ); ?>';
+	const marketplaceUrl = '<?php echo esc_js( $agentic_marketplace_url ); ?>';
 	
 	// API Key form toggle
 	$('#agentic-enter-api-key').on('click', function() {

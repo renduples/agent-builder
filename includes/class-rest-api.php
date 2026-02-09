@@ -16,6 +16,11 @@ declare(strict_types=1);
 
 namespace Agentic;
 
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * REST API handler for agent interactions
  */
@@ -291,6 +296,7 @@ class REST_API {
 	public function get_approvals( \WP_REST_Request $_request ): \WP_REST_Response { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query.
 		$approvals = $wpdb->get_results(
 			"SELECT * FROM {$wpdb->prefix}agentic_approval_queue WHERE status = 'pending' ORDER BY created_at DESC LIMIT 50",
 			ARRAY_A
@@ -315,6 +321,7 @@ class REST_API {
 		$id     = (int) $request->get_param( 'id' );
 		$action = $request->get_param( 'action' );
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query.
 		$approval = $wpdb->get_row(
 			$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}agentic_approval_queue WHERE id = %d", $id ),
 			ARRAY_A
@@ -330,6 +337,7 @@ class REST_API {
 
 		$new_status = 'approve' === $action ? 'approved' : 'rejected';
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table update.
 		$wpdb->update(
 			$wpdb->prefix . 'agentic_approval_queue',
 			array(
@@ -383,10 +391,19 @@ class REST_API {
 				return;
 			}
 
-			if ( ! empty( $params['content'] ) && is_writable( dirname( $full_path ) ) ) {
-				file_put_contents( $full_path, $params['content'] );
-				// Git commands intentionally removed for security.
-				// Changes are written to disk but require manual commit via terminal.
+			if ( ! empty( $params['content'] ) ) {
+				global $wp_filesystem;
+				if ( ! function_exists( 'WP_Filesystem' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/file.php';
+				}
+				WP_Filesystem();
+
+				$dir = dirname( $full_path );
+				if ( $wp_filesystem->is_writable( $dir ) ) {
+					$wp_filesystem->put_contents( $full_path, $params['content'], FS_CHMOD_FILE );
+					// Git commands intentionally removed for security.
+					// Changes are written to disk but require manual commit via terminal.
+				}
 			}
 		}
 	}

@@ -320,6 +320,7 @@ class Response_Cache {
 		global $wpdb;
 
 		// For database transients.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Bulk cleanup operation.
 		$count = $wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
@@ -351,6 +352,7 @@ class Response_Cache {
 	public static function get_stats(): array {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Stats query.
 		$count = (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE %s",

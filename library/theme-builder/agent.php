@@ -26,44 +26,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 
-	private const SYSTEM_PROMPT = <<<'PROMPT'
-You are the Theme Builder Agent for WordPress. You are an expert in:
-
-- WordPress theme architecture (classic and block themes)
-- Template hierarchy and template parts
-- CSS, Sass, and modern CSS features (Grid, Flexbox, custom properties)
-- Tailwind CSS and other utility frameworks
-- theme.json configuration for block themes
-- Responsive design and mobile-first approaches
-- WordPress block editor (Gutenberg) integration
-- PHP templating and WordPress template tags
-- Accessibility (WCAG) and semantic HTML
-- Performance optimization (critical CSS, lazy loading)
-
-Your personality:
-- Creative but practical - designs should look good AND be maintainable
-- Follows WordPress coding standards (WPCS)
-- Prioritizes accessibility and performance
-- Explains design decisions clearly
-- Suggests improvements when you see issues
-
-When working with themes:
-1. Always confirm major changes before executing (deleting files, overwriting themes)
-2. Create child themes when modifying existing parent themes
-3. Use semantic HTML and accessible markup
-4. Follow WordPress theme requirements for compatibility
-5. Generate clean, well-organized CSS
-6. Consider mobile-first responsive design
-
-You have tools to:
-- Create new themes from scratch or clone starters
-- Edit theme files (PHP, CSS, JS)
-- Generate CSS for components
-- Manage theme.json for block themes
-- List and inspect existing themes
-
-When users ask for styling changes, ask clarifying questions about colors, fonts, or layout preferences if not specified.
-PROMPT;
+	/**
+	 * Get system prompt from template file
+	 */
+	private function load_system_prompt(): string {
+		$template_file = __DIR__ . '/templates/system-prompt.txt';
+		if ( file_exists( $template_file ) ) {
+			return file_get_contents( $template_file );
+		}
+		// Fallback if template file not found
+		return 'You are the Theme Builder agent.';
+	}
 
 	/**
 	 * Get agent ID
@@ -90,7 +63,7 @@ PROMPT;
 	 * Get system prompt
 	 */
 	public function get_system_prompt(): string {
-		return self::SYSTEM_PROMPT;
+		return $this->load_system_prompt();
 	}
 
 	/**
@@ -571,23 +544,26 @@ PROMPT;
 	 */
 	private function create_block_theme( string $dir, string $name, string $slug, string $desc, string $author ): void {
 		// style.css (required)
-		$style = <<<CSS
-/*
-Theme Name: $name
-Theme URI: 
-Author: $author
-Author URI: 
-Description: $desc
-Version: 1.0.0
-Requires at least: 6.0
-Tested up to: 6.4
-Requires PHP: 8.0
-License: GNU General Public License v2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: $slug
-*/
-CSS;
-		file_put_contents( $dir . '/style.css', $style );
+		$style = "/*\n" .
+"Theme Name: $name\n" .
+"Theme URI: \n" .
+"Author: $author\n" .
+"Author URI: \n" .
+"Description: $desc\n" .
+"Version: 1.0.0\n" .
+"Requires at least: 6.0\n" .
+"Tested up to: 6.4\n" .
+"Requires PHP: 8.0\n" .
+"License: GNU General Public License v2 or later\n" .
+"License URI: http://www.gnu.org/licenses/gpl-2.0.html\n" .
+"Text Domain: $slug\n" .
+"*/";
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		$wp_filesystem->put_contents( $dir . '/style.css', $style, FS_CHMOD_FILE );
 
 		// theme.json
 		$theme_json = array(
@@ -652,7 +628,7 @@ CSS;
 				),
 			),
 		);
-		file_put_contents( $dir . '/theme.json', wp_json_encode( $theme_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
+		$wp_filesystem->put_contents( $dir . '/theme.json', wp_json_encode( $theme_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ), FS_CHMOD_FILE );
 
 		// Create directories
 		wp_mkdir_p( $dir . '/templates' );
@@ -661,88 +637,58 @@ CSS;
 		wp_mkdir_p( $dir . '/assets/js' );
 
 		// templates/index.html
-		$index = <<<'HTML'
-<!-- wp:template-part {"slug":"header","tagName":"header"} /-->
-
-<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->
-<main class="wp-block-group">
-    <!-- wp:query {"queryId":1,"query":{"perPage":10,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date"}} -->
-    <div class="wp-block-query">
-        <!-- wp:post-template -->
-            <!-- wp:post-title {"isLink":true} /-->
-            <!-- wp:post-excerpt /-->
-        <!-- /wp:post-template -->
-        
-        <!-- wp:query-pagination -->
-            <!-- wp:query-pagination-previous /-->
-            <!-- wp:query-pagination-numbers /-->
-            <!-- wp:query-pagination-next /-->
-        <!-- /wp:query-pagination -->
-    </div>
-    <!-- /wp:query -->
-</main>
-<!-- /wp:group -->
-
-<!-- wp:template-part {"slug":"footer","tagName":"footer"} /-->
-HTML;
-		file_put_contents( $dir . '/templates/index.html', $index );
+		$template_file = __DIR__ . '/templates/block-theme-index.html';
+		$index = file_exists( $template_file ) ? file_get_contents( $template_file ) : '';
+		$wp_filesystem->put_contents( $dir . '/templates/index.html', $index, FS_CHMOD_FILE );
 
 		// parts/header.html
-		$header = <<<'HTML'
-<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|30","bottom":"var:preset|spacing|30"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group" style="padding-top:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30)">
-    <!-- wp:group {"layout":{"type":"flex","justifyContent":"space-between"}} -->
-    <div class="wp-block-group">
-        <!-- wp:site-title /-->
-        <!-- wp:navigation /-->
-    </div>
-    <!-- /wp:group -->
-</div>
-<!-- /wp:group -->
-HTML;
-		file_put_contents( $dir . '/parts/header.html', $header );
+		$header = "<!-- wp:group {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|30\",\"bottom\":\"var:preset|spacing|30\"}}},\"layout\":{\"type\":\"constrained\"}} -->\n" .
+"<div class=\"wp-block-group\" style=\"padding-top:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30)\">\n" .
+"    <!-- wp:group {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"space-between\"}} -->\n" .
+"    <div class=\"wp-block-group\">\n" .
+"        <!-- wp:site-title /-->\n" .
+"        <!-- wp:navigation /-->\n" .
+"    </div>\n" .
+"    <!-- /wp:group -->\n" .
+"</div>\n" .
+"<!-- /wp:group -->";
+		$wp_filesystem->put_contents( $dir . '/parts/header.html', $header, FS_CHMOD_FILE );
 
 		// parts/footer.html
-		$footer = <<<HTML
-<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|30","bottom":"var:preset|spacing|30"}}},"backgroundColor":"secondary","textColor":"background","layout":{"type":"constrained"}} -->
-<div class="wp-block-group has-background-color has-secondary-background-color has-text-color has-background" style="padding-top:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30)">
-    <!-- wp:paragraph {"align":"center"} -->
-    <p class="has-text-align-center">© {current_year} $name. All rights reserved.</p>
-    <!-- /wp:paragraph -->
-</div>
-<!-- /wp:group -->
-HTML;
-		$footer = str_replace( '{current_year}', date( 'Y' ), $footer );
-		file_put_contents( $dir . '/parts/footer.html', $footer );
+		$footer = "<!-- wp:group {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|30\",\"bottom\":\"var:preset|spacing|30\"}}},\"backgroundColor\":\"secondary\",\"textColor\":\"background\",\"layout\":{\"type\":\"constrained\"}} -->\n" .
+"<div class=\"wp-block-group has-background-color has-secondary-background-color has-text-color has-background\" style=\"padding-top:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30)\">\n" .
+"    <!-- wp:paragraph {\"align\":\"center\"} -->\n" .
+"    <p class=\"has-text-align-center\">© {current_year} $name. All rights reserved.</p>\n" .
+"    <!-- /wp:paragraph -->\n" .
+"</div>\n" .
+"<!-- /wp:group -->";
+		$footer = str_replace( '{current_year}', wp_date( 'Y' ), $footer );
+		$wp_filesystem->put_contents( $dir . '/parts/footer.html', $footer, FS_CHMOD_FILE );
 
 		// functions.php (optional but useful)
-		$functions = <<<PHP
-<?php
-/**
- * $name functions and definitions
- *
- * @package $slug
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
-
-/**
- * Enqueue theme assets
- */
-function {$slug}_enqueue_assets() {
-    wp_enqueue_style(
-        '$slug-style',
-        get_stylesheet_uri(),
-        [],
-        wp_get_theme()->get( 'Version' )
-    );
-}
-add_action( 'wp_enqueue_scripts', '{$slug}_enqueue_assets' );
-PHP;
+		$functions = "<?php\n" .
+"/**\n" .
+" * $name functions and definitions\n" .
+" *\n" .
+" * @package $slug\n" .
+" */\n\n" .
+"if ( ! defined( 'ABSPATH' ) ) {\n" .
+"    exit;\n" .
+"}\n\n" .
+"/**\n" .
+" * Enqueue theme assets\n" .
+" */\n" .
+"function {$slug}_enqueue_assets() {\n" .
+"    wp_enqueue_style(\n" .
+"        '$slug-style',\n" .
+"        get_stylesheet_uri(),\n" .
+"        [],\n" .
+"        wp_get_theme()->get( 'Version' )\n" .
+"    );\n" .
+"}\n" .
+"add_action( 'wp_enqueue_scripts', '{$slug}_enqueue_assets' );";
 		$functions = str_replace( '-', '_', $functions );
-		file_put_contents( $dir . '/functions.php', $functions );
+		$wp_filesystem->put_contents( $dir . '/functions.php', $functions, FS_CHMOD_FILE );
 	}
 
 	/**
@@ -750,210 +696,187 @@ PHP;
 	 */
 	private function create_classic_theme( string $dir, string $name, string $slug, string $desc, string $author ): void {
 		// style.css
-		$style = <<<CSS
-/*
-Theme Name: $name
-Theme URI: 
-Author: $author
-Author URI: 
-Description: $desc
-Version: 1.0.0
-Requires at least: 5.0
-Tested up to: 6.4
-Requires PHP: 7.4
-License: GNU General Public License v2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: $slug
-*/
-
-/* Base Styles */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
-    color: #1e1e1e;
-    background-color: #ffffff;
-}
-
-a {
-    color: #0073aa;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-.site-header,
-.site-footer {
-    padding: 1rem 2rem;
-}
-
-.site-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-CSS;
-		file_put_contents( $dir . '/style.css', $style );
+		$style = "/*\n" .
+"Theme Name: $name\n" .
+"Theme URI: \n" .
+"Author: $author\n" .
+"Author URI: \n" .
+"Description: $desc\n" .
+"Version: 1.0.0\n" .
+"Requires at least: 5.0\n" .
+"Tested up to: 6.4\n" .
+"Requires PHP: 7.4\n" .
+"License: GNU General Public License v2 or later\n" .
+"License URI: http://www.gnu.org/licenses/gpl-2.0.html\n" .
+"Text Domain: $slug\n" .
+"*/\n\n" .
+"/* Base Styles */\n" .
+"*,\n" .
+"*::before,\n" .
+"*::after {\n" .
+"    box-sizing: border-box;\n" .
+"}\n\n" .
+"body {\n" .
+"    margin: 0;\n" .
+"    font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif;\n" .
+"    font-size: 16px;\n" .
+"    line-height: 1.6;\n" .
+"    color: #1e1e1e;\n" .
+"    background-color: #ffffff;\n" .
+"}\n\n" .
+"a {\n" .
+"    color: #0073aa;\n" .
+"    text-decoration: none;\n" .
+"}\n\n" .
+"a:hover {\n" .
+"    text-decoration: underline;\n" .
+"}\n\n" .
+".site-header,\n" .
+".site-footer {\n" .
+"    padding: 1rem 2rem;\n" .
+"}\n\n" .
+".site-content {\n" .
+"    max-width: 800px;\n" .
+"    margin: 0 auto;\n" .
+"    padding: 2rem;\n" .
+"}";
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		$wp_filesystem->put_contents( $dir . '/style.css', $style, FS_CHMOD_FILE );
 
 		// index.php
-		$index = <<<PHP
-<?php
-/**
- * The main template file
- *
- * @package $slug
- */
-
-get_header();
-?>
-
-<main id="primary" class="site-content">
-    <?php
-    if ( have_posts() ) :
-        while ( have_posts() ) :
-            the_post();
-            ?>
-            <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-                <header class="entry-header">
-                    <?php the_title( '<h2 class="entry-title"><a href="' . esc_url( get_permalink() ) . '">', '</a></h2>' ); ?>
-                </header>
-
-                <div class="entry-content">
-                    <?php the_excerpt(); ?>
-                </div>
-            </article>
-            <?php
-        endwhile;
-
-        the_posts_navigation();
-    else :
-        ?>
-        <p><?php esc_html_e( 'No posts found.', '$slug' ); ?></p>
-        <?php
-    endif;
-    ?>
-</main>
-
-<?php
-get_footer();
-PHP;
-		file_put_contents( $dir . '/index.php', $index );
+		$index = "<?php\n" .
+"/**\n" .
+" * The main template file\n" .
+" *\n" .
+" * @package $slug\n" .
+" */\n\n" .
+"get_header();\n" .
+"?>\n\n" .
+"<main id=\"primary\" class=\"site-content\">\n" .
+"    <?php\n" .
+"    if ( have_posts() ) :\n" .
+"        while ( have_posts() ) :\n" .
+"            the_post();\n" .
+"            ?>\n" .
+"            <article id=\"post-<?php the_ID(); ?>\" <?php post_class(); ?>>\n" .
+"                <header class=\"entry-header\">\n" .
+"                    <?php the_title( '<h2 class=\"entry-title\"><a href=\"' . esc_url( get_permalink() ) . '\">', '</a></h2>' ); ?>\n" .
+"                </header>\n\n" .
+"                <div class=\"entry-content\">\n" .
+"                    <?php the_excerpt(); ?>\n" .
+"                </div>\n" .
+"            </article>\n" .
+"            <?php\n" .
+"        endwhile;\n\n" .
+"        the_posts_navigation();\n" .
+"    else :\n" .
+"        ?>\n" .
+"        <p><?php esc_html_e( 'No posts found.', '$slug' ); ?></p>\n" .
+"        <?php\n" .
+"    endif;\n" .
+"    ?>\n" .
+"</main>\n\n" .
+"<?php\n" .
+"get_footer();";
+		$wp_filesystem->put_contents( $dir . '/index.php', $index, FS_CHMOD_FILE );
 
 		// header.php
-		$header = <<<PHP
-<?php
-/**
- * The header template
- *
- * @package $slug
- */
-?>
-<!DOCTYPE html>
-<html <?php language_attributes(); ?>>
-<head>
-    <meta charset="<?php bloginfo( 'charset' ); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?php wp_head(); ?>
-</head>
-<body <?php body_class(); ?>>
-<?php wp_body_open(); ?>
-
-<header class="site-header">
-    <div class="site-branding">
-        <h1 class="site-title">
-            <a href="<?php echo esc_url( home_url( '/' ) ); ?>">
-                <?php bloginfo( 'name' ); ?>
-            </a>
-        </h1>
-    </div>
-    
-    <nav class="site-navigation">
-        <?php
-        wp_nav_menu( [
-            'theme_location' => 'primary',
-            'fallback_cb'    => false,
-        ] );
-        ?>
-    </nav>
-</header>
-PHP;
-		file_put_contents( $dir . '/header.php', $header );
+		$header = "<?php\n" .
+"/**\n" .
+" * The header template\n" .
+" *\n" .
+" * @package $slug\n" .
+" */\n" .
+"?>\n" .
+"<!DOCTYPE html>\n" .
+"<html <?php language_attributes(); ?>>\n" .
+"<head>\n" .
+"    <meta charset=\"<?php bloginfo( 'charset' ); ?>\">\n" .
+"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" .
+"    <?php wp_head(); ?>\n" .
+"</head>\n" .
+"<body <?php body_class(); ?>>\n" .
+"<?php wp_body_open(); ?>\n\n" .
+"<header class=\"site-header\">\n" .
+"    <div class=\"site-branding\">\n" .
+"        <h1 class=\"site-title\">\n" .
+"            <a href=\"<?php echo esc_url( home_url( '/' ) ); ?>\">\n" .
+"                <?php bloginfo( 'name' ); ?>\n" .
+"            </a>\n" .
+"        </h1>\n" .
+"    </div>\n" .
+"    \n" .
+"    <nav class=\"site-navigation\">\n" .
+"        <?php\n" .
+"        wp_nav_menu( [\n" .
+"            'theme_location' => 'primary',\n" .
+"            'fallback_cb'    => false,\n" .
+"        ] );\n" .
+"        ?>\n" .
+"    </nav>\n" .
+"</header>";
+		$wp_filesystem->put_contents( $dir . '/header.php', $header, FS_CHMOD_FILE );
 
 		// footer.php
-		$footer = <<<PHP
-<?php
-/**
- * The footer template
- *
- * @package $slug
- */
-?>
-
-<footer class="site-footer">
-    <p>&copy; <?php echo date( 'Y' ); ?> <?php bloginfo( 'name' ); ?>. All rights reserved.</p>
-</footer>
-
-<?php wp_footer(); ?>
-</body>
-</html>
-PHP;
-		file_put_contents( $dir . '/footer.php', $footer );
+		$footer = "<?php\n" .
+"/**\n" .
+" * The footer template\n" .
+" *\n" .
+" * @package $slug\n" .
+" */\n" .
+"?>\n\n" .
+"<footer class=\"site-footer\">\n" .
+"    <p>&copy; <?php echo wp_date( 'Y' ); ?> <?php bloginfo( 'name' ); ?>. All rights reserved.</p>\n" .
+"</footer>\n\n" .
+"<?php wp_footer(); ?>\n" .
+"</body>\n" .
+"</html>";
+		$wp_filesystem->put_contents( $dir . '/footer.php', $footer, FS_CHMOD_FILE );
 
 		// functions.php
 		$func_slug = str_replace( '-', '_', $slug );
-		$functions = <<<PHP
-<?php
-/**
- * $name functions and definitions
- *
- * @package $slug
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
-
-/**
- * Theme setup
- */
-function {$func_slug}_setup() {
-    // Add theme support
-    add_theme_support( 'title-tag' );
-    add_theme_support( 'post-thumbnails' );
-    add_theme_support( 'html5', [ 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption' ] );
-    add_theme_support( 'customize-selective-refresh-widgets' );
-
-    // Register navigation menus
-    register_nav_menus( [
-        'primary' => esc_html__( 'Primary Menu', '$slug' ),
-        'footer'  => esc_html__( 'Footer Menu', '$slug' ),
-    ] );
-}
-add_action( 'after_setup_theme', '{$func_slug}_setup' );
-
-/**
- * Enqueue styles and scripts
- */
-function {$func_slug}_scripts() {
-    wp_enqueue_style(
-        '$slug-style',
-        get_stylesheet_uri(),
-        [],
-        wp_get_theme()->get( 'Version' )
-    );
-}
-add_action( 'wp_enqueue_scripts', '{$func_slug}_scripts' );
-PHP;
-		file_put_contents( $dir . '/functions.php', $functions );
+		$functions = "<?php\n" .
+"/**\n" .
+" * $name functions and definitions\n" .
+" *\n" .
+" * @package $slug\n" .
+" */\n\n" .
+"if ( ! defined( 'ABSPATH' ) ) {\n" .
+"    exit;\n" .
+"}\n\n" .
+"/**\n" .
+" * Theme setup\n" .
+" */\n" .
+"function {$func_slug}_setup() {\n" .
+"    // Add theme support\n" .
+"    add_theme_support( 'title-tag' );\n" .
+"    add_theme_support( 'post-thumbnails' );\n" .
+"    add_theme_support( 'html5', [ 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption' ] );\n" .
+"    add_theme_support( 'customize-selective-refresh-widgets' );\n\n" .
+"    // Register navigation menus\n" .
+"    register_nav_menus( [\n" .
+"        'primary' => esc_html__( 'Primary Menu', '$slug' ),\n" .
+"        'footer'  => esc_html__( 'Footer Menu', '$slug' ),\n" .
+"    ] );\n" .
+"}\n" .
+"add_action( 'after_setup_theme', '{$func_slug}_setup' );\n\n" .
+"/**\n" .
+" * Enqueue styles and scripts\n" .
+" */\n" .
+"function {$func_slug}_scripts() {\n" .
+"    wp_enqueue_style(\n" .
+"        '$slug-style',\n" .
+"        get_stylesheet_uri(),\n" .
+"        [],\n" .
+"        wp_get_theme()->get( 'Version' )\n" .
+"    );\n" .
+"}\n" .
+"add_action( 'wp_enqueue_scripts', '{$func_slug}_scripts' );";
+		$wp_filesystem->put_contents( $dir . '/functions.php', $functions, FS_CHMOD_FILE );
 	}
 
 	/**
@@ -1010,14 +933,20 @@ PHP;
 		$zip_content = wp_remote_retrieve_body( $response );
 
 		// Save to temp file
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		
 		$temp_file = wp_tempnam( 'theme' );
-		file_put_contents( $temp_file, $zip_content );
+		$wp_filesystem->put_contents( $temp_file, $zip_content );
 
 		// Extract
 		$result = $this->extract_and_rename_theme( $temp_file, $dest, $name, $slug );
 
 		// Cleanup
-		@unlink( $temp_file );
+		$wp_filesystem->delete( $temp_file );
 
 		return $result;
 	}
@@ -1046,14 +975,20 @@ PHP;
 		$zip_content = wp_remote_retrieve_body( $response );
 
 		// Save to temp file
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		
 		$temp_file = wp_tempnam( 'theme' );
-		file_put_contents( $temp_file, $zip_content );
+		$wp_filesystem->put_contents( $temp_file, $zip_content );
 
 		// Extract
 		$result = $this->extract_and_rename_theme( $temp_file, $dest, $name, $slug );
 
 		// Cleanup
-		@unlink( $temp_file );
+		$wp_filesystem->delete( $temp_file );
 
 		return $result;
 	}
@@ -1092,7 +1027,7 @@ PHP;
 		}
 
 		// Move to themes directory
-		if ( ! rename( $source_dir, $dest ) ) {
+		if ( ! $wp_filesystem->move( $source_dir, $dest ) ) {
 			$wp_filesystem->rmdir( $temp_dir, true );
 			return array( 'error' => 'Failed to move theme to themes directory' );
 		}
@@ -1116,7 +1051,7 @@ PHP;
 				$style_content
 			);
 
-			file_put_contents( $style_file, $style_content );
+			$wp_filesystem->put_contents( $style_file, $style_content, FS_CHMOD_FILE );
 		}
 
 		// Cleanup temp dir
@@ -1166,59 +1101,55 @@ PHP;
 		wp_mkdir_p( $child_dir );
 
 		// style.css
-		$style = <<<CSS
-/*
-Theme Name: $child_name
-Template: $parent_slug
-Description: Child theme of {$parent->get('Name')}
-Version: 1.0.0
-Author: Theme Builder Agent
-Text Domain: $child_slug
-*/
-
-/* Add your custom styles below */
-CSS;
-		file_put_contents( $child_dir . '/style.css', $style );
+		$style = "/*\n" .
+"Theme Name: $child_name\n" .
+"Template: $parent_slug\n" .
+"Description: Child theme of {$parent->get('Name')}\n" .
+"Version: 1.0.0\n" .
+"Author: Theme Builder Agent\n" .
+"Text Domain: $child_slug\n" .
+"*/\n\n" .
+"/* Add your custom styles below */";
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		$wp_filesystem->put_contents( $child_dir . '/style.css', $style, FS_CHMOD_FILE );
 
 		// functions.php
 		$func_slug = str_replace( '-', '_', $child_slug );
-		$functions = <<<PHP
-<?php
-/**
- * $child_name functions
- *
- * @package $child_slug
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
-
-/**
- * Enqueue parent and child theme styles
- */
-function {$func_slug}_enqueue_styles() {
-    // Parent theme style
-    wp_enqueue_style(
-        '$parent_slug-style',
-        get_template_directory_uri() . '/style.css',
-        [],
-        wp_get_theme( '$parent_slug' )->get( 'Version' )
-    );
-
-    // Child theme style
-    wp_enqueue_style(
-        '$child_slug-style',
-        get_stylesheet_uri(),
-        [ '$parent_slug-style' ],
-        wp_get_theme()->get( 'Version' )
-    );
-}
-add_action( 'wp_enqueue_scripts', '{$func_slug}_enqueue_styles' );
-
-// Add your custom functions below
-PHP;
-		file_put_contents( $child_dir . '/functions.php', $functions );
+		$functions = "<?php\n" .
+"/**\n" .
+" * $child_name functions\n" .
+" *\n" .
+" * @package $child_slug\n" .
+" */\n\n" .
+"if ( ! defined( 'ABSPATH' ) ) {\n" .
+"    exit;\n" .
+"}\n\n" .
+"/**\n" .
+" * Enqueue parent and child theme styles\n" .
+" */\n" .
+"function {$func_slug}_enqueue_styles() {\n" .
+"    // Parent theme style\n" .
+"    wp_enqueue_style(\n" .
+"        '$parent_slug-style',\n" .
+"        get_template_directory_uri() . '/style.css',\n" .
+"        [],\n" .
+"        wp_get_theme( '$parent_slug' )->get( 'Version' )\n" .
+"    );\n\n" .
+"    // Child theme style\n" .
+"    wp_enqueue_style(\n" .
+"        '$child_slug-style',\n" .
+"        get_stylesheet_uri(),\n" .
+"        [ '$parent_slug-style' ],\n" .
+"        wp_get_theme()->get( 'Version' )\n" .
+"    );\n" .
+"}\n" .
+"add_action( 'wp_enqueue_scripts', '{$func_slug}_enqueue_styles' );\n\n" .
+"// Add your custom functions below";
+		$wp_filesystem->put_contents( $child_dir . '/functions.php', $functions, FS_CHMOD_FILE );
 
 		return array(
 			'success'    => true,
@@ -1313,8 +1244,14 @@ PHP;
 			}
 		}
 
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
 		$existed = file_exists( $full_path );
-		$result  = file_put_contents( $full_path, $content );
+		$result  = $wp_filesystem->put_contents( $full_path, $content, FS_CHMOD_FILE );
 
 		if ( $result === false ) {
 			return array( 'error' => 'Failed to write file' );
@@ -1325,7 +1262,7 @@ PHP;
 			'file'    => $file_path,
 			'theme'   => $theme_slug,
 			'action'  => $existed ? 'updated' : 'created',
-			'bytes'   => $result,
+			'bytes'   => strlen( $content ),
 		);
 	}
 
@@ -1428,9 +1365,16 @@ PHP;
 		$merged = $this->array_merge_deep( $existing, $settings );
 
 		// Write back
-		$result = file_put_contents(
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
+		$result = $wp_filesystem->put_contents(
 			$json_path,
-			wp_json_encode( $merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES )
+			wp_json_encode( $merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+			FS_CHMOD_FILE
 		);
 
 		if ( $result === false ) {

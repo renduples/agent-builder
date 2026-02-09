@@ -1,0 +1,51 @@
+<?php
+/**
+ * Uninstall script.
+ *
+ * This file runs when the plugin is deleted via the WordPress admin.
+ * It removes all plugin data from the database.
+ *
+ * @package Plugin_Uninstall
+ */
+
+// Exit if accessed directly or not uninstalling.
+if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+	exit;
+}
+
+// Delete plugin options.
+$options = array(
+	'{{prefix}}_settings',
+	'{{prefix}}_version',
+);
+
+foreach ( $options as $option ) {
+	delete_option( $option );
+	delete_site_option( $option ); // For multisite.
+}
+
+// Delete transients.
+delete_transient( '{{prefix}}_cache' );
+
+// Clean up any scheduled events.
+wp_clear_scheduled_hook( '{{prefix}}_cron_hook' );
+
+// Optionally remove custom post types and their data.
+// Uncomment to enable (this is destructive!):
+/*
+$posts = get_posts(
+	array(
+		'post_type'      => '{{prefix}}_custom_type',
+		'posts_per_page' => -1,
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+	)
+);
+
+foreach ( $posts as $post_id ) {
+	wp_delete_post( $post_id, true );
+}
+*/
+
+// Clear any cached data.
+wp_cache_flush();

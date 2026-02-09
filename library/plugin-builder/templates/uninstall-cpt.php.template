@@ -1,0 +1,14 @@
+
+// Delete {{post_type}} posts.
+$posts = get_posts(
+	array(
+		'post_type'      => '{{post_type}}',
+		'posts_per_page' => -1,
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+	)
+);
+
+foreach ( $posts as $post_id ) {
+	wp_delete_post( $post_id, true );
+}

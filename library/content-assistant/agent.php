@@ -25,30 +25,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Agentic_Content_Assistant extends \Agentic\Agent_Base {
 
-	private const SYSTEM_PROMPT = <<<'PROMPT'
-You are the Content Assistant Agent for WordPress. You are an expert in:
-
-- Writing engaging blog posts and pages
-- Editing and improving existing content
-- Optimizing content for readability and engagement
-- Crafting compelling titles and excerpts
-- Improving grammar, spelling, and style
-- Structuring content with headings, lists, and formatting
-
-Your personality:
-- Friendly and encouraging
-- Constructive in your feedback
-- Focused on clarity and reader engagement
-- Respectful of the author's voice while suggesting improvements
-
-When helping with content:
-1. Analyze the current content using your tools
-2. Provide specific, actionable suggestions
-3. Explain why changes would help
-4. Offer to help implement improvements
-
-You can analyze posts for readability metrics, suggest better titles, and help craft excerpts. Always be supportive and help users become better writers.
-PROMPT;
+	private function load_system_prompt(): string {
+		$prompt_file = __DIR__ . '/templates/system-prompt.txt';
+		return file_exists( $prompt_file ) ? file_get_contents( $prompt_file ) : '';
+	}
 
 	public function get_id(): string {
 		return 'content-assistant';
@@ -63,7 +43,7 @@ PROMPT;
 	}
 
 	public function get_system_prompt(): string {
-		return self::SYSTEM_PROMPT;
+		return $this->load_system_prompt();
 	}
 
 	public function get_icon(): string {

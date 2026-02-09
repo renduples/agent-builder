@@ -18,6 +18,11 @@ declare(strict_types=1);
 
 namespace Agentic;
 
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Jobs API class
  */

@@ -1,0 +1,8 @@
+
+	add_settings_field(
+		'{{field_id}}',
+		__( '{{field_label}}', '{{prefix}}' ),
+		'{{prefix}}_render_{{field_id}}_field',
+		'{{menu_slug}}',
+		'{{section_id}}'
+	);

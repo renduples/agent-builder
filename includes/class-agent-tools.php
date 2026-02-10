@@ -374,7 +374,10 @@ class Agent_Tools {
 			);
 		}
 
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local files.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local files.
+		$content = file_get_contents( $full_path );
+		$size    = strlen( $content );
+
 		if ( $size > 100000 ) {
 			$content = substr( $content, 0, 100000 ) . "\n\n[Content truncated - file too large]";
 		}
@@ -477,7 +480,8 @@ class Agent_Tools {
 					if ( strpos( $file->getPathname(), 'vendor/' ) !== false || strpos( $file->getPathname(), 'node_modules/' ) !== false ) {
 						continue;
 					}
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local files.					$content = file_get_contents( $file->getPathname() );
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local files.
+					$content = file_get_contents( $file->getPathname() );
 					if ( preg_match( "/{$pattern}/i", $content, $matches, PREG_OFFSET_CAPTURE ) ) {
 						$relative_path = str_replace( trailingslashit( $this->repo_path ), '', $file->getPathname() );
 						$line_number   = substr_count( substr( $content, 0, $matches[0][1] ), "\n" ) + 1;

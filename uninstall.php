@@ -49,8 +49,9 @@ foreach ( $agentic_options_to_delete as $agentic_option ) {
 $agentic_tables_to_drop = array(
 	$wpdb->prefix . 'agentic_jobs',
 	$wpdb->prefix . 'agentic_audit_log',
-	$wpdb->prefix . 'agentic_response_cache',
 	$wpdb->prefix . 'agentic_approval_queue',
+	$wpdb->prefix . 'agentic_memory',
+	$wpdb->prefix . 'agentic_security_log',
 );
 
 foreach ( $agentic_tables_to_drop as $agentic_table ) {

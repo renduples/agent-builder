@@ -23,29 +23,48 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 
 if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_settings_nonce' ) ) {
-	// Core settings.
-	update_option( 'agentic_llm_provider', sanitize_text_field( wp_unslash( $_POST['agentic_llm_provider'] ?? 'openai' ) ) );
-	update_option( 'agentic_llm_api_key', sanitize_text_field( wp_unslash( $_POST['agentic_llm_api_key'] ?? '' ) ) );
-	update_option( 'agentic_model', sanitize_text_field( wp_unslash( $_POST['agentic_model'] ?? 'gpt-4o' ) ) );
-	update_option( 'agentic_agent_mode', sanitize_text_field( wp_unslash( $_POST['agentic_agent_mode'] ?? 'supervised' ) ) );
+	$agentic_save_tab = sanitize_text_field( wp_unslash( $_POST['tab'] ?? 'general' ) );
 
-	// Cache settings.
-	update_option( 'agentic_response_cache_enabled', isset( $_POST['agentic_response_cache_enabled'] ) );
-	update_option( 'agentic_response_cache_ttl', absint( $_POST['agentic_response_cache_ttl'] ?? 3600 ) );
+	// Only save settings for the active tab to avoid overwriting other tabs with defaults.
+	if ( 'general' === $agentic_save_tab ) {
+		$agentic_new_provider = sanitize_text_field( wp_unslash( $_POST['agentic_llm_provider'] ?? 'openai' ) );
+		$agentic_new_model    = sanitize_text_field( wp_unslash( $_POST['agentic_model'] ?? '' ) );
 
-	// Security settings.
-	update_option( 'agentic_security_enabled', isset( $_POST['agentic_security_enabled'] ) );
-	update_option( 'agentic_rate_limit_authenticated', absint( $_POST['agentic_rate_limit_authenticated'] ?? 30 ) );
-	update_option( 'agentic_rate_limit_anonymous', absint( $_POST['agentic_rate_limit_anonymous'] ?? 10 ) );
-	update_option( 'agentic_allow_anonymous_chat', isset( $_POST['agentic_allow_anonymous_chat'] ) );
+		// If model is empty or doesn't belong to the selected provider, use the provider's default.
+		if ( empty( $agentic_new_model ) ) {
+			$agentic_provider_defaults = array(
+				'openai'    => 'gpt-4o',
+				'anthropic' => 'claude-3-5-sonnet-20241022',
+				'xai'       => 'grok-3',
+				'google'    => 'gemini-2.0-flash-exp',
+				'mistral'   => 'mistral-large-latest',
+			);
+			$agentic_new_model = $agentic_provider_defaults[ $agentic_new_provider ] ?? 'gpt-4o';
+		}
 
-
-	// Handle cache clear.
-	if ( isset( $_POST['agentic_clear_cache'] ) ) {
-		$agentic_cleared = \Agentic\Response_Cache::clear_all();
-		echo '<div class="notice notice-info"><p>Cleared ' . esc_html( $agentic_cleared ) . ' cached responses.</p></div>';
+		update_option( 'agentic_llm_provider', $agentic_new_provider );
+		update_option( 'agentic_llm_api_key', sanitize_text_field( wp_unslash( $_POST['agentic_llm_api_key'] ?? '' ) ) );
+		update_option( 'agentic_model', $agentic_new_model );
+		update_option( 'agentic_agent_mode', sanitize_text_field( wp_unslash( $_POST['agentic_agent_mode'] ?? 'supervised' ) ) );
 	}
 
+	if ( 'cache' === $agentic_save_tab ) {
+		update_option( 'agentic_response_cache_enabled', isset( $_POST['agentic_response_cache_enabled'] ) );
+		update_option( 'agentic_response_cache_ttl', absint( $_POST['agentic_response_cache_ttl'] ?? 3600 ) );
+
+		// Handle cache clear.
+		if ( isset( $_POST['agentic_clear_cache'] ) ) {
+			$agentic_cleared = \Agentic\Response_Cache::clear_all();
+			echo '<div class="notice notice-info"><p>Cleared ' . esc_html( $agentic_cleared ) . ' cached responses.</p></div>';
+		}
+	}
+
+	if ( 'security' === $agentic_save_tab ) {
+		update_option( 'agentic_security_enabled', isset( $_POST['agentic_security_enabled'] ) );
+		update_option( 'agentic_rate_limit_authenticated', absint( $_POST['agentic_rate_limit_authenticated'] ?? 30 ) );
+		update_option( 'agentic_rate_limit_anonymous', absint( $_POST['agentic_rate_limit_anonymous'] ?? 10 ) );
+		update_option( 'agentic_allow_anonymous_chat', isset( $_POST['agentic_allow_anonymous_chat'] ) );
+	}
 
 	// Handle system check completion flag.
 	if ( isset( $_POST['agentic_system_check_done'] ) ) {

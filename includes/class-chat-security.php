@@ -387,9 +387,9 @@ class Chat_Security {
 			 * @param string $message  The blocked message.
 			 * @param int    $user_id  User ID (0 for anonymous).
 			 * @param string $type     Block type.
-			 * @param string $match    Pattern that matched.
+			 * @param string $pattern  Pattern that matched.
 			 */
-		do_action( 'agentic_security_blocked', $message, $user_id, $type, $match );
+		do_action( 'agentic_security_blocked', $message, $user_id, $type, $pattern );
 	}
 
 	/**

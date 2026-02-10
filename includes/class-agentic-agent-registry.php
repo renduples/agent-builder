@@ -373,6 +373,8 @@ class Agentic_Agent_Registry {
 			do_action( $activation_hook );
 		}
 
+		$active_agents   = $this->get_active_agents();
+		$active_agents[] = $slug;
 		update_option( self::ACTIVE_AGENTS_OPTION, array_unique( $active_agents ) );
 
 		// Clear cache.
@@ -690,6 +692,8 @@ class Agentic_Agent_Registry {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook name by design.
 			do_action( $uninstall_hook );
 		}
+
+		$result = $this->delete_directory( $agent_path );
 
 		if ( ! $result ) {
 			return new WP_Error( 'delete_failed', __( 'Failed to delete agent files.', 'agent-builder' ) );

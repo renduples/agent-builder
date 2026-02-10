@@ -279,7 +279,7 @@ class Agent_Tools {
 					'description' => $tool['description'],
 					'parameters'  => $tool['parameters'] ?? array(
 						'type'       => 'object',
-						'properties' => array(),
+						'properties' => new \stdClass(),
 					),
 				),
 			);

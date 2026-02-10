@@ -121,8 +121,7 @@ class Agentic_Social_Media_Manager extends \Agentic\Agent_Base {
 					'description' => 'List available social media platform categories with post counts',
 					'parameters'  => array(
 						'type'       => 'object',
-						'properties' => array(),
-						'required'   => array(),
+						'properties' => new \stdClass(),
 					),
 				),
 			),
@@ -301,8 +300,7 @@ class Agentic_Social_Media_Manager extends \Agentic\Agent_Base {
 					'description' => 'Get statistics about the current campaign',
 					'parameters'  => array(
 						'type'       => 'object',
-						'properties' => array(),
-						'required'   => array(),
+						'properties' => new \stdClass(),
 					),
 				),
 			),

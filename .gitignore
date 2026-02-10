@@ -85,6 +85,9 @@ tests/test-license*.php
 .phpunit.result.cache
 phpunit.xml
 jest.config.js
+coverage-report/
+coverage.xml
+/tmp/wordpress-tests-lib/
 
 # Misc
 vendor/

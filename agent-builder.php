@@ -179,8 +179,8 @@ final class Plugin {
 
 		add_submenu_page(
 			'agent-builder',
-			__( 'Agent Marketplace', 'agent-builder' ),
-			__( 'Marketplace', 'agent-builder' ),
+			__( 'Add Agent', 'agent-builder' ),
+			__( 'Add Agent', 'agent-builder' ),
 			'read',
 			'agentic-agents-add',
 			array( $this, 'render_agents_add_page' )
@@ -569,7 +569,7 @@ final class Plugin {
 			wp_insert_post(
 				array(
 					'post_type'    => 'page',
-					'post_title'   => 'Developer Agent',
+					'post_title'   => 'Onboarding Agent',
 					'post_name'    => 'agent-chat',
 					'post_status'  => 'publish',
 					'post_content' => '<!-- Chat interface rendered by Agent Builder -->',

@@ -56,7 +56,7 @@ $agentic_stats = $agentic_audit->get_stats( 'month' );
 		
 		<select name="agent">
 			<option value="">All Agents</option>
-			<option value="developer_agent" <?php selected( $agentic_agent_filter, 'developer_agent' ); ?>>Developer Agent</option>
+			<option value="developer_agent" <?php selected( $agentic_agent_filter, 'developer_agent' ); ?>>Onboarding Agent</option>
 			<option value="human" <?php selected( $agentic_agent_filter, 'human' ); ?>>Human Actions</option>
 		</select>
 

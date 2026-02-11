@@ -589,7 +589,7 @@ class Agent_Tools {
 					'user_login'   => 'developer-agent',
 					'user_pass'    => wp_generate_password( 32 ),
 					'user_email'   => 'agent@agentic.test',
-					'display_name' => 'Developer Agent',
+					'display_name' => 'Onboarding Agent',
 					'role'         => 'author',
 				)
 			);
@@ -604,7 +604,7 @@ class Agent_Tools {
 		$comment_id = wp_insert_comment(
 			array(
 				'comment_post_ID'      => $post_id,
-				'comment_author'       => 'Developer Agent',
+				'comment_author'       => 'Onboarding Agent',
 				'comment_author_email' => $agent_user->user_email,
 				'comment_content'      => $content,
 				'comment_type'         => 'comment',
@@ -750,7 +750,7 @@ class Agent_Tools {
 		}
 
 		// Stage and commit.
-		$commit_message = "feat(agent): {$reasoning}\n\nProposed by Developer Agent\nFile: {$path}";
+		$commit_message = "feat(agent): {$reasoning}\n\nProposed by Onboarding Agent\nFile: {$path}";
 		$this->git_exec( 'git add ' . escapeshellarg( $path ) );
 		$commit_result = $this->git_exec( 'git commit -m ' . escapeshellarg( $commit_message ) );
 

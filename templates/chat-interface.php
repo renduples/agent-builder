@@ -163,8 +163,8 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 				<div class="agent-grid">
 					<div class="agent-preview-card">
 						<span class="agent-icon">👨‍💻</span>
-						<span class="agent-name">Developer Agent</span>
-						<span class="agent-desc">Code & debugging help</span>
+						<span class="agent-name">Onboarding Agent</span>
+						<span class="agent-desc">Getting started & guidance</span>
 					</div>
 					<div class="agent-preview-card">
 						<span class="agent-icon">✍️</span>

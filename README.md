@@ -65,7 +65,7 @@ The Agent Builder comes with **10 pre-built agents** to jumpstart development:
 | **Security Monitor** | AI vulnerability scanning |
 | **Comment Moderator** | Smart spam detection & responses |
 | **Agent Builder** | Visual agent builder (meta) |
-| **Developer Agent** | Your own AI coding assistant |
+| **Onboarding Agent** | Your guide to the Agent Builder ecosystem |
 
 ---
 

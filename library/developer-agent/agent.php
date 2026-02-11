@@ -1,6 +1,6 @@
 <?php
 /**
- * Agent Name: Developer Agent
+ * Agent Name: Onboarding Agent
  * Version: 1.0.0
  * Description: Your guide to the Agent Builder ecosystem. Answers questions about the codebase, evaluates feature requests, and helps new developers get started.
  * Author: Agentic Community
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Developer Agent
+ * Onboarding Agent
  *
  * A true AI agent for developer onboarding and feature request evaluation.
  * This is a Q&A agent - it does NOT execute code or make changes.
@@ -45,7 +45,7 @@ class Agentic_Developer_Agent extends \Agentic\Agent_Base {
 	 * Get agent name
 	 */
 	public function get_name(): string {
-		return 'Developer Agent';
+		return 'Onboarding Agent';
 	}
 
 	/**
@@ -435,7 +435,7 @@ class Agentic_Developer_Agent extends \Agentic\Agent_Base {
 					"**Date:** %s\n\n" .
 					"## Description\n\n%s\n\n" .
 					"## Agent Evaluation\n\n" .
-					'_Pending evaluation by Developer Agent_',
+					'_Pending evaluation by Onboarding Agent_',
 					$requester,
 					current_time( 'F j, Y' ),
 					$description

@@ -7,7 +7,7 @@
 
 ## Overview
 
-Consolidated all important documentation from https://agentic-plugin.com/roadmap/ and its 12 subpages into the GitHub Wiki. This centralizes documentation in one authoritative location and eliminates duplication.
+Consolidated all important documentation from https://agentic-plugin.com/documentation/ and its 12 subpages into the GitHub Wiki. This centralizes documentation in one authoritative location and eliminates duplication.
 
 ---
 

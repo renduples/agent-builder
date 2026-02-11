@@ -94,7 +94,7 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 <div class="wrap">
 	<h1>Agentic Settings</h1>
 	<p style="margin-bottom: 20px;">
-		Need help? Visit our <a href="https://agentic-plugin.com/support/" target="_blank">Support Center</a> | <a href="https://github.com/renduples/agent-builder/wiki" target="_blank">Documentation</a>
+		Need help? Visit our <a href="https://agentic-plugin.com/support/" target="_blank">Support Center</a> | <a href="https://agentic-plugin.com/documentation/" target="_blank">Documentation</a>
 	</p>
 
 	<?php
@@ -284,7 +284,7 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 				<li><?php esc_html_e( 'Earn 70% of each sale (80% for >$10k/month)', 'agent-builder' ); ?></li>
 			</ol>
 			<p style="margin-bottom: 0; margin-top: 15px;">
-				<a href="https://github.com/renduples/agent-builder/wiki/Selling-Agents-on-the-Marketplace" target="_blank">
+				<a href="https://agentic-plugin.com/documentation/" target="_blank">
 					<?php esc_html_e( 'Read the developer guide →', 'agent-builder' ); ?>
 				</a>
 			</p>

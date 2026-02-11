@@ -76,7 +76,7 @@ if ( ! empty( $agentic_plugin_license_key ) ) {
 		Agent Builder
 	</h1>
 	<p style="margin-bottom: 20px;">
-		Need help? Visit our <a href="https://agentic-plugin.com/support/" target="_blank">Support Center</a> | <a href="https://github.com/renduples/agent-builder/wiki" target="_blank">Documentation</a>
+		Need help? Visit our <a href="https://agentic-plugin.com/support/" target="_blank">Support Center</a> | <a href="https://agentic-plugin.com/documentation/" target="_blank">Documentation</a>
 	</p>
 
 	<div class="agentic-dashboard-grid">

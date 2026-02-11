@@ -179,4 +179,72 @@ abstract class Agent_Base {
 			'tools'       => array_map( fn( $t ) => $t['function']['name'] ?? $t['name'], $this->get_tools() ),
 		);
 	}
+
+	/**
+	 * Get scheduled tasks for this agent
+	 *
+	 * Override this to define recurring tasks the agent should perform.
+	 * Each task array must include:
+	 *   - 'id'       (string) Unique task identifier within this agent.
+	 *   - 'name'     (string) Human-readable task name.
+	 *   - 'callback' (string) Method name on this agent to call (fallback).
+	 *   - 'schedule' (string) WP-Cron recurrence: 'hourly', 'twicedaily', 'daily', 'weekly'.
+	 *
+	 * Optional:
+	 *   - 'description' (string) What this task does.
+	 *   - 'prompt'      (string) If set, the task runs through the LLM autonomously
+	 *                            using Agent_Controller::run_autonomous_task(). The agent
+	 *                            will receive this prompt, use its tools, and produce a
+	 *                            summary. Falls back to 'callback' if LLM is not configured.
+	 *
+	 * @return array[] Array of task definitions.
+	 */
+	public function get_scheduled_tasks(): array {
+		return array();
+	}
+
+	/**
+	 * Get the WP-Cron hook name for a scheduled task
+	 *
+	 * @param string $task_id Task identifier.
+	 * @return string Hook name.
+	 */
+	public function get_cron_hook( string $task_id ): string {
+		return 'agentic_task_' . $this->get_id() . '_' . $task_id;
+	}
+
+	/**
+	 * Register all scheduled tasks for this agent
+	 *
+	 * Called when the agent is activated.
+	 *
+	 * @return void
+	 */
+	public function register_scheduled_tasks(): void {
+		foreach ( $this->get_scheduled_tasks() as $task ) {
+			$hook = $this->get_cron_hook( $task['id'] );
+
+			if ( ! wp_next_scheduled( $hook ) ) {
+				wp_schedule_event( time(), $task['schedule'], $hook );
+			}
+		}
+	}
+
+	/**
+	 * Unregister all scheduled tasks for this agent
+	 *
+	 * Called when the agent is deactivated.
+	 *
+	 * @return void
+	 */
+	public function unregister_scheduled_tasks(): void {
+		foreach ( $this->get_scheduled_tasks() as $task ) {
+			$hook      = $this->get_cron_hook( $task['id'] );
+			$timestamp = wp_next_scheduled( $hook );
+
+			if ( $timestamp ) {
+				wp_unschedule_event( $timestamp, $hook );
+			}
+		}
+	}
 }

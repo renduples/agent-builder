@@ -84,6 +84,51 @@ class Agentic_Security_Monitor extends \Agentic\Agent_Base {
 	}
 
 	/**
+	 * Get scheduled tasks
+	 */
+	public function get_scheduled_tasks(): array {
+		return array(
+			array(
+				'id'          => 'daily_scan',
+				'name'        => 'Daily Security Scan',
+				'callback'    => 'run_daily_scan',
+				'schedule'    => 'daily',
+				'description' => 'Runs a comprehensive security scan and reports findings.',
+				'prompt'      => 'Run a comprehensive security scan on this WordPress installation. '
+					. 'Use your security_scan tool to check for vulnerabilities, then check file '
+					. 'permissions with check_file_permissions, and review admin users with '
+					. 'list_admin_users. Provide a summary of all findings and flag any critical '
+					. 'issues that need immediate attention.',
+			),
+		);
+	}
+
+	/**
+	 * Run the daily security scan (cron callback)
+	 *
+	 * @return void
+	 */
+	public function run_daily_scan(): void {
+		$results = $this->tool_security_scan( array( 'check_type' => 'full' ) );
+
+		$audit = new \Agentic\Audit_Log();
+		$audit->log(
+			$this->get_id(),
+			'scheduled_scan_complete',
+			'security',
+			array(
+				'score'        => $results['score'] ?? 0,
+				'rating'       => $results['rating'] ?? 'Unknown',
+				'issues_found' => $results['issues_found'] ?? 0,
+				'issues'       => array_map(
+					fn( $i ) => $i['issue'] ?? '',
+					$results['issues'] ?? array()
+				),
+			)
+		);
+	}
+
+	/**
 	 * Get welcome message
 	 */
 	public function get_welcome_message(): string {

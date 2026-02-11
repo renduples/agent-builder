@@ -56,19 +56,29 @@ $agentic_stats = $agentic_audit->get_stats( 'month' );
 		
 		<select name="agent">
 			<option value="">All Agents</option>
-			<option value="developer_agent" <?php selected( $agentic_agent_filter, 'developer_agent' ); ?>>Onboarding Agent</option>
-			<option value="human" <?php selected( $agentic_agent_filter, 'human' ); ?>>Human Actions</option>
+			<?php
+			global $wpdb;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query for filter options.
+			$agentic_agent_ids = $wpdb->get_col( "SELECT DISTINCT agent_id FROM {$wpdb->prefix}agentic_audit_log ORDER BY agent_id ASC" );
+			foreach ( $agentic_agent_ids as $agentic_aid ) :
+				?>
+				<option value="<?php echo esc_attr( $agentic_aid ); ?>" <?php selected( $agentic_agent_filter, $agentic_aid ); ?>>
+					<?php echo esc_html( ucwords( str_replace( array( '-', '_' ), ' ', $agentic_aid ) ) ); ?>
+				</option>
+			<?php endforeach; ?>
 		</select>
 
 		<select name="action">
 			<option value="">All Actions</option>
-			<option value="chat_start" <?php selected( $agentic_action_filter, 'chat_start' ); ?>>Chat Start</option>
-			<option value="chat_complete" <?php selected( $agentic_action_filter, 'chat_complete' ); ?>>Chat Complete</option>
-			<option value="chat_error" <?php selected( $agentic_action_filter, 'chat_error' ); ?>>Chat Error</option>
-			<option value="tool_call" <?php selected( $agentic_action_filter, 'tool_call' ); ?>>Tool Call</option>
-			<option value="create_comment" <?php selected( $agentic_action_filter, 'create_comment' ); ?>>Create Comment</option>
-			<option value="update_documentation" <?php selected( $agentic_action_filter, 'update_documentation' ); ?>>Update Documentation</option>
-			<option value="request_code_change" <?php selected( $agentic_action_filter, 'request_code_change' ); ?>>Request Code Change</option>
+			<?php
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table query for filter options.
+			$agentic_actions = $wpdb->get_col( "SELECT DISTINCT action FROM {$wpdb->prefix}agentic_audit_log ORDER BY action ASC" );
+			foreach ( $agentic_actions as $agentic_act ) :
+				?>
+				<option value="<?php echo esc_attr( $agentic_act ); ?>" <?php selected( $agentic_action_filter, $agentic_act ); ?>>
+					<?php echo esc_html( ucwords( str_replace( '_', ' ', $agentic_act ) ) ); ?>
+				</option>
+			<?php endforeach; ?>
 		</select>
 
 		<button type="submit" class="button">Filter</button>
@@ -99,9 +109,10 @@ $agentic_stats = $agentic_audit->get_stats( 'month' );
 				<?php foreach ( $agentic_logs as $agentic_entry ) : ?>
 				<tr>
 					<td>
-						<span title="<?php echo esc_attr( $agentic_entry['created_at'] ); ?>">
-							<?php echo esc_html( human_time_diff( strtotime( $agentic_entry['created_at'] ) ) ); ?> ago
-						</span>
+						<?php
+						$agentic_timestamp = strtotime( $agentic_entry['created_at'] );
+						echo esc_html( wp_date( 'Y-m-d H:i', $agentic_timestamp ) );
+						?>
 					</td>
 					<td><?php echo esc_html( $agentic_entry['agent_id'] ); ?></td>
 					<td><code><?php echo esc_html( $agentic_entry['action'] ); ?></code></td>
@@ -131,7 +142,7 @@ $agentic_stats = $agentic_audit->get_stats( 'month' );
 						<?php if ( $agentic_entry['details'] ) : ?>
 							<details>
 								<summary>View</summary>
-								<pre style="max-width: 400px; overflow: auto; font-size: 11px; background: #f5f5f5; padding: 5px;"><?php echo esc_html( $agentic_entry['details'] ); ?></pre>
+								<pre style="max-width: 600px; max-height: 300px; overflow: auto; font-size: 11px; background: #f5f5f5; padding: 8px; white-space: pre-wrap; word-wrap: break-word;"><?php echo esc_html( $agentic_entry['details'] ); ?></pre>
 							</details>
 						<?php else : ?>
 							-
@@ -147,6 +158,6 @@ $agentic_stats = $agentic_audit->get_stats( 'month' );
 
 	<h2>Data Retention</h2>
 	<p>
-		Audit logs are retained for 90 days by default. Older entries are automatically cleaned up.
+		Audit logs are retained for 30 days. Older entries are automatically cleaned up.
 	</p>
 </div>

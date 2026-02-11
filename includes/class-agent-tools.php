@@ -265,6 +265,32 @@ class Agent_Tools {
 					),
 				),
 			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'manage_schedules',
+					'description' => 'View and manage scheduled tasks for agents. Can list all schedules, pause a task, or resume a paused task.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'operation' => array(
+								'type'        => 'string',
+								'enum'        => array( 'list', 'pause', 'resume' ),
+								'description' => 'Operation to perform: list all schedules, pause a task, or resume a paused task',
+							),
+							'agent_id'  => array(
+								'type'        => 'string',
+								'description' => 'Agent ID (required for pause/resume)',
+							),
+							'task_id'   => array(
+								'type'        => 'string',
+								'description' => 'Task ID (required for pause/resume)',
+							),
+						),
+						'required'   => array( 'operation' ),
+					),
+				),
+			),
 		);
 
 		// Get tools from activated agents via filter.
@@ -337,6 +363,9 @@ class Agent_Tools {
 
 			case 'request_code_change':
 				return $this->request_code_change( $arguments['path'], $arguments['content'], $arguments['reasoning'] );
+
+			case 'manage_schedules':
+				return $this->manage_schedules( $arguments );
 
 			default:
 				return new \WP_Error( 'unknown_tool', "Unknown tool: {$name}" );
@@ -805,6 +834,105 @@ class Agent_Tools {
 	 * @param string $command Git command.
 	 * @return string|false Output or false on failure.
 	 */
+	/**
+	 * Manage agent scheduled tasks
+	 *
+	 * @param array $args Arguments: operation, agent_id, task_id.
+	 * @return array Result.
+	 */
+	private function manage_schedules( array $args ): array {
+		$operation = $args['operation'] ?? 'list';
+		$registry  = \Agentic_Agent_Registry::get_instance();
+
+		switch ( $operation ) {
+			case 'list':
+				$instances = $registry->get_all_instances();
+				$all_tasks = array();
+
+				foreach ( $instances as $agent ) {
+					$tasks = $agent->get_scheduled_tasks();
+					foreach ( $tasks as $task ) {
+						$hook     = $agent->get_cron_hook( $task['id'] );
+						$next_run = wp_next_scheduled( $hook );
+
+						$all_tasks[] = array(
+							'agent_id'   => $agent->get_id(),
+							'agent_name' => $agent->get_name(),
+							'task_id'    => $task['id'],
+							'task_name'  => $task['name'],
+							'schedule'   => $task['schedule'],
+							'active'     => false !== $next_run,
+							'next_run'   => $next_run ? wp_date( 'Y-m-d H:i:s', $next_run ) : null,
+							'mode'       => ! empty( $task['prompt'] ) ? 'autonomous' : 'direct',
+						);
+					}
+				}
+
+				return array(
+					'schedules'   => $all_tasks,
+					'total_tasks' => count( $all_tasks ),
+				);
+
+			case 'pause':
+				$agent_id = $args['agent_id'] ?? '';
+				$task_id  = $args['task_id'] ?? '';
+				$instance = $registry->get_agent_instance( $agent_id );
+
+				if ( ! $instance ) {
+					return array( 'error' => 'Agent not found: ' . $agent_id );
+				}
+
+				$tasks = $instance->get_scheduled_tasks();
+				foreach ( $tasks as $task ) {
+					if ( $task['id'] === $task_id ) {
+						$hook      = $instance->get_cron_hook( $task_id );
+						$timestamp = wp_next_scheduled( $hook );
+
+						if ( $timestamp ) {
+							wp_unschedule_event( $timestamp, $hook );
+							$this->audit->log( $agent_id, 'schedule_paused', $task_id );
+							return array(
+								'success' => true,
+								'message' => sprintf( "Paused task '%s' for agent '%s'", $task['name'], $instance->get_name() ),
+							);
+						}
+						return array( 'error' => 'Task is not currently scheduled' );
+					}
+				}
+				return array( 'error' => 'Task not found: ' . $task_id );
+
+			case 'resume':
+				$agent_id = $args['agent_id'] ?? '';
+				$task_id  = $args['task_id'] ?? '';
+				$instance = $registry->get_agent_instance( $agent_id );
+
+				if ( ! $instance ) {
+					return array( 'error' => 'Agent not found: ' . $agent_id );
+				}
+
+				$tasks = $instance->get_scheduled_tasks();
+				foreach ( $tasks as $task ) {
+					if ( $task['id'] === $task_id ) {
+						$hook = $instance->get_cron_hook( $task_id );
+
+						if ( ! wp_next_scheduled( $hook ) ) {
+							wp_schedule_event( time(), $task['schedule'], $hook );
+							$this->audit->log( $agent_id, 'schedule_resumed', $task_id );
+							return array(
+								'success' => true,
+								'message' => sprintf( "Resumed task '%s' for agent '%s'", $task['name'], $instance->get_name() ),
+							);
+						}
+						return array( 'error' => 'Task is already scheduled' );
+					}
+				}
+				return array( 'error' => 'Task not found: ' . $task_id );
+
+			default:
+				return array( 'error' => 'Unknown operation: ' . $operation . '. Use list, pause, or resume.' );
+		}
+	}
+
 	/**
 	 * Execute a git command (DISABLED for security)
 	 *

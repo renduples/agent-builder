@@ -141,7 +141,7 @@ class Audit_Log {
 	 * @param int $days Entries older than this will be deleted.
 	 * @return int Number of deleted entries.
 	 */
-	public function cleanup( int $days = 90 ): int {
+	public function cleanup( int $days = 30 ): int {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table cleanup.

@@ -316,6 +316,8 @@ class Agent_Controller {
 				'session_id' => $session_id,
 				'iterations' => $iterations,
 				'tools_used' => array_column( $tool_results, 'tool' ),
+				'prompt'     => substr( $message, 0, 500 ),
+				'response'   => substr( $response, 0, 1000 ),
 			),
 			'',
 			$total_tokens,
@@ -327,6 +329,168 @@ class Agent_Controller {
 			'agent_id'    => $current_agent_id,
 			'agent_name'  => $this->current_agent->get_name(),
 			'agent_icon'  => $this->current_agent->get_icon(),
+			'session_id'  => $session_id,
+			'tokens_used' => $total_tokens,
+			'cost'        => round( $estimated_cost, 6 ),
+			'tools_used'  => array_column( $tool_results, 'tool' ),
+			'iterations'  => $iterations,
+		);
+	}
+
+	/**
+	 * Run an autonomous task through the LLM
+	 *
+	 * Used by scheduled tasks that define a `prompt` field. The agent runs
+	 * through the full LLM loop (with tool calls) in autonomous mode,
+	 * meaning no human user is present.
+	 *
+	 * Bypasses user access checks since this is system-initiated.
+	 *
+	 * @param \Agentic\Agent_Base $agent   Agent instance.
+	 * @param string              $prompt  Task prompt describing what to do.
+	 * @param string              $task_id Task identifier for logging.
+	 * @return array|null Response data, or null if LLM is not configured.
+	 */
+	public function run_autonomous_task( \Agentic\Agent_Base $agent, string $prompt, string $task_id = '' ): ?array {
+		if ( ! $this->llm->is_configured() ) {
+			return null; // Caller will fall back to direct callback.
+		}
+
+		// Set agent directly — bypass capability check for system tasks.
+		$this->current_agent = $agent;
+
+		$agent_id = $agent->get_id();
+
+		// Build autonomous system prompt.
+		$autonomous_context = "\n\n[AUTONOMOUS MODE]\n"
+			. "You are running autonomously as a scheduled task (task: {$task_id}). "
+			. "There is no human user in this conversation.\n"
+			. "Execute the requested task using your available tools, then provide "
+			. "a concise summary of what you did and any findings.\n";
+
+		$system_prompt = $agent->get_system_prompt() . $autonomous_context;
+
+		$messages = array(
+			array(
+				'role'    => 'system',
+				'content' => $system_prompt,
+			),
+			array(
+				'role'    => 'user',
+				'content' => $prompt,
+			),
+		);
+
+		$tools = $this->get_tools_for_agent();
+
+		$session_id = 'autonomous_' . $task_id . '_' . gmdate( 'Ymd_His' );
+
+		// Log autonomous start.
+		$this->audit->log(
+			$agent_id,
+			'autonomous_chat_start',
+			'scheduled_task',
+			array(
+				'task_id'    => $task_id,
+				'session_id' => $session_id,
+				'prompt'     => substr( $prompt, 0, 500 ),
+			)
+		);
+
+		// Process with tool calls (same loop as chat()).
+		$response     = null;
+		$total_tokens = 0;
+		$iterations   = 0;
+		$tool_results = array();
+		$usage        = array(
+			'prompt_tokens'     => 0,
+			'completion_tokens' => 0,
+		);
+
+		while ( $iterations < self::MAX_ITERATIONS ) {
+			++$iterations;
+
+			$result = $this->llm->chat( $messages, $tools ? $tools : null );
+
+			if ( is_wp_error( $result ) ) {
+				$this->audit->log(
+					$agent_id,
+					'autonomous_chat_error',
+					'scheduled_task',
+					array(
+						'task_id' => $task_id,
+						'error'   => $result->get_error_message(),
+					)
+				);
+				return null;
+			}
+
+			$usage         = $this->llm->get_usage( $result );
+			$total_tokens += $usage['total_tokens'];
+
+			$choice = $result['choices'][0] ?? null;
+			if ( ! $choice ) {
+				return null;
+			}
+
+			$assistant_message = $choice['message'];
+			if ( ! isset( $assistant_message['content'] ) || null === $assistant_message['content'] ) {
+				$assistant_message['content'] = '';
+			}
+			$messages[] = $assistant_message;
+
+			if ( ! empty( $assistant_message['tool_calls'] ) ) {
+				foreach ( $assistant_message['tool_calls'] as $tool_call ) {
+					$function_name = $tool_call['function']['name'];
+					$arguments     = json_decode( $tool_call['function']['arguments'], true ) ?? array();
+
+					$tool_result = $this->execute_tool( $function_name, $arguments );
+
+					$messages[] = array(
+						'role'         => 'tool',
+						'tool_call_id' => $tool_call['id'],
+						'content'      => wp_json_encode( $tool_result ),
+					);
+
+					$tool_results[] = array(
+						'tool'   => $function_name,
+						'result' => $tool_result,
+					);
+				}
+			} else {
+				$response = $assistant_message['content'];
+				break;
+			}
+		}
+
+		if ( null === $response ) {
+			$response = 'Reached maximum tool iterations for autonomous task.';
+		}
+
+		$estimated_cost = ( $usage['prompt_tokens'] * 0.000003 ) + ( $usage['completion_tokens'] * 0.000015 );
+
+		// Log autonomous completion.
+		$this->audit->log(
+			$agent_id,
+			'autonomous_chat_complete',
+			'scheduled_task',
+			array(
+				'task_id'    => $task_id,
+				'session_id' => $session_id,
+				'iterations' => $iterations,
+				'tools_used' => array_column( $tool_results, 'tool' ),
+				'response'   => substr( $response, 0, 1000 ),
+			),
+			'',
+			$total_tokens,
+			$estimated_cost
+		);
+
+		return array(
+			'response'    => $response,
+			'agent_id'    => $agent_id,
+			'task_id'     => $task_id,
+			'mode'        => 'autonomous',
 			'session_id'  => $session_id,
 			'tokens_used' => $total_tokens,
 			'cost'        => round( $estimated_cost, 6 ),

@@ -68,7 +68,7 @@ Open http://agentic.test and work through `tests/manual/frontend-chat.md`.
 
 ---
 
-## Step 3: Admin UI Testing (8 tests)
+## Step 3: Admin UI Testing (7 tests)
 
 Navigate to http://agentic.test/wp-admin/ → Agent Builder menu.
 
@@ -101,11 +101,7 @@ Navigate to http://agentic.test/wp-admin/ → Agent Builder menu.
 2. Check the audit log page
 3. **Expected:** Entry logged with agent name, action, token count, timestamp
 
-### 3.7 Job Queue
-1. If background jobs are configured, navigate to the jobs page
-2. **Expected:** Jobs listed with status (pending/processing/completed/failed)
-
-### 3.8 System Check
+### 3.7 System Check
 1. Go to **System Status**
 2. **Expected:** PHP version, WordPress version, MySQL version, required extensions all show green checks
 
@@ -242,7 +238,7 @@ Work through `tests/manual/testing-procedures.md` for broader scenarios:
 - **Test 4–8:** Agent discovery, activation, chat interaction, multi-agent config, agent deletion
 
 ### API & Performance
-- **Test 9–12:** REST API endpoints, job queue processing, response caching, concurrent requests
+- **Test 9–11:** REST API endpoints, response caching, concurrent requests
 
 ### Cross-Browser
 - **Test 13–15:** Chrome, Firefox, Safari — verify chat UI works in all three

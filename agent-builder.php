@@ -5,7 +5,7 @@
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
  * Description:       Build AI agents without writing code. Describe the AI agent you want and let WordPress build it for you.
- * Version:           1.3.0
+ * Version:           1.4.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agent Builder Team
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'AGENTIC_PLUGIN_VERSION', '1.3.0' );
+define( 'AGENTIC_PLUGIN_VERSION', '1.4.0' );
 define( 'AGENTIC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENTIC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AGENTIC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -83,6 +83,16 @@ final class Plugin {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 		add_filter( 'the_content', array( $this, 'render_chat_interface' ) );
 
+		// Add weekly cron schedule (WordPress only provides hourly, twicedaily, daily).
+		add_filter( 'cron_schedules', array( $this, 'add_cron_schedules' ) );
+
+		// Agent scheduled tasks: bind cron hooks after agents are loaded.
+		add_action( 'agentic_agents_loaded', array( $this, 'bind_agent_cron_hooks' ) );
+
+		// Register/unregister cron on agent activate/deactivate.
+		add_action( 'agentic_agent_activated', array( $this, 'on_agent_activated_schedule' ), 10, 2 );
+		add_action( 'agentic_agent_deactivated', array( $this, 'on_agent_deactivated_schedule' ), 10, 2 );
+
 		// Activation/Deactivation hooks.
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
 		register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
@@ -99,6 +109,22 @@ final class Plugin {
 	public function load_textdomain(): void {
 		// Translations are automatically loaded by WordPress for plugins on WordPress.org.
 		// No action needed since WordPress 4.6+.
+	}
+
+	/**
+	 * Add custom cron schedules
+	 *
+	 * @param array $schedules Existing schedules.
+	 * @return array Modified schedules.
+	 */
+	public function add_cron_schedules( array $schedules ): array {
+		if ( ! isset( $schedules['weekly'] ) ) {
+			$schedules['weekly'] = array(
+				'interval' => WEEK_IN_SECONDS,
+				'display'  => __( 'Once Weekly', 'agent-builder' ),
+			);
+		}
+		return $schedules;
 	}
 
 	/**
@@ -193,6 +219,24 @@ final class Plugin {
 			'manage_options',
 			'agentic-audit',
 			array( $this, 'render_audit_log_page' )
+		);
+
+		add_submenu_page(
+			'agent-builder',
+			__( 'Scheduled Tasks', 'agent-builder' ),
+			__( 'Scheduled Tasks', 'agent-builder' ),
+			'manage_options',
+			'agentic-scheduled-tasks',
+			array( $this, 'render_scheduled_tasks_page' )
+		);
+
+		add_submenu_page(
+			'agent-builder',
+			__( 'Agent Tools', 'agent-builder' ),
+			__( 'Agent Tools', 'agent-builder' ),
+			'manage_options',
+			'agentic-tools',
+			array( $this, 'render_tools_page' )
 		);
 
 		add_submenu_page(
@@ -386,6 +430,175 @@ final class Plugin {
 	 */
 	public function render_audit_log_page(): void {
 		include AGENTIC_PLUGIN_DIR . 'admin/audit.php';
+	}
+
+	/**
+	 * Render scheduled tasks page
+	 *
+	 * @return void
+	 */
+	public function render_scheduled_tasks_page(): void {
+		include AGENTIC_PLUGIN_DIR . 'admin/scheduled-tasks.php';
+	}
+
+	/**
+	 * Render agent tools page
+	 *
+	 * @return void
+	 */
+	public function render_tools_page(): void {
+		include AGENTIC_PLUGIN_DIR . 'admin/tools.php';
+	}
+
+	/**
+	 * Bind cron hooks for all active agents' scheduled tasks
+	 *
+	 * Called on 'agentic_agents_loaded' action.
+	 *
+	 * @return void
+	 */
+	public function bind_agent_cron_hooks(): void {
+		$registry  = \Agentic_Agent_Registry::get_instance();
+		$instances = $registry->get_all_instances();
+
+		foreach ( $instances as $agent ) {
+			$tasks = $agent->get_scheduled_tasks();
+
+			foreach ( $tasks as $task ) {
+				$hook = $agent->get_cron_hook( $task['id'] );
+
+				add_action(
+					$hook,
+					function () use ( $agent, $task ) {
+						$this->execute_scheduled_task( $agent, $task );
+					}
+				);
+			}
+		}
+	}
+
+	/**
+	 * Execute a scheduled task with outcome logging and optional LLM routing
+	 *
+	 * If the task defines a 'prompt' field and the LLM is configured, the task
+	 * runs through Agent_Controller::run_autonomous_task() (full AI reasoning
+	 * with tool calls). Otherwise it falls back to calling the agent's callback
+	 * method directly.
+	 *
+	 * Every execution is wrapped with start/complete/error audit logging including
+	 * duration timing, so admins can see exactly what happened and how long it took.
+	 *
+	 * @param \Agentic\Agent_Base $agent Agent instance.
+	 * @param array               $task  Task definition from get_scheduled_tasks().
+	 * @return void
+	 */
+	public function execute_scheduled_task( \Agentic\Agent_Base $agent, array $task ): void {
+		$audit    = new \Agentic\Audit_Log();
+		$start    = microtime( true );
+		$agent_id = $agent->get_id();
+		$mode     = ! empty( $task['prompt'] ) ? 'autonomous' : 'direct';
+
+		// Log task start.
+		$audit->log(
+			$agent_id,
+			'scheduled_task_start',
+			$task['id'],
+			array(
+				'task_name' => $task['name'],
+				'schedule'  => $task['schedule'],
+				'mode'      => $mode,
+			)
+		);
+
+		try {
+			$result = null;
+
+			// If task has a prompt, route through LLM for autonomous execution.
+			if ( ! empty( $task['prompt'] ) ) {
+				$controller = new \Agentic\Agent_Controller();
+				$result     = $controller->run_autonomous_task( $agent, $task['prompt'], $task['id'] );
+			}
+
+			// Fallback to direct callback if no prompt or LLM not configured.
+			if ( null === $result && method_exists( $agent, $task['callback'] ) ) {
+				call_user_func( array( $agent, $task['callback'] ) );
+				$result = array( 'mode' => 'direct', 'status' => 'completed' );
+			}
+
+			$duration = round( microtime( true ) - $start, 3 );
+
+			// Log task completion.
+			$audit->log(
+				$agent_id,
+				'scheduled_task_complete',
+				$task['id'],
+				array(
+					'task_name'  => $task['name'],
+					'duration_s' => $duration,
+					'mode'       => $mode,
+					'result'     => is_array( $result ) ? substr( wp_json_encode( $result ), 0, 1000 ) : null,
+				)
+			);
+		} catch ( \Throwable $e ) {
+			$duration = round( microtime( true ) - $start, 3 );
+
+			// Log task error.
+			$audit->log(
+				$agent_id,
+				'scheduled_task_error',
+				$task['id'],
+				array(
+					'task_name'  => $task['name'],
+					'duration_s' => $duration,
+					'error'      => $e->getMessage(),
+					'file'       => $e->getFile() . ':' . $e->getLine(),
+				)
+			);
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled.
+				error_log(
+					sprintf(
+						'Agentic scheduled task error (%s/%s): %s',
+						$agent_id,
+						$task['id'],
+						$e->getMessage()
+					)
+				);
+			}
+		}
+	}
+
+	/**
+	 * Register cron events when an agent is activated
+	 *
+	 * @param string     $slug  Agent slug.
+	 * @param array|null $agent Agent data.
+	 * @return void
+	 */
+	public function on_agent_activated_schedule( string $slug, $agent ): void {
+		$registry = \Agentic_Agent_Registry::get_instance();
+		$instance = $registry->get_agent_instance( $slug );
+
+		if ( $instance ) {
+			$instance->register_scheduled_tasks();
+		}
+	}
+
+	/**
+	 * Unregister cron events when an agent is deactivated
+	 *
+	 * @param string     $slug  Agent slug.
+	 * @param array|null $agent Agent data.
+	 * @return void
+	 */
+	public function on_agent_deactivated_schedule( string $slug, $agent ): void {
+		$registry = \Agentic_Agent_Registry::get_instance();
+		$instance = $registry->get_agent_instance( $slug );
+
+		if ( $instance ) {
+			$instance->unregister_scheduled_tasks();
+		}
 	}
 
 	/**

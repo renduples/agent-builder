@@ -41,6 +41,110 @@ if ( 'install' === $agentic_agent_action && $agentic_slug && isset( $_GET['_wpno
 	}
 }
 
+// Handle agent zip upload.
+$agentic_upload_message = '';
+$agentic_upload_error   = '';
+
+if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'agentic-agent-upload' ) ) {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		$agentic_upload_error = __( 'You do not have permission to upload agents.', 'agent-builder' );
+	} elseif ( ! str_ends_with( strtolower( sanitize_file_name( $_FILES['agentzip']['name'] ) ), '.zip' ) ) {
+		$agentic_upload_error = __( 'The uploaded file is not a valid .zip archive.', 'agent-builder' );
+	} else {
+		// Ensure filesystem functions are available.
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
+
+		$agentic_agents_dir = WP_CONTENT_DIR . '/agents';
+		if ( ! is_dir( $agentic_agents_dir ) ) {
+			wp_mkdir_p( $agentic_agents_dir );
+		}
+
+		$agentic_tmp_dir = $agentic_agents_dir . '/__upload_tmp_' . wp_generate_password( 8, false );
+		wp_mkdir_p( $agentic_tmp_dir );
+
+		$agentic_unzip = unzip_file( $_FILES['agentzip']['tmp_name'], $agentic_tmp_dir );
+
+		if ( is_wp_error( $agentic_unzip ) ) {
+			$agentic_upload_error = $agentic_unzip->get_error_message();
+		} else {
+			// Find agent.php — could be at root or inside a subfolder.
+			$agentic_agent_file = null;
+			$agentic_agent_root = null;
+
+			if ( file_exists( $agentic_tmp_dir . '/agent.php' ) ) {
+				$agentic_agent_file = $agentic_tmp_dir . '/agent.php';
+				$agentic_agent_root = $agentic_tmp_dir;
+			} else {
+				// Check one level deep (zip contains a folder).
+				$agentic_subdirs = glob( $agentic_tmp_dir . '/*', GLOB_ONLYDIR );
+				foreach ( $agentic_subdirs as $agentic_subdir ) {
+					if ( file_exists( $agentic_subdir . '/agent.php' ) ) {
+						$agentic_agent_file = $agentic_subdir . '/agent.php';
+						$agentic_agent_root = $agentic_subdir;
+						break;
+					}
+				}
+			}
+
+			if ( ! $agentic_agent_file ) {
+				$agentic_upload_error = __( 'The uploaded zip does not contain a valid agent. An agent.php file is required.', 'agent-builder' );
+			} else {
+				// Read agent headers.
+				$agentic_headers = array(
+					'name'        => 'Agent Name',
+					'version'     => 'Version',
+					'description' => 'Description',
+					'author'      => 'Author',
+				);
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+				$agentic_agent_contents = file_get_contents( $agentic_agent_file );
+				$agentic_parsed_headers = array();
+				foreach ( $agentic_headers as $agentic_hkey => $agentic_hlabel ) {
+					if ( preg_match( '/^\s*\*?\s*' . preg_quote( $agentic_hlabel, '/' ) . ':\s*(.+)$/mi', $agentic_agent_contents, $agentic_hmatch ) ) {
+						$agentic_parsed_headers[ $agentic_hkey ] = trim( $agentic_hmatch[1] );
+					}
+				}
+
+				if ( empty( $agentic_parsed_headers['name'] ) ) {
+					$agentic_upload_error = __( 'The agent.php file is missing a required "Agent Name" header.', 'agent-builder' );
+				} else {
+					// Derive slug from folder name or sanitize the agent name.
+					$agentic_upload_slug = sanitize_title( basename( $agentic_agent_root ) );
+					if ( '__upload_tmp_' === substr( $agentic_upload_slug, 0, 13 ) ) {
+						$agentic_upload_slug = sanitize_title( $agentic_parsed_headers['name'] );
+					}
+
+					$agentic_dest = $agentic_agents_dir . '/' . $agentic_upload_slug;
+
+					if ( is_dir( $agentic_dest ) ) {
+						// Remove existing version for update.
+						global $wp_filesystem;
+						$wp_filesystem->delete( $agentic_dest, true );
+					}
+
+					rename( $agentic_agent_root, $agentic_dest );
+					$agentic_upload_message = sprintf(
+						/* translators: %s: Agent name */
+						__( 'Agent "%s" has been installed successfully.', 'agent-builder' ),
+						$agentic_parsed_headers['name']
+					);
+
+					// Clear registry cache by forcing a refresh.
+					$agentic_registry_inst = Agentic_Agent_Registry::get_instance();
+					$agentic_registry_inst->get_installed_agents( true );
+				}
+			}
+		}
+
+		// Cleanup temp directory if it still exists.
+		if ( is_dir( $agentic_tmp_dir ) ) {
+			global $wp_filesystem;
+			$wp_filesystem->delete( $agentic_tmp_dir, true );
+		}
+	}
+}
+
 $agentic_registry   = Agentic_Agent_Registry::get_instance();
 $agentic_categories = $agentic_registry->get_agent_categories();
 
@@ -59,8 +163,42 @@ $agentic_library = $agentic_registry->get_library_agents(
 ?>
 
 <div class="wrap agentic-add-agents-page">
-	<h1 class="wp-heading-inline"><?php esc_html_e( 'Marketplace', 'agent-builder' ); ?></h1>
+	<h1 class="wp-heading-inline"><?php esc_html_e( 'Add Agents', 'agent-builder' ); ?></h1>
+
+	<a href="#" class="upload-view-toggle page-title-action" id="agentic-upload-toggle">
+		<span class="upload"><?php esc_html_e( 'Upload Agent', 'agent-builder' ); ?></span>
+		<span class="browse"><?php esc_html_e( 'Browse Agents', 'agent-builder' ); ?></span>
+	</a>
+
 	<hr class="wp-header-end">
+
+		<p class="agentic-add-agents-description">
+		<?php
+		printf(
+			/* translators: %s: Marketplace link */
+			wp_kses(
+				__( 'AI Agents extend and expand the functionality of WordPress. You may install AI Agents from the <a href="%s">Marketplace</a> right on this page, or upload an Agent in .zip format by clicking the button above.', 'agent-builder' ),
+				array( 'a' => array( 'href' => array() ) )
+			),
+			'https://agentic-plugin.com/marketplace/'
+		);
+		?>
+	</p>
+
+	<!-- Upload Agent Form (hidden by default) -->
+	<div class="upload-agent-wrap" style="display: none;">
+		<div class="upload-agent">
+			<p class="install-help"><?php esc_html_e( 'If you have an agent in a .zip format, you may install it by uploading it here.', 'agent-builder' ); ?></p>
+			<form method="post" enctype="multipart/form-data" class="wp-upload-form" action="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add' ) ); ?>">
+				<?php wp_nonce_field( 'agentic-agent-upload' ); ?>
+				<label class="screen-reader-text" for="agentzip">
+					<?php esc_html_e( 'Agent zip file', 'agent-builder' ); ?>
+				</label>
+				<input type="file" id="agentzip" name="agentzip" accept=".zip" />
+				<?php submit_button( __( 'Install Now', 'agent-builder' ), 'primary', 'install-agent-submit', false ); ?>
+			</form>
+		</div>
+	</div>
 
 	<?php if ( $agentic_message ) : ?>
 		<div class="notice notice-success is-dismissible">
@@ -79,6 +217,24 @@ $agentic_library = $agentic_registry->get_library_agents(
 		</div>
 	<?php endif; ?>
 
+	<?php if ( $agentic_upload_message ) : ?>
+		<div class="notice notice-success is-dismissible">
+			<p>
+				<?php echo esc_html( $agentic_upload_message ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents' ) ); ?>">
+					<?php esc_html_e( 'Go to Installed Agents', 'agent-builder' ); ?>
+				</a>
+			</p>
+		</div>
+	<?php endif; ?>
+
+	<?php if ( $agentic_upload_error ) : ?>
+		<div class="notice notice-error is-dismissible">
+			<p><?php echo esc_html( $agentic_upload_error ); ?></p>
+		</div>
+	<?php endif; ?>
+
+	<div class="agentic-browse-content">
 	<!-- Navigation Tabs -->
 	<ul class="filter-links">
 		<li>
@@ -146,40 +302,46 @@ $agentic_library = $agentic_registry->get_library_agents(
 				?>
 				<div class="plugin-card plugin-card-<?php echo esc_attr( $agentic_slug ); ?>">
 					<div class="plugin-card-top">
-						<div class="plugin-card-top-header">
-							<div class="agent-icon">
-								<?php echo esc_html( $agentic_icon ); ?>
-							</div>
-							<div class="name column-name">
-								<h3><?php echo esc_html( $agentic_agent['name'] ); ?></h3>
-							</div>
-						</div>
-						<p class="authors">
-							<cite>
-								<?php esc_html_e( 'By', 'agent-builder' ); ?>
-								<?php if ( ! empty( $agentic_agent['author_uri'] ) ) : ?>
-									<a href="<?php echo esc_url( $agentic_agent['author_uri'] ); ?>" target="_blank">
-										<?php echo esc_html( $agentic_agent['author'] ); ?>
-									</a>
-								<?php else : ?>
-									<?php echo esc_html( $agentic_agent['author'] ); ?>
-								<?php endif; ?>
-							</cite>
-						</p>
-						<div class="desc column-description">
-							<p><?php echo esc_html( $agentic_agent['description'] ); ?></p>
+						<div class="name column-name">
+							<h3>
+								<?php echo esc_html( $agentic_agent['name'] ); ?>
+								<span class="plugin-icon agent-icon-emoji"><?php echo esc_html( $agentic_icon ); ?></span>
+							</h3>
 						</div>
 						<div class="action-links">
-							<?php if ( $agentic_agent['installed'] ) : ?>
-								<button type="button" class="button button-disabled" disabled="disabled">
-									<?php esc_html_e( 'Installed', 'agent-builder' ); ?>
-								</button>
-							<?php else : ?>
-								<a class="install-now button button-primary"
-									href="<?php echo esc_url( $agentic_install_url ); ?>">
-									<?php esc_html_e( 'Install Now', 'agent-builder' ); ?>
-								</a>
-							<?php endif; ?>
+							<ul class="plugin-action-buttons">
+								<li>
+									<?php if ( $agentic_agent['installed'] ) : ?>
+										<button type="button" class="button button-disabled" disabled="disabled">
+											<?php esc_html_e( 'Installed', 'agent-builder' ); ?>
+										</button>
+									<?php else : ?>
+										<a class="install-now button" href="<?php echo esc_url( $agentic_install_url ); ?>">
+											<?php esc_html_e( 'Install Now', 'agent-builder' ); ?>
+										</a>
+									<?php endif; ?>
+								</li>
+								<li>
+									<a href="#" class="agent-more-details" data-slug="<?php echo esc_attr( $agentic_slug ); ?>">
+										<?php esc_html_e( 'More Details', 'agent-builder' ); ?>
+									</a>
+								</li>
+							</ul>
+						</div>
+						<div class="desc column-description">
+							<p><?php echo esc_html( $agentic_agent['description'] ); ?></p>
+							<p class="authors">
+								<cite>
+									<?php esc_html_e( 'By', 'agent-builder' ); ?>
+									<?php if ( ! empty( $agentic_agent['author_uri'] ) ) : ?>
+										<a href="<?php echo esc_url( $agentic_agent['author_uri'] ); ?>" target="_blank">
+											<?php echo esc_html( $agentic_agent['author'] ); ?>
+										</a>
+									<?php else : ?>
+										<?php echo esc_html( $agentic_agent['author'] ); ?>
+									<?php endif; ?>
+								</cite>
+							</p>
 						</div>
 					</div>
 					<div class="plugin-card-bottom">
@@ -194,27 +356,25 @@ $agentic_library = $agentic_registry->get_library_agents(
 							<strong><?php esc_html_e( 'Version:', 'agent-builder' ); ?></strong>
 							<?php echo esc_html( $agentic_agent['version'] ); ?>
 						</div>
-						<div class="column-compatibility">
+						<div class="column-downloaded">
 							<?php if ( ! empty( $agentic_agent['capabilities'] ) ) : ?>
-								<span class="agent-caps" title="<?php echo esc_attr( implode( ', ', $agentic_agent['capabilities'] ) ); ?>">
-									<?php
-									printf(
-										/* translators: %d: Number of capabilities */
-										esc_html( _n( '%d capability', '%d capabilities', count( $agentic_agent['capabilities'] ), 'agent-builder' ) ),
-										esc_html( count( $agentic_agent['capabilities'] ) )
-									);
-									?>
-								</span>
+								<?php
+								printf(
+									/* translators: %d: Number of capabilities */
+									esc_html( _n( '%d Capability', '%d Capabilities', count( $agentic_agent['capabilities'] ), 'agent-builder' ) ),
+									esc_html( count( $agentic_agent['capabilities'] ) )
+								);
+								?>
+							<?php endif; ?>
+						</div>
+						<div class="column-compatibility">
+							<?php if ( ! empty( $agentic_agent['tags'] ) ) : ?>
+								<?php foreach ( array_slice( $agentic_agent['tags'], 0, 3 ) as $agentic_agent_tag ) : ?>
+									<span class="agent-tag"><?php echo esc_html( $agentic_agent_tag ); ?></span>
+								<?php endforeach; ?>
 							<?php endif; ?>
 						</div>
 					</div>
-					<?php if ( ! empty( $agentic_agent['tags'] ) ) : ?>
-						<div class="plugin-card-tags">
-							<?php foreach ( $agentic_agent['tags'] as $agentic_agent_tag ) : ?>
-								<span class="agent-tag"><?php echo esc_html( $agentic_agent_tag ); ?></span>
-							<?php endforeach; ?>
-						</div>
-					<?php endif; ?>
 				</div>
 			<?php endforeach; ?>
 		</div>
@@ -235,15 +395,16 @@ $agentic_library = $agentic_registry->get_library_agents(
 			</div>
 		<?php endif; ?>
 	<?php endif; ?>
+	</div><!-- /.agentic-browse-content -->
 
 	<!-- Info Box: Creating Your Own Agent -->
 	<div class="agentic-create-agent-info">
 		<h3><?php esc_html_e( 'Create Your Own Agent', 'agent-builder' ); ?></h3>
 		<p><?php esc_html_e( 'Agents are modular components that can be built by any developer. Like WordPress plugins, agents follow a standard structure:', 'agent-builder' ); ?></p>
 		<pre><code>wp-content/agents/my-agent/
-├── agent.php          # Main file with agent headers
-├── includes/          # Agent logic
-└── README.md          # Documentation</code></pre>
+├── agent.php                       # Main file with agent headers &amp; class
+└── templates/
+    └── system-prompt.txt           # System prompt for the AI provider</code></pre>
 		<p>
 			<strong><?php esc_html_e( 'Agent Headers:', 'agent-builder' ); ?></strong>
 		</p>
@@ -257,7 +418,7 @@ $agentic_library = $agentic_registry->get_library_agents(
  * Capabilities: read_posts, create_posts
  */</code></pre>
 		<p>
-			<a href="https://github.com/renduples/agent-builder/wiki/Creating-Agents" target="_blank" class="button">
+			<a href="https://agentic-plugin.com/documentation/" target="_blank" class="button">
 				<?php esc_html_e( 'View Documentation', 'agent-builder' ); ?>
 			</a>
 		</p>
@@ -265,173 +426,322 @@ $agentic_library = $agentic_registry->get_library_agents(
 </div>
 
 <style>
+.agentic-add-agents-page .agentic-add-agents-description {
+	font-size: 13px;
+	color: #50575e;
+	margin: 15px 0 10px;
+}
+
+.agentic-add-agents-page .upload-view-toggle .browse {
+	display: none;
+}
+
+.agentic-add-agents-page.show-upload-view .upload-view-toggle .upload {
+	display: none;
+}
+
+.agentic-add-agents-page.show-upload-view .upload-view-toggle .browse {
+	display: inline;
+}
+
+.upload-agent-wrap {
+	overflow: hidden;
+}
+
+.upload-agent {
+	box-sizing: border-box;
+	display: block;
+	margin: 0;
+	padding: 50px 0;
+	width: 100%;
+	overflow: hidden;
+	position: relative;
+	text-align: center;
+}
+
+.upload-agent .install-help {
+	color: #50575e;
+	font-size: 18px;
+	font-style: normal;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+
+.upload-agent .wp-upload-form {
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	padding: 30px;
+	margin: 30px auto;
+	display: inline-flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.upload-agent .wp-upload-form input[type="file"] {
+	margin-right: 10px;
+}
+
 .agentic-add-agents-page .filter-links {
 	display: flex;
-	gap: 10px;
+	gap: 0;
 	flex-wrap: wrap;
-	margin: 15px 0;
+	margin: 0 0 15px;
 	padding: 0;
 	list-style: none;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.agentic-add-agents-page .filter-links li {
+	margin: 0;
 }
 
 .agentic-add-agents-page .filter-links a {
 	display: inline-block;
-	padding: 8px 16px;
-	background: #f0f0f1;
-	border-radius: 4px;
+	padding: 4px 14px;
 	text-decoration: none;
 	color: #50575e;
 	font-size: 13px;
+	line-height: 2;
+	border: 1px solid transparent;
+	border-bottom: none;
+	background: none;
+	border-radius: 0;
 }
 
 .agentic-add-agents-page .filter-links a:hover {
-	background: #e0e0e0;
+	color: #135e96;
 }
 
 .agentic-add-agents-page .filter-links a.current {
-	background: #0073aa;
-	color: #fff;
+	background: #f0f0f1;
+	border-color: #c3c4c7;
+	color: #000;
+	font-weight: 600;
+	margin-bottom: -1px;
+	padding-bottom: 5px;
 }
 
 .agentic-add-agents-page .search-form {
 	float: right;
-	margin-top: -50px;
+	margin-top: -40px;
 }
 
+/* Agent cards — mirror WP plugin-card layout */
 .agentic-agent-cards {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-	gap: 20px;
-	margin-top: 20px;
+	display: flex;
+	flex-wrap: wrap;
 }
 
 .agentic-agent-cards .plugin-card {
-	margin: 0;
-	float: none;
-	width: 100%;
+	float: left;
+	margin: 0 8px 16px;
+	width: 48.5%;
+	width: calc(50% - 8px);
+	background-color: #fff;
+	border: 1px solid #dcdcde;
+	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
+	justify-content: space-between;
+}
+
+.agentic-agent-cards .plugin-card:nth-child(odd) {
+	clear: both;
+	margin-left: 0;
+}
+
+.agentic-agent-cards .plugin-card:nth-child(even) {
+	margin-right: 0;
+}
+
+@media screen and (min-width: 1100px) {
+	.agentic-agent-cards .plugin-card {
+		width: 30%;
+		width: calc(33.1% - 8px);
+	}
+
+	.agentic-agent-cards .plugin-card:nth-child(odd) {
+		clear: none;
+		margin-left: 8px;
+	}
+
+	.agentic-agent-cards .plugin-card:nth-child(even) {
+		margin-right: 8px;
+	}
+
+	.agentic-agent-cards .plugin-card:nth-child(3n+1) {
+		clear: both;
+		margin-left: 0;
+	}
+
+	.agentic-agent-cards .plugin-card:nth-child(3n) {
+		margin-right: 0;
+	}
 }
 
 .agentic-agent-cards .plugin-card-top {
-	display: block;
-	padding: 20px;
+	position: relative;
+	padding: 20px 20px 10px;
+	min-height: 135px;
 }
 
-.agentic-agent-cards .plugin-card-top-header {
+.agentic-agent-cards .plugin-card h3 {
+	margin: 0 12px 12px 0;
+	font-size: 18px;
+	line-height: 1.3;
+}
+
+.agentic-agent-cards .name.column-name,
+.agentic-agent-cards .desc.column-description > p,
+.agentic-agent-cards .desc.column-description .authors {
+	margin-left: 148px;
+}
+
+@media (min-width: 1101px) {
+	.agentic-agent-cards .name.column-name,
+	.agentic-agent-cards .desc.column-description > p,
+	.agentic-agent-cards .desc.column-description .authors {
+		margin-right: 128px;
+	}
+}
+
+@media (max-width: 1100px) {
+	.agentic-agent-cards .name.column-name,
+	.agentic-agent-cards .desc.column-description > p,
+	.agentic-agent-cards .desc.column-description .authors {
+		margin-left: 0;
+	}
+
+	.agentic-agent-cards .agent-icon-emoji {
+		display: none;
+	}
+}
+
+.agentic-agent-cards .desc.column-description {
 	display: flex;
-	align-items: flex-start;
-	gap: 12px;
-	margin-bottom: 12px;
+	flex-direction: column;
+	justify-content: flex-start;
 }
 
-.agentic-agent-cards .agent-icon {
-	width: 48px;
-	height: 48px;
+.agentic-agent-cards .desc.column-description > p {
+	margin-top: 0;
+}
+
+.agentic-agent-cards .authors {
+	margin: 0 0 8px 0;
+	font-size: 13px;
+	color: #646970;
+}
+
+/* Agent icon — emoji square mimicking the 128x128 plugin icon */
+.agentic-agent-cards .agent-icon-emoji {
+	position: absolute;
+	top: 20px;
+	left: 20px;
+	width: 128px;
+	height: 128px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	border-radius: 8px;
-	font-size: 24px;
-	flex-shrink: 0;
+	border-radius: 4px;
+	font-size: 56px;
+	line-height: 1;
 }
 
-.agentic-agent-cards .name {
-	flex: 1;
-}
-
-.agentic-agent-cards .name h3 {
-	margin: 0;
-	font-size: 14px;
-	font-weight: 600;
-	color: #1e1e1e;
-}
-
-.agentic-agent-cards .authors {
-	margin: 4px 0 8px 0;
-	font-size: 12px;
-	color: #666;
-}
-
+/* Action links — top right, matching WP */
 .agentic-agent-cards .action-links {
-	margin-top: 12px;
-}
-
-.plugin-card .action-links {
 	position: absolute;
 	top: 20px;
 	right: 20px;
-	width: 190px;
+	width: 120px;
 }
 
-.agentic-agent-cards .desc {
-	margin-top: 0;
+.agentic-agent-cards .plugin-action-buttons {
+	clear: right;
+	float: right;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	text-align: right;
 }
 
-.agentic-agent-cards .desc p {
-	margin: 0 0 5px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
+.agentic-agent-cards .plugin-action-buttons li {
+	margin-bottom: 10px;
 }
 
-.agentic-agent-cards .desc p:first-child {
-	line-height: 1.5;
-}
-
+/* Bottom bar — matches WP plugin-card-bottom */
 .agentic-agent-cards .plugin-card-bottom {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	clear: both;
 	padding: 12px 20px;
-	background: #f9f9f9;
+	background-color: #f6f7f7;
 	border-top: 1px solid #dcdcde;
+	overflow: hidden;
 }
 
-.agentic-agent-cards .plugin-card-tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	padding: 10px 20px;
-	background: #f9f9f9;
-	border-top: 1px solid #dcdcde;
+.agentic-agent-cards .vers.column-rating {
+	float: left;
+	line-height: 1.76923076;
 }
 
-.agentic-agent-cards .agent-tag {
-	display: inline-block;
-	padding: 2px 8px;
-	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 12px;
-	font-size: 11px;
-	color: #50575e;
+.agentic-agent-cards .column-rating,
+.agentic-agent-cards .column-updated {
+	margin-bottom: 4px;
 }
 
-.agentic-agent-cards .agent-tag:hover {
-	background: #e0e0e0;
-	cursor: pointer;
+.agentic-agent-cards .column-rating,
+.agentic-agent-cards .column-downloaded {
+	float: left;
+	clear: left;
+	max-width: 180px;
+}
+
+.agentic-agent-cards .column-updated,
+.agentic-agent-cards .column-compatibility {
+	text-align: right;
+	float: right;
+	clear: right;
+	max-width: 260px;
 }
 
 .agentic-agent-cards .agent-category-badge {
 	display: inline-block;
-	padding: 3px 8px;
-	background: #e7e7e7;
+	padding: 2px 8px;
+	background: #2271b1;
+	color: #fff;
 	border-radius: 3px;
 	font-size: 11px;
 	text-transform: uppercase;
+	font-weight: 600;
+}
+
+.agentic-agent-cards .agent-tag {
+	display: inline-block;
+	padding: 1px 6px;
+	background: #f0f0f1;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	font-size: 11px;
+	color: #50575e;
+	margin-right: 2px;
 }
 
 .agentic-empty-library {
 	text-align: center;
 	padding: 60px 20px;
-	background: #fff;
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
-	margin-top: 20px;
+	color: #646970;
+	font-size: 18px;
+	font-style: normal;
+	margin: 0;
 }
 
 .agentic-empty-library h2 {
 	margin-bottom: 10px;
+}
+
+.no-plugin-results {
+	width: 100%;
 }
 
 .agentic-create-agent-info {
@@ -439,7 +749,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 	padding: 25px;
 	background: #fff;
 	border: 1px solid #c3c4c7;
-	border-left: 4px solid #0073aa;
+	border-left: 4px solid #2271b1;
 }
 
 .agentic-create-agent-info h3 {
@@ -464,16 +774,46 @@ $agentic_library = $agentic_registry->get_library_agents(
 		margin: 15px 0;
 	}
 
-	.agentic-agent-cards .plugin-card-top {
-		grid-template-columns: 50px 1fr;
+	.agentic-agent-cards .plugin-card {
+		width: 100%;
+		margin-left: 0;
+		margin-right: 0;
 	}
 
-	.agentic-agent-cards .action-links {
-		grid-column: 2;
-	}
-
-	.agentic-agent-cards .desc {
-		grid-column: 1 / 3;
+	.agentic-agent-cards .plugin-card:nth-child(odd) {
+		clear: none;
 	}
 }
 </style>
+
+<script>
+(function() {
+	var toggle = document.getElementById('agentic-upload-toggle');
+	var wrap = document.querySelector('.upload-agent-wrap');
+	var page = document.querySelector('.agentic-add-agents-page');
+	var browseContent = document.querySelector('.agentic-browse-content');
+
+	if ( toggle && wrap && page ) {
+		toggle.addEventListener('click', function(e) {
+			e.preventDefault();
+			var isShowing = page.classList.contains('show-upload-view');
+			if ( isShowing ) {
+				page.classList.remove('show-upload-view');
+				wrap.style.display = 'none';
+				if ( browseContent ) browseContent.style.display = '';
+			} else {
+				page.classList.add('show-upload-view');
+				wrap.style.display = 'block';
+				if ( browseContent ) browseContent.style.display = 'none';
+			}
+		});
+
+		<?php if ( $agentic_upload_error ) : ?>
+		// If there was an upload error, show the upload form.
+		page.classList.add('show-upload-view');
+		wrap.style.display = 'block';
+		if ( browseContent ) browseContent.style.display = 'none';
+		<?php endif; ?>
+	}
+})();
+</script>

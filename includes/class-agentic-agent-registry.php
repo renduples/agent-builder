@@ -552,7 +552,7 @@ class Agentic_Agent_Registry {
 				if ( $agent_data ) {
 					$agent_data['slug']         = $folder;
 					$agent_data['library_path'] = $agent_path;
-					$agent_data['installed']    = $this->is_agent_installed( $folder );
+					$agent_data['installed']    = $this->is_agent_installed( $folder ) || $this->is_agent_active( $folder );
 
 					// Apply search filter.
 					if ( ! empty( $args['search'] ) ) {

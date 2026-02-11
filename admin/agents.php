@@ -132,23 +132,12 @@ if ( 'active' === $agentic_filter ) {
 	$agentic_agents = array_filter( $agentic_agents, fn( $a ) => ! $a['active'] );
 }
 
-// Search.
-$agentic_search_term = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
-if ( $agentic_search_term ) {
-	$agentic_agents = array_filter(
-		$agentic_agents,
-		function ( $a ) use ( $agentic_search_term ) {
-			return false !== stripos( $a['name'], $agentic_search_term )
-			|| false !== stripos( $a['description'], $agentic_search_term );
-		}
-	);
-}
 ?>
 
 <div class="wrap agentic-agents-page">
 	<h1 class="wp-heading-inline"><?php esc_html_e( 'Agents', 'agent-builder' ); ?></h1>
 	<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add' ) ); ?>" class="page-title-action">
-		<?php esc_html_e( 'Browse Marketplace', 'agent-builder' ); ?>
+		<?php esc_html_e( 'Add Agent', 'agent-builder' ); ?>
 	</a>
 	<hr class="wp-header-end">
 
@@ -188,21 +177,6 @@ if ( $agentic_search_term ) {
 			</a>
 		</li>
 	</ul>
-
-	<!-- Search Box -->
-	<form method="get" class="search-form">
-		<input type="hidden" name="page" value="agentic-agents">
-		<p class="search-box">
-			<label class="screen-reader-text" for="agent-search-input">
-				<?php esc_html_e( 'Search Agents', 'agent-builder' ); ?>
-			</label>
-			<input type="search" id="agent-search-input" name="s"
-					value="<?php echo esc_attr( $agentic_search_term ); ?>"
-					placeholder="<?php esc_attr_e( 'Search installed agents...', 'agent-builder' ); ?>">
-			<input type="submit" id="search-submit" class="button"
-					value="<?php esc_attr_e( 'Search Agents', 'agent-builder' ); ?>">
-		</p>
-	</form>
 
 	<!-- Agents Table -->
 	<table class="wp-list-table widefat plugins">

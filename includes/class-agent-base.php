@@ -181,6 +181,31 @@ abstract class Agent_Base {
 	}
 
 	/**
+	 * Get event listeners for this agent
+	 *
+	 * Override this to react to WordPress actions as they happen.
+	 * Each listener array must include:
+	 *   - 'id'            (string) Unique listener identifier within this agent.
+	 *   - 'hook'          (string) WordPress action hook name (e.g., 'save_post', 'wp_login').
+	 *   - 'name'          (string) Human-readable listener name.
+	 *   - 'callback'      (string) Method name on this agent to call.
+	 *
+	 * Optional:
+	 *   - 'description'   (string) What this listener does.
+	 *   - 'priority'      (int)    Hook priority (default 10).
+	 *   - 'accepted_args' (int)    Number of arguments the callback accepts (default 1).
+	 *   - 'prompt'        (string) If set, queues an async LLM task via wp_schedule_single_event
+	 *                              instead of calling the callback synchronously. The hook
+	 *                              arguments are JSON-serialized into the prompt context.
+	 *                              Falls back to 'callback' if LLM is not configured.
+	 *
+	 * @return array[] Array of listener definitions.
+	 */
+	public function get_event_listeners(): array {
+		return array();
+	}
+
+	/**
 	 * Get scheduled tasks for this agent
 	 *
 	 * Override this to define recurring tasks the agent should perform.

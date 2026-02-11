@@ -5,7 +5,7 @@
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
  * Description:       Build AI agents without writing code. Describe the AI agent you want and let WordPress build it for you.
- * Version:           1.4.0
+ * Version:           1.5.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agent Builder Team
@@ -88,6 +88,12 @@ final class Plugin {
 
 		// Agent scheduled tasks: bind cron hooks after agents are loaded.
 		add_action( 'agentic_agents_loaded', array( $this, 'bind_agent_cron_hooks' ) );
+
+		// Agent event listeners: bind WordPress action hooks after agents are loaded.
+		add_action( 'agentic_agents_loaded', array( $this, 'bind_agent_event_listeners' ) );
+
+		// Handler for async LLM event processing (queued via wp_schedule_single_event).
+		add_action( 'agentic_async_event', array( $this, 'handle_async_event' ), 10, 4 );
 
 		// Register/unregister cron on agent activate/deactivate.
 		add_action( 'agentic_agent_activated', array( $this, 'on_agent_activated_schedule' ), 10, 2 );
@@ -228,6 +234,15 @@ final class Plugin {
 			'manage_options',
 			'agentic-scheduled-tasks',
 			array( $this, 'render_scheduled_tasks_page' )
+		);
+
+		add_submenu_page(
+			'agent-builder',
+			__( 'Event Listeners', 'agent-builder' ),
+			__( 'Event Listeners', 'agent-builder' ),
+			'manage_options',
+			'agentic-event-listeners',
+			array( $this, 'render_event_listeners_page' )
 		);
 
 		add_submenu_page(
@@ -442,6 +457,15 @@ final class Plugin {
 	}
 
 	/**
+	 * Render event listeners page
+	 *
+	 * @return void
+	 */
+	public function render_event_listeners_page(): void {
+		include AGENTIC_PLUGIN_DIR . 'admin/event-listeners.php';
+	}
+
+	/**
 	 * Render agent tools page
 	 *
 	 * @return void
@@ -567,6 +591,240 @@ final class Plugin {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Bind WordPress action hooks for all active agents' event listeners
+	 *
+	 * Called on 'agentic_agents_loaded' action.
+	 *
+	 * @return void
+	 */
+	public function bind_agent_event_listeners(): void {
+		$registry  = \Agentic_Agent_Registry::get_instance();
+		$instances = $registry->get_all_instances();
+
+		foreach ( $instances as $agent ) {
+			$listeners = $agent->get_event_listeners();
+
+			foreach ( $listeners as $listener ) {
+				$priority      = $listener['priority'] ?? 10;
+				$accepted_args = $listener['accepted_args'] ?? 1;
+
+				add_action(
+					$listener['hook'],
+					function () use ( $agent, $listener ) {
+						$args = func_get_args();
+						$this->execute_event_listener( $agent, $listener, $args );
+					},
+					$priority,
+					$accepted_args
+				);
+			}
+		}
+	}
+
+	/**
+	 * Execute an event listener with outcome logging
+	 *
+	 * For direct mode: calls the agent callback synchronously.
+	 * For autonomous mode (prompt defined): queues an async LLM task via
+	 * wp_schedule_single_event so it doesn't block the current request.
+	 *
+	 * @param \Agentic\Agent_Base $agent    Agent instance.
+	 * @param array               $listener Listener definition.
+	 * @param array               $args     WordPress hook arguments.
+	 * @return void
+	 */
+	public function execute_event_listener( \Agentic\Agent_Base $agent, array $listener, array $args ): void {
+		$audit    = new \Agentic\Audit_Log();
+		$start    = microtime( true );
+		$agent_id = $agent->get_id();
+		$mode     = ! empty( $listener['prompt'] ) ? 'autonomous' : 'direct';
+
+		// Log event trigger.
+		$audit->log(
+			$agent_id,
+			'event_listener_triggered',
+			$listener['id'],
+			array(
+				'listener_name' => $listener['name'],
+				'hook'          => $listener['hook'],
+				'mode'          => $mode,
+				'args_summary'  => substr( wp_json_encode( $this->sanitize_hook_args( $args ) ), 0, 500 ),
+			)
+		);
+
+		try {
+			if ( ! empty( $listener['prompt'] ) ) {
+				// Queue async LLM execution so we don't block the current request.
+				wp_schedule_single_event(
+					time(),
+					'agentic_async_event',
+					array(
+						$agent_id,
+						$listener['id'],
+						$listener['prompt'],
+						$this->sanitize_hook_args( $args ),
+					)
+				);
+				return; // Actual execution happens in handle_async_event.
+			}
+
+			// Direct mode: call agent callback synchronously.
+			if ( method_exists( $agent, $listener['callback'] ) ) {
+				call_user_func_array( array( $agent, $listener['callback'] ), $args );
+			}
+
+			$duration = round( microtime( true ) - $start, 3 );
+
+			$audit->log(
+				$agent_id,
+				'event_listener_complete',
+				$listener['id'],
+				array(
+					'listener_name' => $listener['name'],
+					'hook'          => $listener['hook'],
+					'duration_s'    => $duration,
+					'mode'          => 'direct',
+				)
+			);
+		} catch ( \Throwable $e ) {
+			$duration = round( microtime( true ) - $start, 3 );
+
+			$audit->log(
+				$agent_id,
+				'event_listener_error',
+				$listener['id'],
+				array(
+					'listener_name' => $listener['name'],
+					'hook'          => $listener['hook'],
+					'duration_s'    => $duration,
+					'error'         => $e->getMessage(),
+					'file'          => $e->getFile() . ':' . $e->getLine(),
+				)
+			);
+		}
+	}
+
+	/**
+	 * Handle async event processing via WP-Cron single event
+	 *
+	 * Runs the LLM with the event prompt and serialized hook arguments.
+	 *
+	 * @param string $agent_id    Agent ID.
+	 * @param string $listener_id Listener ID.
+	 * @param string $prompt      Base prompt.
+	 * @param array  $hook_args   Sanitized hook arguments.
+	 * @return void
+	 */
+	public function handle_async_event( string $agent_id, string $listener_id, string $prompt, array $hook_args ): void {
+		$registry = \Agentic_Agent_Registry::get_instance();
+		$agent    = $registry->get_agent_instance( $agent_id );
+		$audit    = new \Agentic\Audit_Log();
+
+		if ( ! $agent ) {
+			$audit->log( $agent_id, 'event_listener_error', $listener_id, array( 'error' => 'Agent not found for async event' ) );
+			return;
+		}
+
+		// Build context-enriched prompt.
+		$context_json  = wp_json_encode( $hook_args, JSON_PRETTY_PRINT );
+		$full_prompt   = $prompt . "\n\n[EVENT CONTEXT]\n" . $context_json;
+
+		$start = microtime( true );
+
+		try {
+			$controller = new \Agentic\Agent_Controller();
+			$result     = $controller->run_autonomous_task( $agent, $full_prompt, 'event_' . $listener_id );
+
+			// If LLM not configured, try direct fallback.
+			if ( null === $result ) {
+				$listeners = $agent->get_event_listeners();
+				foreach ( $listeners as $listener ) {
+					if ( $listener['id'] === $listener_id && method_exists( $agent, $listener['callback'] ) ) {
+						call_user_func( array( $agent, $listener['callback'] ), ...$hook_args );
+						$result = array( 'mode' => 'direct_fallback', 'status' => 'completed' );
+						break;
+					}
+				}
+			}
+
+			$duration = round( microtime( true ) - $start, 3 );
+
+			$audit->log(
+				$agent_id,
+				'event_listener_complete',
+				$listener_id,
+				array(
+					'duration_s' => $duration,
+					'mode'       => 'autonomous',
+					'result'     => is_array( $result ) ? substr( wp_json_encode( $result ), 0, 1000 ) : null,
+				)
+			);
+		} catch ( \Throwable $e ) {
+			$duration = round( microtime( true ) - $start, 3 );
+
+			$audit->log(
+				$agent_id,
+				'event_listener_error',
+				$listener_id,
+				array(
+					'duration_s' => $duration,
+					'error'      => $e->getMessage(),
+					'file'       => $e->getFile() . ':' . $e->getLine(),
+				)
+			);
+		}
+	}
+
+	/**
+	 * Sanitize hook arguments for safe serialization
+	 *
+	 * Converts WP objects to arrays, truncates large values, removes non-serializable data.
+	 *
+	 * @param array $args Raw hook arguments.
+	 * @return array Sanitized arguments.
+	 */
+	private function sanitize_hook_args( array $args ): array {
+		$sanitized = array();
+
+		foreach ( $args as $key => $value ) {
+			if ( $value instanceof \WP_Post ) {
+				$sanitized[ $key ] = array(
+					'_type'       => 'WP_Post',
+					'ID'          => $value->ID,
+					'post_title'  => $value->post_title,
+					'post_type'   => $value->post_type,
+					'post_status' => $value->post_status,
+					'post_author' => $value->post_author,
+				);
+			} elseif ( $value instanceof \WP_Comment ) {
+				$sanitized[ $key ] = array(
+					'_type'          => 'WP_Comment',
+					'comment_ID'     => $value->comment_ID,
+					'comment_post_ID' => $value->comment_post_ID,
+					'comment_author' => $value->comment_author,
+					'comment_content' => substr( $value->comment_content, 0, 500 ),
+				);
+			} elseif ( $value instanceof \WP_User ) {
+				$sanitized[ $key ] = array(
+					'_type'        => 'WP_User',
+					'ID'           => $value->ID,
+					'user_login'   => $value->user_login,
+					'display_name' => $value->display_name,
+					'roles'        => $value->roles,
+				);
+			} elseif ( is_object( $value ) ) {
+				$sanitized[ $key ] = array( '_type' => get_class( $value ), '_note' => 'Object serialized to class name only' );
+			} elseif ( is_string( $value ) && strlen( $value ) > 1000 ) {
+				$sanitized[ $key ] = substr( $value, 0, 1000 ) . '... [truncated]';
+			} else {
+				$sanitized[ $key ] = $value;
+			}
+		}
+
+		return $sanitized;
 	}
 
 	/**

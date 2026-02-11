@@ -84,6 +84,73 @@ class Agentic_Security_Monitor extends \Agentic\Agent_Base {
 	}
 
 	/**
+	 * Get event listeners
+	 */
+	public function get_event_listeners(): array {
+		return array(
+			array(
+				'id'            => 'failed_login',
+				'hook'          => 'wp_login_failed',
+				'name'          => 'Failed Login Monitor',
+				'callback'      => 'on_failed_login',
+				'description'   => 'Logs failed login attempts for security monitoring.',
+				'accepted_args' => 2,
+			),
+			array(
+				'id'            => 'user_registered',
+				'hook'          => 'user_register',
+				'name'          => 'New User Alert',
+				'callback'      => 'on_user_registered',
+				'description'   => 'Monitors new user registrations for suspicious activity.',
+				'accepted_args' => 1,
+			),
+		);
+	}
+
+	/**
+	 * Handle failed login event
+	 *
+	 * @param string    $username Username attempted.
+	 * @param \WP_Error $error    WP_Error object.
+	 * @return void
+	 */
+	public function on_failed_login( string $username, $error = null ): void {
+		$audit = new \Agentic\Audit_Log();
+		$audit->log(
+			$this->get_id(),
+			'failed_login_detected',
+			'security',
+			array(
+				'username'  => $username,
+				'ip'        => sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? 'unknown' ) ),
+				'timestamp' => current_time( 'mysql' ),
+			)
+		);
+	}
+
+	/**
+	 * Handle new user registration event
+	 *
+	 * @param int $user_id New user ID.
+	 * @return void
+	 */
+	public function on_user_registered( int $user_id ): void {
+		$user  = get_userdata( $user_id );
+		$audit = new \Agentic\Audit_Log();
+		$audit->log(
+			$this->get_id(),
+			'new_user_detected',
+			'security',
+			array(
+				'user_id'    => $user_id,
+				'user_login' => $user ? $user->user_login : 'unknown',
+				'user_email' => $user ? $user->user_email : 'unknown',
+				'roles'      => $user ? $user->roles : array(),
+			)
+		);
+	}
+
+	/**
 	 * Get scheduled tasks
 	 */
 	public function get_scheduled_tasks(): array {

@@ -1,8 +1,8 @@
 # Manual Testing Walkthrough
 
-**Plugin:** Agent Builder v1.3.0  
-**Date:** February 10, 2026  
-**Estimated Time:** 60–90 minutes  
+**Plugin:** Agent Builder v1.5.0  
+**Date:** February 11, 2026  
+**Estimated Time:** 75–100 minutes  
 **Prerequisites:** Local WP site running (http://agentic.test), LLM API key configured in Agent Builder → Settings
 
 ---
@@ -68,7 +68,7 @@ Open http://agentic.test and work through `tests/manual/frontend-chat.md`.
 
 ---
 
-## Step 3: Admin UI Testing (7 tests)
+## Step 3: Admin UI Testing (11 tests)
 
 Navigate to http://agentic.test/wp-admin/ → Agent Builder menu.
 
@@ -99,11 +99,49 @@ Navigate to http://agentic.test/wp-admin/ → Agent Builder menu.
 ### 3.6 Audit Log
 1. Send a chat message (Step 2.2)
 2. Check the audit log page
-3. **Expected:** Entry logged with agent name, action, token count, timestamp
+3. **Expected:** Entry logged with agent name, action, token count, actual timestamp (not relative)
+4. Click **Details** on any entry → expandable panel shows full JSON (scrollable, max 600×300px)
+5. Use the Agent and Action filter dropdowns → should list only agents/actions present in logs (dynamic DISTINCT queries)
+6. Verify 30-day retention: entries older than 30 days should be auto-pruned
+7. If a `chat_complete` entry exists, verify it includes agent response text in details
 
-### 3.7 System Check
+### 3.7 Scheduled Tasks
+1. Go to **Scheduled Tasks**
+2. **Expected:** Table shows all agent tasks with columns: Agent, Task, Schedule, Mode, Status, Next Run, Actions
+3. Verify Security Monitor's "Daily Security Scan" appears with mode **🤖 AI** (has prompt)
+4. Check Status column: **Active** (green) if cron is registered, **Not Scheduled** (red) otherwise
+5. Click **Run Now** on a task → success notice appears
+6. Go to Audit Log → confirm `scheduled_task_start` and `scheduled_task_complete` entries logged with duration
+7. Info box at bottom explains WP-Cron, AI vs Direct mode, and outcome logging
+
+### 3.8 Event Listeners
+1. Go to **Event Listeners**
+2. **Expected:** Table shows all agent listeners with columns: Agent, Listener, WordPress Hook, Priority, Mode, Status
+3. Verify Security Monitor shows two listeners:
+   - "Failed Login Monitor" on hook `wp_login_failed` — mode **⚙️ Direct**
+   - "New User Alert" on hook `user_register` — mode **⚙️ Direct**
+4. All listeners should show Status **Active** (green)
+5. Info box at bottom explains Direct vs AI Async mode, serialization, and outcome logging
+
+### 3.9 Agent Tools
+1. Go to **Agent Tools**
+2. **Expected:** Table shows all tools across all agents with type (Core/Agent), parameters, used-by
+3. Verify core tools listed: `read_file`, `list_directory`, `search_code`, `get_posts`, `get_comments`, `create_comment`, `update_documentation`, `request_code_change`, `manage_schedules`
+4. Verify agent-specific tools appear (e.g., Security Monitor's `security_scan`)
+
+### 3.10 System Check
 1. Go to **System Status**
 2. **Expected:** PHP version, WordPress version, MySQL version, required extensions all show green checks
+
+### 3.11 Event Listener Integration (end-to-end)
+1. Ensure Security Monitor is activated
+2. Log out and attempt a login with a wrong password
+3. Log back in, go to **Audit Log**
+4. **Expected:** `failed_login_detected` entry from Security Monitor with username, IP, timestamp
+5. Create a new test user via WP-CLI: `wp user create testlistener test@test.com --role=subscriber`
+6. Check Audit Log again
+7. **Expected:** `new_user_detected` entry with user_id, user_login, roles
+8. Clean up: `wp user delete testlistener --yes`
 
 **Section Pass/Fail:** _______  
 **Notes:** _______________________________
@@ -273,10 +311,14 @@ For efficiency, follow this order (some tests generate data needed by later step
 3. **Step 3.5** — Admin: Security Log (verify entries from step above)
 4. **Step 2** — Frontend chat (generates audit log entries)
 5. **Step 3.6** — Admin: Audit Log (verify entries from step above)
-6. **Step 3** — Remaining admin tests
-7. **Step 4.4–4.10** — Remaining security tests
-8. **Step 5** — Marketplace (requires network)
-9. **Step 6** — Comprehensive procedures (final pass)
+6. **Step 3.7** — Admin: Scheduled Tasks (verify tasks, Run Now)
+7. **Step 3.8** — Admin: Event Listeners (verify listeners active)
+8. **Step 3.9** — Admin: Agent Tools (verify tools index)
+9. **Step 3** — Remaining admin tests
+10. **Step 3.11** — Event Listener Integration (end-to-end with failed login + new user)
+11. **Step 4.4–4.10** — Remaining security tests
+12. **Step 5** — Marketplace (requires network)
+13. **Step 6** — Comprehensive procedures (final pass)
 
 ---
 

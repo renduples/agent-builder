@@ -111,8 +111,11 @@ class Agent_Controller {
 			$tools = $this->current_agent->get_tools();
 		}
 
-		// Agent can optionally use core tools (read-only ones).
-		// For now, agents define their own tools.
+		// Merge core tools so the LLM knows about them.
+		$core_tool_defs = $this->core_tools->get_tool_definitions();
+		foreach ( $core_tool_defs as $core_tool ) {
+			$tools[] = $core_tool;
+		}
 
 		return $tools;
 	}

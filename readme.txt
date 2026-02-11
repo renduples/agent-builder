@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,22 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.6.0 - 2026-02-11 =
+* Added: Two-zone architecture — plugin/repo code vs user-space changes.
+* Added: Agent_Permissions class with 6 granular permission scopes (all disabled by default).
+* Added: Agent_Proposals class for pending change confirmation with diff view.
+* Added: write_file tool — create/modify files in active theme or agentic-custom sandbox.
+* Added: modify_option tool — set/delete WordPress options (sensitive options blocked).
+* Added: manage_transients tool — list, delete, or flush transients.
+* Added: modify_postmeta tool — get, set, or delete post meta fields.
+* Added: Settings Permissions tab with scope toggles and confirmation mode selector.
+* Added: Chat proposal cards with syntax-highlighted diff view and Approve/Reject buttons.
+* Added: REST API POST /proposals/{id} endpoint for proposal approve/reject.
+* Added: File backup system (wp-content/agentic-backups/) before user-space writes.
+* Security: Sensitive core options blocked (siteurl, home, admin_email, passwords, API keys).
+* Security: All user-space permissions disabled by default with opt-in confirmation mode.
+* Tests: 434 tests, 1,172 assertions (48 new tests for permissions, proposals, user-space tools).
 
 = 1.5.0 - 2026-02-11 =
 * Added: Event listeners — agents react to WordPress action hooks in real time.
@@ -158,6 +174,9 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 * Marketplace foundation.
 
 == Upgrade Notice ==
+
+= 1.6.0 =
+New: Two-zone user-space permissions and proposals. Agents can now write theme files, modify options, manage transients, and update post meta — all permission-gated with confirmation diffs. No breaking changes.
 
 = 1.5.0 =
 New: Event listeners let agents react to WordPress hooks (login failures, new users, etc.). No breaking changes.

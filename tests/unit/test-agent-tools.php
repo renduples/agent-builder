@@ -570,4 +570,504 @@ class Test_Agent_Tools extends TestCase {
 
 		remove_all_filters( 'agentic_agent_tools' );
 	}
+
+	// -------------------------------------------------------------------------
+	// Tool definitions — new tools present
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test new core tools are present in definitions.
+	 */
+	public function test_new_core_tools_present() {
+		$tools = $this->tools->get_tool_definitions();
+		$names = array_map( fn( $t ) => $t['function']['name'], $tools );
+
+		$expected_new = array(
+			'query_database',
+			'get_error_log',
+			'get_site_health',
+			'manage_wp_cron',
+			'get_users',
+			'get_option',
+		);
+
+		foreach ( $expected_new as $name ) {
+			$this->assertContains( $name, $names, "Missing new core tool: {$name}" );
+		}
+	}
+
+	/**
+	 * Test total core tool count is now 15.
+	 */
+	public function test_tool_count_fifteen() {
+		$tools = $this->tools->get_tool_definitions();
+		$this->assertGreaterThanOrEqual( 15, count( $tools ) );
+	}
+
+	// -------------------------------------------------------------------------
+	// execute — query_database
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test query_database returns results for valid SELECT.
+	 */
+	public function test_query_database_select() {
+		$this->factory->post->create( array( 'post_title' => 'DB Query Test' ) );
+
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => "SELECT ID, post_title FROM {prefix}posts WHERE post_title = 'DB Query Test'" )
+		);
+
+		$this->assertIsArray( $result );
+		$this->assertArrayHasKey( 'results', $result );
+		$this->assertArrayHasKey( 'row_count', $result );
+		$this->assertGreaterThanOrEqual( 1, $result['row_count'] );
+	}
+
+	/**
+	 * Test query_database rejects INSERT.
+	 */
+	public function test_query_database_rejects_insert() {
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => "INSERT INTO {prefix}posts (post_title) VALUES ('hacked')" )
+		);
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'SELECT', $result['error'] );
+	}
+
+	/**
+	 * Test query_database rejects UPDATE.
+	 */
+	public function test_query_database_rejects_update() {
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => "UPDATE {prefix}posts SET post_title = 'hacked'" )
+		);
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test query_database rejects DELETE.
+	 */
+	public function test_query_database_rejects_delete() {
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => "DELETE FROM {prefix}posts" )
+		);
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test query_database rejects DROP.
+	 */
+	public function test_query_database_rejects_drop() {
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => "DROP TABLE {prefix}posts" )
+		);
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test query_database rejects empty query.
+	 */
+	public function test_query_database_rejects_empty() {
+		$result = $this->tools->execute( 'query_database', array( 'query' => '' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test query_database replaces prefix placeholder.
+	 */
+	public function test_query_database_replaces_prefix() {
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => 'SELECT COUNT(*) AS cnt FROM {prefix}options LIMIT 1' )
+		);
+		$this->assertArrayHasKey( 'results', $result );
+		// The resolved query should not contain {prefix}.
+		$this->assertStringNotContainsString( '{prefix}', $result['query'] );
+	}
+
+	/**
+	 * Test query_database blocks SLEEP injection.
+	 */
+	public function test_query_database_blocks_sleep() {
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => 'SELECT SLEEP(10)' )
+		);
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'disallowed', $result['error'] );
+	}
+
+	/**
+	 * Test query_database blocks BENCHMARK.
+	 */
+	public function test_query_database_blocks_benchmark() {
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => "SELECT BENCHMARK(1000000, SHA1('test'))" )
+		);
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test query_database adds LIMIT if missing.
+	 */
+	public function test_query_database_adds_limit() {
+		$result = $this->tools->execute(
+			'query_database',
+			array( 'query' => 'SELECT option_name FROM {prefix}options' )
+		);
+		$this->assertArrayHasKey( 'results', $result );
+		$this->assertLessThanOrEqual( 100, $result['row_count'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// execute — get_error_log
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test get_error_log returns structure.
+	 */
+	public function test_get_error_log_structure() {
+		$result = $this->tools->execute( 'get_error_log', array() );
+		$this->assertIsArray( $result );
+		// Either has 'lines' (log exists) or 'error' (log not found).
+		$this->assertTrue(
+			isset( $result['lines'] ) || isset( $result['error'] ),
+			'get_error_log should return lines or error'
+		);
+	}
+
+	/**
+	 * Test get_error_log respects line limit.
+	 */
+	public function test_get_error_log_line_limit() {
+		$result = $this->tools->execute( 'get_error_log', array( 'lines' => 5 ) );
+		if ( isset( $result['lines'] ) ) {
+			$this->assertLessThanOrEqual( 5, count( $result['lines'] ) );
+		}
+	}
+
+	/**
+	 * Test get_error_log caps at 200 lines.
+	 */
+	public function test_get_error_log_max_cap() {
+		$result = $this->tools->execute( 'get_error_log', array( 'lines' => 999 ) );
+		if ( isset( $result['lines'] ) ) {
+			$this->assertLessThanOrEqual( 200, count( $result['lines'] ) );
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// execute — get_site_health
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test get_site_health returns all sections.
+	 */
+	public function test_get_site_health_sections() {
+		$result = $this->tools->execute( 'get_site_health', array() );
+		$this->assertIsArray( $result );
+		$this->assertArrayHasKey( 'wordpress', $result );
+		$this->assertArrayHasKey( 'php', $result );
+		$this->assertArrayHasKey( 'memory', $result );
+		$this->assertArrayHasKey( 'database', $result );
+		$this->assertArrayHasKey( 'active_plugins', $result );
+		$this->assertArrayHasKey( 'theme', $result );
+		$this->assertArrayHasKey( 'debug', $result );
+		$this->assertArrayHasKey( 'post_counts', $result );
+	}
+
+	/**
+	 * Test get_site_health WordPress info.
+	 */
+	public function test_get_site_health_wp_info() {
+		$result = $this->tools->execute( 'get_site_health', array() );
+		$this->assertArrayHasKey( 'version', $result['wordpress'] );
+		$this->assertArrayHasKey( 'site_url', $result['wordpress'] );
+		$this->assertNotEmpty( $result['wordpress']['version'] );
+	}
+
+	/**
+	 * Test get_site_health PHP info.
+	 */
+	public function test_get_site_health_php_info() {
+		$result = $this->tools->execute( 'get_site_health', array() );
+		$this->assertEquals( PHP_VERSION, $result['php']['version'] );
+		$this->assertArrayHasKey( 'extensions', $result['php'] );
+		$this->assertIsArray( $result['php']['extensions'] );
+	}
+
+	/**
+	 * Test get_site_health memory info.
+	 */
+	public function test_get_site_health_memory() {
+		$result = $this->tools->execute( 'get_site_health', array() );
+		$this->assertArrayHasKey( 'current_usage', $result['memory'] );
+		$this->assertArrayHasKey( 'peak_usage', $result['memory'] );
+	}
+
+	/**
+	 * Test get_site_health database info.
+	 */
+	public function test_get_site_health_database() {
+		$result = $this->tools->execute( 'get_site_health', array() );
+		$this->assertArrayHasKey( 'server_version', $result['database'] );
+		$this->assertArrayHasKey( 'prefix', $result['database'] );
+		$this->assertArrayHasKey( 'tables', $result['database'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// execute — manage_wp_cron
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test manage_wp_cron list returns events.
+	 */
+	public function test_manage_wp_cron_list() {
+		$result = $this->tools->execute( 'manage_wp_cron', array( 'operation' => 'list' ) );
+		$this->assertIsArray( $result );
+		$this->assertArrayHasKey( 'events', $result );
+		$this->assertArrayHasKey( 'total_count', $result );
+		$this->assertIsArray( $result['events'] );
+	}
+
+	/**
+	 * Test manage_wp_cron list event structure.
+	 */
+	public function test_manage_wp_cron_event_structure() {
+		// Schedule a test event.
+		wp_schedule_single_event( time() + 3600, 'agentic_test_cron_event' );
+
+		$result = $this->tools->execute( 'manage_wp_cron', array( 'operation' => 'list' ) );
+
+		$found = false;
+		foreach ( $result['events'] as $event ) {
+			$this->assertArrayHasKey( 'hook', $event );
+			$this->assertArrayHasKey( 'timestamp', $event );
+			$this->assertArrayHasKey( 'next_run', $event );
+			$this->assertArrayHasKey( 'schedule', $event );
+			if ( 'agentic_test_cron_event' === $event['hook'] ) {
+				$found = true;
+			}
+		}
+		$this->assertTrue( $found, 'Test cron event should be in list' );
+
+		// Cleanup.
+		wp_clear_scheduled_hook( 'agentic_test_cron_event' );
+	}
+
+	/**
+	 * Test manage_wp_cron delete requires hook and timestamp.
+	 */
+	public function test_manage_wp_cron_delete_requires_params() {
+		$result = $this->tools->execute( 'manage_wp_cron', array( 'operation' => 'delete' ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'required', $result['error'] );
+	}
+
+	/**
+	 * Test manage_wp_cron delete removes an event.
+	 */
+	public function test_manage_wp_cron_delete_event() {
+		$ts = time() + 7200;
+		wp_schedule_single_event( $ts, 'agentic_test_delete_cron' );
+
+		$result = $this->tools->execute(
+			'manage_wp_cron',
+			array(
+				'operation' => 'delete',
+				'hook'      => 'agentic_test_delete_cron',
+				'timestamp' => $ts,
+			)
+		);
+
+		$this->assertArrayHasKey( 'success', $result );
+		$this->assertTrue( $result['success'] );
+		$this->assertFalse( wp_next_scheduled( 'agentic_test_delete_cron' ) );
+	}
+
+	/**
+	 * Test manage_wp_cron unknown operation.
+	 */
+	public function test_manage_wp_cron_unknown_operation() {
+		$result = $this->tools->execute( 'manage_wp_cron', array( 'operation' => 'restart' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	// -------------------------------------------------------------------------
+	// execute — get_users
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test get_users returns user list.
+	 */
+	public function test_get_users() {
+		$result = $this->tools->execute( 'get_users', array() );
+		$this->assertIsArray( $result );
+		$this->assertArrayHasKey( 'users', $result );
+		$this->assertArrayHasKey( 'total_found', $result );
+		$this->assertArrayHasKey( 'available_roles', $result );
+	}
+
+	/**
+	 * Test get_users returns user structure.
+	 */
+	public function test_get_users_structure() {
+		$this->factory->user->create( array( 'role' => 'editor' ) );
+
+		$result = $this->tools->execute( 'get_users', array() );
+
+		if ( ! empty( $result['users'] ) ) {
+			$user = $result['users'][0];
+			$this->assertArrayHasKey( 'id', $user );
+			$this->assertArrayHasKey( 'login', $user );
+			$this->assertArrayHasKey( 'email', $user );
+			$this->assertArrayHasKey( 'display_name', $user );
+			$this->assertArrayHasKey( 'roles', $user );
+			$this->assertArrayHasKey( 'registered', $user );
+			$this->assertArrayHasKey( 'post_count', $user );
+		}
+	}
+
+	/**
+	 * Test get_users filters by role.
+	 */
+	public function test_get_users_filter_by_role() {
+		$this->factory->user->create( array( 'role' => 'subscriber' ) );
+		$this->factory->user->create( array( 'role' => 'editor' ) );
+
+		$result = $this->tools->execute( 'get_users', array( 'role' => 'subscriber' ) );
+
+		foreach ( $result['users'] as $user ) {
+			$this->assertContains( 'subscriber', $user['roles'] );
+		}
+	}
+
+	/**
+	 * Test get_users respects limit.
+	 */
+	public function test_get_users_limit() {
+		$this->factory->user->create_many( 5 );
+
+		$result = $this->tools->execute( 'get_users', array( 'limit' => 2 ) );
+		$this->assertLessThanOrEqual( 2, count( $result['users'] ) );
+	}
+
+	/**
+	 * Test get_users search.
+	 */
+	public function test_get_users_search() {
+		$this->factory->user->create(
+			array(
+				'user_login'   => 'searchable_user_xyz',
+				'display_name' => 'Searchable XYZ',
+			)
+		);
+
+		$result = $this->tools->execute( 'get_users', array( 'search' => 'searchable_user_xyz' ) );
+		$this->assertGreaterThanOrEqual( 1, $result['total_found'] );
+	}
+
+	/**
+	 * Test get_users includes available roles.
+	 */
+	public function test_get_users_available_roles() {
+		$result = $this->tools->execute( 'get_users', array() );
+		$this->assertArrayHasKey( 'administrator', $result['available_roles'] );
+		$this->assertArrayHasKey( 'editor', $result['available_roles'] );
+		$this->assertArrayHasKey( 'subscriber', $result['available_roles'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// execute — get_option
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test get_option returns option value.
+	 */
+	public function test_get_option() {
+		$result = $this->tools->execute( 'get_option', array( 'name' => 'blogname' ) );
+		$this->assertIsArray( $result );
+		$this->assertEquals( 'blogname', $result['name'] );
+		$this->assertTrue( $result['exists'] );
+		$this->assertArrayHasKey( 'value', $result );
+	}
+
+	/**
+	 * Test get_option for nonexistent option.
+	 */
+	public function test_get_option_nonexistent() {
+		$result = $this->tools->execute(
+			'get_option',
+			array( 'name' => 'agentic_nonexistent_option_xyz_999' )
+		);
+		$this->assertFalse( $result['exists'] );
+	}
+
+	/**
+	 * Test get_option blocks sensitive options.
+	 */
+	public function test_get_option_blocks_password() {
+		$result = $this->tools->execute( 'get_option', array( 'name' => 'db_password' ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'security', $result['error'] );
+	}
+
+	/**
+	 * Test get_option blocks API keys.
+	 */
+	public function test_get_option_blocks_api_key() {
+		$result = $this->tools->execute( 'get_option', array( 'name' => 'my_api_key' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test get_option blocks secret.
+	 */
+	public function test_get_option_blocks_secret() {
+		$result = $this->tools->execute( 'get_option', array( 'name' => 'auth_secret_token' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test get_option blocks stripe keys.
+	 */
+	public function test_get_option_blocks_stripe() {
+		$result = $this->tools->execute( 'get_option', array( 'name' => 'stripe_secret_key' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test get_option rejects empty name.
+	 */
+	public function test_get_option_empty_name() {
+		$result = $this->tools->execute( 'get_option', array( 'name' => '' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test get_option returns array value.
+	 */
+	public function test_get_option_array_value() {
+		$result = $this->tools->execute( 'get_option', array( 'name' => 'active_plugins' ) );
+		$this->assertTrue( $result['exists'] );
+		$this->assertEquals( 'array', $result['type'] );
+	}
+
+	/**
+	 * Test get_option returns type info.
+	 */
+	public function test_get_option_type() {
+		update_option( 'agentic_test_option_str', 'hello' );
+		$result = $this->tools->execute( 'get_option', array( 'name' => 'agentic_test_option_str' ) );
+		$this->assertEquals( 'string', $result['type'] );
+		$this->assertEquals( 'hello', $result['value'] );
+		delete_option( 'agentic_test_option_str' );
+	}
 }

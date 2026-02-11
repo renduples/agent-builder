@@ -291,6 +291,121 @@ class Agent_Tools {
 					),
 				),
 			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'query_database',
+					'description' => 'Execute a read-only SQL SELECT query against the WordPress database. Only SELECT statements are allowed. Use $wpdb->prefix for table names (e.g., wp_posts). Results are limited to 100 rows.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'query' => array(
+								'type'        => 'string',
+								'description' => 'SQL SELECT query to execute. Use {prefix} as placeholder for the WordPress table prefix (e.g., "SELECT * FROM {prefix}posts LIMIT 10").',
+							),
+						),
+						'required'   => array( 'query' ),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'get_error_log',
+					'description' => 'Read the WordPress debug.log file (last N lines). Requires WP_DEBUG_LOG to be enabled. Useful for diagnosing PHP errors, warnings, and notices.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'lines' => array(
+								'type'        => 'integer',
+								'description' => 'Number of lines to read from the end of the log file (default: 50, max: 200)',
+							),
+							'filter' => array(
+								'type'        => 'string',
+								'description' => 'Optional text filter — only return lines containing this string (case-insensitive)',
+							),
+						),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'get_site_health',
+					'description' => 'Get comprehensive WordPress site health information including PHP version, WordPress version, memory usage, active plugins, database size, and server environment details.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => new \stdClass(),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'manage_wp_cron',
+					'description' => 'List, view, or delete WordPress cron events. Covers all WP-Cron scheduled events, not just agent tasks.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'operation' => array(
+								'type'        => 'string',
+								'enum'        => array( 'list', 'delete' ),
+								'description' => 'Operation: list all cron events, or delete a specific event',
+							),
+							'hook'      => array(
+								'type'        => 'string',
+								'description' => 'Hook name (required for delete operation)',
+							),
+							'timestamp' => array(
+								'type'        => 'integer',
+								'description' => 'Unix timestamp of the event to delete (required for delete)',
+							),
+						),
+						'required'   => array( 'operation' ),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'get_users',
+					'description' => 'List WordPress users with their roles, registration dates, and post counts. Can filter by role.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'role'   => array(
+								'type'        => 'string',
+								'description' => 'Filter by user role (e.g., administrator, editor, subscriber)',
+							),
+							'search' => array(
+								'type'        => 'string',
+								'description' => 'Search users by login, email, or display name',
+							),
+							'limit'  => array(
+								'type'        => 'integer',
+								'description' => 'Maximum number of users to return (default: 20, max: 50)',
+							),
+						),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'get_option',
+					'description' => 'Read a WordPress option value from the options table. Sensitive options (passwords, secret keys, API keys) are redacted for security.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'name' => array(
+								'type'        => 'string',
+								'description' => 'Option name to retrieve (e.g., blogname, siteurl, permalink_structure, active_plugins)',
+							),
+						),
+						'required'   => array( 'name' ),
+					),
+				),
+			),
 		);
 
 		// Get tools from activated agents via filter.
@@ -366,6 +481,24 @@ class Agent_Tools {
 
 			case 'manage_schedules':
 				return $this->manage_schedules( $arguments );
+
+			case 'query_database':
+				return $this->query_database( $arguments['query'] ?? '' );
+
+			case 'get_error_log':
+				return $this->get_error_log( $arguments );
+
+			case 'get_site_health':
+				return $this->get_site_health();
+
+			case 'manage_wp_cron':
+				return $this->manage_wp_cron( $arguments );
+
+			case 'get_users':
+				return $this->get_users( $arguments );
+
+			case 'get_option':
+				return $this->get_option( $arguments['name'] ?? '' );
 
 			default:
 				return new \WP_Error( 'unknown_tool', "Unknown tool: {$name}" );
@@ -931,6 +1064,443 @@ class Agent_Tools {
 			default:
 				return array( 'error' => 'Unknown operation: ' . $operation . '. Use list, pause, or resume.' );
 		}
+	}
+
+	/**
+	 * Execute a read-only database query
+	 *
+	 * Only SELECT statements are allowed. Results capped at 100 rows.
+	 *
+	 * @param string $query SQL query with {prefix} placeholder.
+	 * @return array Query results or error.
+	 */
+	private function query_database( string $query ): array {
+		global $wpdb;
+
+		if ( empty( $query ) ) {
+			return array( 'error' => 'Query cannot be empty.' );
+		}
+
+		// Replace {prefix} placeholder with actual table prefix.
+		$query = str_replace( '{prefix}', $wpdb->prefix, $query );
+
+		// Security: only allow SELECT queries.
+		$normalized = trim( preg_replace( '/\s+/', ' ', $query ) );
+		$first_word = strtoupper( strtok( $normalized, ' ' ) );
+
+		if ( 'SELECT' !== $first_word ) {
+			return array( 'error' => 'Only SELECT queries are allowed. Use WordPress functions for data modification.' );
+		}
+
+		// Block dangerous patterns even in SELECT context.
+		$dangerous = array( 'INTO OUTFILE', 'INTO DUMPFILE', 'LOAD_FILE', 'BENCHMARK(', 'SLEEP(' );
+		$upper     = strtoupper( $normalized );
+		foreach ( $dangerous as $pattern ) {
+			if ( false !== strpos( $upper, $pattern ) ) {
+				return array( 'error' => 'Query contains a disallowed pattern: ' . $pattern );
+			}
+		}
+
+		// Enforce a LIMIT if none is present.
+		if ( false === stripos( $normalized, ' LIMIT ' ) ) {
+			$query .= ' LIMIT 100';
+		}
+
+		// Execute the query.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Read-only, validated SELECT query.
+		$results = $wpdb->get_results( $query, ARRAY_A );
+
+		if ( null === $results ) {
+			return array(
+				'error'      => 'Query execution failed.',
+				'db_error'   => $wpdb->last_error,
+				'last_query' => $wpdb->last_query,
+			);
+		}
+
+		return array(
+			'results'   => $results,
+			'row_count' => count( $results ),
+			'query'     => $wpdb->last_query,
+		);
+	}
+
+	/**
+	 * Read the WordPress debug.log file
+	 *
+	 * @param array $args Arguments: lines (int), filter (string).
+	 * @return array Log contents or error.
+	 */
+	private function get_error_log( array $args ): array {
+		$max_lines = min( (int) ( $args['lines'] ?? 50 ), 200 );
+		$filter    = $args['filter'] ?? '';
+
+		// Find the log file.
+		$log_file = WP_CONTENT_DIR . '/debug.log';
+
+		if ( defined( 'WP_DEBUG_LOG' ) && is_string( WP_DEBUG_LOG ) ) {
+			$log_file = WP_DEBUG_LOG;
+		}
+
+		if ( ! file_exists( $log_file ) ) {
+			return array(
+				'error'    => 'Debug log file not found. Ensure WP_DEBUG and WP_DEBUG_LOG are enabled in wp-config.php.',
+				'expected' => $log_file,
+			);
+		}
+
+		if ( ! is_readable( $log_file ) ) {
+			return array( 'error' => 'Debug log file is not readable.' );
+		}
+
+		$file_size = filesize( $log_file );
+
+		// Read the last portion of the file efficiently.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local log file.
+		$content = '';
+		// Read up to 256 KB from end.
+		$read_bytes = min( $file_size, 262144 );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Reading local log file.
+		$fp = fopen( $log_file, 'r' );
+		if ( $fp ) {
+			if ( $file_size > $read_bytes ) {
+				fseek( $fp, -$read_bytes, SEEK_END );
+			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Reading local log file.
+			$content = fread( $fp, $read_bytes );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Reading local log file.
+			fclose( $fp );
+		}
+
+		$lines = explode( "\n", $content );
+
+		// If we seeked into middle of file, drop the first (partial) line.
+		if ( $file_size > $read_bytes ) {
+			array_shift( $lines );
+		}
+
+		// Apply filter if provided.
+		if ( $filter ) {
+			$lines = array_filter(
+				$lines,
+				function ( $line ) use ( $filter ) {
+					return false !== stripos( $line, $filter );
+				}
+			);
+			$lines = array_values( $lines );
+		}
+
+		// Get last N lines.
+		$lines = array_slice( $lines, -$max_lines );
+
+		return array(
+			'lines'     => $lines,
+			'count'     => count( $lines ),
+			'file_size' => $file_size,
+			'file'      => $log_file,
+			'filter'    => $filter ?: null,
+		);
+	}
+
+	/**
+	 * Get comprehensive site health information
+	 *
+	 * @return array Site health data.
+	 */
+	private function get_site_health(): array {
+		global $wpdb;
+
+		// WordPress info.
+		$wp_info = array(
+			'version'   => get_bloginfo( 'version' ),
+			'site_url'  => get_site_url(),
+			'home_url'  => get_home_url(),
+			'multisite' => is_multisite(),
+			'language'  => get_locale(),
+		);
+
+		// PHP info.
+		$php_info = array(
+			'version'         => PHP_VERSION,
+			'memory_limit'    => ini_get( 'memory_limit' ),
+			'max_exec_time'   => ini_get( 'max_execution_time' ),
+			'upload_max_size' => ini_get( 'upload_max_filesize' ),
+			'post_max_size'   => ini_get( 'post_max_size' ),
+			'sapi'            => PHP_SAPI,
+			'extensions'      => get_loaded_extensions(),
+		);
+
+		// Memory usage.
+		$memory = array(
+			'current_usage'    => size_format( memory_get_usage() ),
+			'peak_usage'       => size_format( memory_get_peak_usage() ),
+			'wp_memory_limit'  => defined( 'WP_MEMORY_LIMIT' ) ? WP_MEMORY_LIMIT : 'not set',
+			'wp_max_memory'    => defined( 'WP_MAX_MEMORY_LIMIT' ) ? WP_MAX_MEMORY_LIMIT : 'not set',
+		);
+
+		// Database info.
+		$db_info = array(
+			'server_version' => $wpdb->db_version(),
+			'prefix'         => $wpdb->prefix,
+			'charset'        => $wpdb->charset,
+			'collate'        => $wpdb->collate,
+		);
+
+		// Table sizes.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time diagnostic query.
+		$tables = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT table_name, ROUND(((data_length + index_length) / 1024 / 1024), 2) AS size_mb
+				 FROM information_schema.TABLES
+				 WHERE table_schema = %s
+				 ORDER BY (data_length + index_length) DESC
+				 LIMIT 20",
+				DB_NAME
+			),
+			ARRAY_A
+		);
+		$db_info['tables'] = $tables ?: array();
+
+		// Active plugins.
+		$active_plugins = get_option( 'active_plugins', array() );
+		$plugins_info   = array();
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		foreach ( $active_plugins as $plugin_file ) {
+			$plugin_path = WP_PLUGIN_DIR . '/' . $plugin_file;
+			if ( file_exists( $plugin_path ) ) {
+				$data           = get_plugin_data( $plugin_path, false, false );
+				$plugins_info[] = array(
+					'name'    => $data['Name'],
+					'version' => $data['Version'],
+					'file'    => $plugin_file,
+				);
+			}
+		}
+
+		// Active theme.
+		$theme      = wp_get_theme();
+		$theme_info = array(
+			'name'        => $theme->get( 'Name' ),
+			'version'     => $theme->get( 'Version' ),
+			'template'    => $theme->get_template(),
+			'stylesheet'  => $theme->get_stylesheet(),
+			'parent'      => $theme->parent() ? $theme->parent()->get( 'Name' ) : null,
+		);
+
+		// Cron info.
+		$cron_events = _get_cron_array();
+		$cron_count  = 0;
+		if ( $cron_events ) {
+			foreach ( $cron_events as $hooks ) {
+				$cron_count += count( $hooks );
+			}
+		}
+
+		// Debug settings.
+		$debug = array(
+			'WP_DEBUG'         => defined( 'WP_DEBUG' ) && WP_DEBUG,
+			'WP_DEBUG_LOG'     => defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG,
+			'WP_DEBUG_DISPLAY' => defined( 'WP_DEBUG_DISPLAY' ) && WP_DEBUG_DISPLAY,
+			'SCRIPT_DEBUG'     => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG,
+		);
+
+		// Post counts.
+		$post_counts = array();
+		$post_types  = get_post_types( array( 'public' => true ), 'names' );
+		foreach ( $post_types as $pt ) {
+			$counts = wp_count_posts( $pt );
+			$post_counts[ $pt ] = array(
+				'publish' => (int) $counts->publish,
+				'draft'   => (int) $counts->draft,
+				'total'   => array_sum( (array) $counts ),
+			);
+		}
+
+		return array(
+			'wordpress'      => $wp_info,
+			'php'            => $php_info,
+			'memory'         => $memory,
+			'database'       => $db_info,
+			'active_plugins' => $plugins_info,
+			'theme'          => $theme_info,
+			'cron_events'    => $cron_count,
+			'debug'          => $debug,
+			'post_counts'    => $post_counts,
+		);
+	}
+
+	/**
+	 * Manage WordPress cron events
+	 *
+	 * @param array $args Arguments: operation, hook, timestamp.
+	 * @return array Result.
+	 */
+	private function manage_wp_cron( array $args ): array {
+		$operation = $args['operation'] ?? 'list';
+
+		switch ( $operation ) {
+			case 'list':
+				$cron_array = _get_cron_array();
+				$events     = array();
+
+				if ( $cron_array ) {
+					foreach ( $cron_array as $timestamp => $hooks ) {
+						foreach ( $hooks as $hook => $schedules ) {
+							foreach ( $schedules as $key => $data ) {
+								$events[] = array(
+									'hook'      => $hook,
+									'timestamp' => $timestamp,
+									'next_run'  => wp_date( 'Y-m-d H:i:s', $timestamp ),
+									'schedule'  => $data['schedule'] ?: 'single',
+									'interval'  => $data['interval'] ?? null,
+									'args'      => $data['args'],
+								);
+							}
+						}
+					}
+
+					// Sort by next run time.
+					usort( $events, fn( $a, $b ) => $a['timestamp'] <=> $b['timestamp'] );
+				}
+
+				return array(
+					'events'      => $events,
+					'total_count' => count( $events ),
+				);
+
+			case 'delete':
+				$hook      = $args['hook'] ?? '';
+				$timestamp = (int) ( $args['timestamp'] ?? 0 );
+
+				if ( empty( $hook ) || empty( $timestamp ) ) {
+					return array( 'error' => 'Both hook and timestamp are required for delete operation.' );
+				}
+
+				// Find the event to get its args.
+				$cron_array = _get_cron_array();
+				if ( isset( $cron_array[ $timestamp ][ $hook ] ) ) {
+					foreach ( $cron_array[ $timestamp ][ $hook ] as $key => $data ) {
+						wp_unschedule_event( $timestamp, $hook, $data['args'] );
+					}
+					return array(
+						'success' => true,
+						'message' => sprintf( 'Deleted cron event "%s" scheduled for %s', $hook, wp_date( 'Y-m-d H:i:s', $timestamp ) ),
+					);
+				}
+
+				return array( 'error' => sprintf( 'Cron event not found: hook=%s, timestamp=%d', $hook, $timestamp ) );
+
+			default:
+				return array( 'error' => 'Unknown operation: ' . $operation . '. Use list or delete.' );
+		}
+	}
+
+	/**
+	 * Get WordPress users
+	 *
+	 * @param array $args Arguments: role, search, limit.
+	 * @return array User list.
+	 */
+	private function get_users( array $args ): array {
+		$query_args = array(
+			'number'  => min( (int) ( $args['limit'] ?? 20 ), 50 ),
+			'orderby' => 'registered',
+			'order'   => 'DESC',
+		);
+
+		if ( ! empty( $args['role'] ) ) {
+			$query_args['role'] = sanitize_text_field( $args['role'] );
+		}
+
+		if ( ! empty( $args['search'] ) ) {
+			$query_args['search']         = '*' . sanitize_text_field( $args['search'] ) . '*';
+			$query_args['search_columns'] = array( 'user_login', 'user_email', 'display_name' );
+		}
+
+		$user_query = new \WP_User_Query( $query_args );
+		$users      = $user_query->get_results();
+		$result     = array();
+
+		foreach ( $users as $user ) {
+			$result[] = array(
+				'id'           => $user->ID,
+				'login'        => $user->user_login,
+				'email'        => $user->user_email,
+				'display_name' => $user->display_name,
+				'roles'        => $user->roles,
+				'registered'   => $user->user_registered,
+				'post_count'   => count_user_posts( $user->ID ),
+			);
+		}
+
+		// Available roles.
+		$wp_roles       = wp_roles();
+		$available_roles = array();
+		foreach ( $wp_roles->role_names as $slug => $name ) {
+			$available_roles[ $slug ] = $name;
+		}
+
+		return array(
+			'users'           => $result,
+			'total_found'     => $user_query->get_total(),
+			'available_roles' => $available_roles,
+		);
+	}
+
+	/**
+	 * Get a WordPress option value
+	 *
+	 * Sensitive options are redacted.
+	 *
+	 * @param string $name Option name.
+	 * @return array Option value or error.
+	 */
+	private function get_option( string $name ): array {
+		if ( empty( $name ) ) {
+			return array( 'error' => 'Option name is required.' );
+		}
+
+		// Block sensitive options.
+		$sensitive_patterns = array(
+			'password', 'secret', 'api_key', 'apikey', 'auth_key', 'auth_salt',
+			'logged_in_key', 'logged_in_salt', 'nonce_key', 'nonce_salt',
+			'secure_auth_key', 'secure_auth_salt', 'stripe', 'paypal',
+		);
+
+		$lower_name = strtolower( $name );
+		foreach ( $sensitive_patterns as $pattern ) {
+			if ( false !== strpos( $lower_name, $pattern ) ) {
+				return array(
+					'name'  => $name,
+					'error' => 'This option is blocked for security reasons. Sensitive options containing passwords, keys, or secrets cannot be read.',
+				);
+			}
+		}
+
+		$value = get_option( $name, null );
+
+		if ( null === $value ) {
+			return array(
+				'name'   => $name,
+				'exists' => false,
+				'error'  => 'Option not found.',
+			);
+		}
+
+		// Serialize complex values for display.
+		$display_value = $value;
+		if ( is_array( $value ) || is_object( $value ) ) {
+			$display_value = $value; // Will be JSON-encoded by the caller.
+		}
+
+		return array(
+			'name'   => $name,
+			'exists' => true,
+			'value'  => $display_value,
+			'type'   => gettype( $value ),
+		);
 	}
 
 	/**

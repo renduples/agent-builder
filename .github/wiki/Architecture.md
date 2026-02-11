@@ -875,5 +875,130 @@ add_filter('wp_agent_before_process', function($data, $context) {
 
 ---
 
-**Last Updated**: January 28, 2026  
+## Implemented Agent Architecture (v1.5.0)
+
+The following sections document the currently shipped agent infrastructure.
+
+### Agent Base Class
+
+All agents extend `\Agentic\Agent_Base` and may override these scheduling/event methods:
+
+```php
+abstract class Agent_Base {
+    // Required
+    abstract public function get_id(): string;
+    abstract public function get_name(): string;
+    abstract public function get_description(): string;
+    abstract public function get_system_prompt(): string;
+    abstract public function get_tools(): array;
+
+    // Optional — scheduling & events
+    public function get_scheduled_tasks(): array { return []; }
+    public function get_event_listeners(): array { return []; }
+}
+```
+
+### Three Agent Invocation Methods
+
+| Method | Trigger | Mode | Added |
+|--------|---------|------|-------|
+| **Chat** | User sends a message | Interactive, real-time | v1.0.0 |
+| **Cron** | WP-Cron schedule fires | Autonomous or direct | v1.4.0 |
+| **Hooks** | WordPress action hook fires | Direct or async AI | v1.5.0 |
+
+### Scheduled Tasks (v1.4.0)
+
+Agents define recurring tasks that run on WP-Cron schedules.
+
+```php
+public function get_scheduled_tasks(): array {
+    return [
+        [
+            'id'          => 'daily_scan',
+            'name'        => 'Daily Security Scan',
+            'callback'    => 'run_daily_scan',
+            'schedule'    => 'daily',
+            'description' => 'Run a comprehensive security scan.',
+            'prompt'      => 'Analyze the site for security issues...', // Optional: routes through LLM
+        ],
+    ];
+}
+```
+
+**Execution flow:**
+1. `agentic_agents_loaded` → `bind_agent_cron_hooks()` registers WP action hooks
+2. `agentic_agent_activated` → `register_scheduled_tasks()` creates `wp_schedule_event`
+3. Cron fires → `execute_scheduled_task()` logs start, runs task, logs complete/error with duration
+4. If `prompt` is set → `Agent_Controller::run_autonomous_task()` routes through LLM with full tool access
+5. If LLM not configured → falls back to calling the `callback` method directly
+
+### Event Listeners (v1.5.0)
+
+Agents react to WordPress action hooks as they fire.
+
+```php
+public function get_event_listeners(): array {
+    return [
+        [
+            'id'            => 'failed_login',
+            'hook'          => 'wp_login_failed',
+            'name'          => 'Failed Login Monitor',
+            'callback'      => 'on_failed_login',
+            'description'   => 'Logs failed login attempts.',
+            'accepted_args' => 2,
+            // Optional: 'prompt' => '...' for async LLM processing
+        ],
+    ];
+}
+```
+
+**Execution flow:**
+1. `agentic_agents_loaded` → `bind_agent_event_listeners()` registers WP action hooks
+2. Hook fires → `execute_event_listener()` logs trigger with sanitized args
+3. **Direct mode** (no `prompt`): calls agent callback synchronously
+4. **AI Async mode** (`prompt` set): queues via `wp_schedule_single_event()` → `handle_async_event()` runs LLM with event context
+5. All executions logged: `event_listener_triggered`, `event_listener_complete`, `event_listener_error`
+
+**Smart serialization** of hook arguments:
+- `WP_Post` → `{ID, post_title, post_type, post_status, post_author}`
+- `WP_Comment` → `{comment_ID, comment_post_ID, comment_author, comment_content (truncated)}`
+- `WP_User` → `{ID, user_login, display_name, roles}`
+- Other objects → `{class_name only}`
+- Long strings → truncated at 1000 chars
+
+### Core Tools
+
+Available to all agents via `Agent_Tools`:
+
+| Tool | Description |
+|------|-------------|
+| `read_file` | Read file contents from the codebase |
+| `list_directory` | List files in a directory |
+| `search_code` | Search code by pattern |
+| `get_posts` | Query WordPress posts |
+| `get_comments` | Query WordPress comments |
+| `create_comment` | Create a new comment |
+| `update_documentation` | Update documentation files |
+| `request_code_change` | Request a code modification  |
+| `manage_schedules` | List, pause, or resume scheduled tasks |
+
+### Admin Pages
+
+| Page | Description |
+|------|-------------|
+| Dashboard | Stats overview: total agents, active count, recent activity |
+| Installed Agents | Agent list with activate/deactivate controls |
+| Add Agents | Browse library with upload (ZIP) support |
+| Agent Chat | Interactive chat interface |
+| Scheduled Tasks | All agent cron tasks with Run Now, mode, status, next run |
+| Event Listeners | All agent hook bindings with hook name, priority, mode, status |
+| Agent Tools | All tools across all agents with type, parameters, used-by |
+| Audit Log | Full action history with timestamps, expandable details, dynamic filters |
+| Security Log | Security events (prompt injection, PII, rate limiting) |
+| Settings | API keys, model selection, feature toggles |
+| System Status | PHP/WP/MySQL version checks, required extensions |
+
+---
+
+**Last Updated**: February 11, 2026  
 **Status**: Vision document - Phased implementation in progress

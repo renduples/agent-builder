@@ -30,6 +30,9 @@ Welcome to the Agent Builder documentation. For assistance please email support@
 
 ### Features & Systems
 
+- [Scheduled Tasks](Architecture#scheduled-tasks-v140) - Autonomous cron-based agent execution
+- [Event Listeners](Architecture#event-listeners-v150) - Agents react to WordPress action hooks
+- [Core Tools](Architecture#core-tools) - Built-in tools available to all agents
 - [Async Jobs System](Async-Jobs)
 - [System Requirements Checker](System-Requirements-Checker)
 - [WordPress.org Submission Checklist](WordPress-Org-Checklist)

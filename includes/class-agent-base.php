@@ -32,7 +32,7 @@ abstract class Agent_Base {
 	/**
 	 * Get the agent's unique identifier (slug)
 	 *
-	 * @return string Agent ID (e.g., 'security-monitor', 'developer-agent')
+	 * @return string Agent ID (e.g., 'security-monitor', 'onboarding-agent')
 	 */
 	abstract public function get_id(): string;
 

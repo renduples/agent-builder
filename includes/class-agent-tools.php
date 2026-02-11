@@ -554,7 +554,7 @@ class Agent_Tools {
 	 * @param string $agent_id  Agent identifier.
 	 * @return array|\WP_Error Tool result.
 	 */
-	public function execute( string $name, array $arguments, string $agent_id = 'developer_agent' ): array|\WP_Error {
+	public function execute( string $name, array $arguments, string $agent_id = 'onboarding_agent' ): array|\WP_Error {
 		$this->audit->log( $agent_id, 'tool_call', $name, $arguments );
 
 		// Check for agent-registered tool handlers first.
@@ -863,16 +863,16 @@ class Agent_Tools {
 	 * @return array Result.
 	 */
 	private function create_comment( int $post_id, string $content ): array {
-		$agent_user = get_user_by( 'login', 'developer-agent' );
+		$agent_user = get_user_by( 'login', 'agentic-bot' );
 
 		if ( ! $agent_user ) {
 			// Create agent user if it doesn't exist.
 			$user_id = wp_insert_user(
 				array(
-					'user_login'   => 'developer-agent',
+					'user_login'   => 'agentic-bot',
 					'user_pass'    => wp_generate_password( 32 ),
 					'user_email'   => 'agent@agentic.test',
-					'display_name' => 'Onboarding Agent',
+					'display_name' => 'Agent Builder Bot',
 					'role'         => 'author',
 				)
 			);
@@ -887,7 +887,7 @@ class Agent_Tools {
 		$comment_id = wp_insert_comment(
 			array(
 				'comment_post_ID'      => $post_id,
-				'comment_author'       => 'Onboarding Agent',
+				'comment_author'       => 'Agent Builder Bot',
 				'comment_author_email' => $agent_user->user_email,
 				'comment_content'      => $content,
 				'comment_type'         => 'comment',
@@ -901,7 +901,7 @@ class Agent_Tools {
 		}
 
 		$this->audit->log(
-			'developer_agent',
+			'agent',
 			'create_comment',
 			'comment',
 			array(
@@ -960,7 +960,7 @@ class Agent_Tools {
 		$this->git_exec( 'git commit -m ' . escapeshellarg( $commit_message ) );
 
 		$this->audit->log(
-			'developer_agent',
+			'agent',
 			'update_documentation',
 			'file',
 			array(
@@ -1049,7 +1049,7 @@ class Agent_Tools {
 
 		// Log the action.
 		$this->audit->log(
-			'developer_agent',
+			'agent',
 			'request_code_change',
 			'git_branch',
 			array(

@@ -191,7 +191,7 @@ We've built and open-sourced **10 fully functional agents** to help you get star
 
 ---
 
-#### **[Onboarding Agent](developer-agent/agent.php)** 👨‍💻
+#### **[Onboarding Agent](onboarding-agent/agent.php)** 👨‍💻
 **What it does:** Your personal AI guide to the Agent Builder ecosystem
 - ✅ Answers questions about the platform
 - ✅ Helps debug issues

@@ -1587,7 +1587,7 @@ $expertise . "\n\n" .
 		}
 
 		// Don't allow deleting built-in agents
-		$protected = array( 'security-monitor', 'content-assistant', 'seo-analyzer', 'developer-agent', 'agent-builder' );
+		$protected = array( 'security-monitor', 'content-assistant', 'seo-analyzer', 'onboarding-agent', 'agent-builder' );
 		if ( in_array( $slug, $protected, true ) ) {
 			return array( 'error' => "Cannot delete protected agent: {$slug}" );
 		}

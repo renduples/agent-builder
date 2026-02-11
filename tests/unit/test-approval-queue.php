@@ -45,7 +45,7 @@ class Test_Approval_Queue extends TestCase {
 	 */
 	public function test_add_returns_id() {
 		$id = $this->queue->add(
-			'developer-agent',
+			'onboarding-agent',
 			'code_change',
 			array( 'path' => 'style.css', 'content' => 'body { color: red; }' ),
 			'User requested color change'

@@ -127,7 +127,7 @@ class Test_Audit_Log extends TestCase {
 	 */
 	public function test_log_details_json_encoded() {
 		$details = array( 'file' => 'style.css', 'changes' => 3 );
-		$id      = $this->log->log( 'developer-agent', 'code_change', 'file', $details );
+		$id      = $this->log->log( 'onboarding-agent', 'code_change', 'file', $details );
 
 		global $wpdb;
 		$row = $wpdb->get_row(

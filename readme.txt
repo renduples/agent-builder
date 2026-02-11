@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.3.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -75,13 +75,35 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 
 == Changelog ==
 
+= 1.5.0 - 2026-02-11 =
+* Added: Event listeners — agents react to WordPress action hooks in real time.
+* Added: Agent_Base::get_event_listeners() for defining hook-triggered behaviour.
+* Added: Direct mode event listeners — synchronous PHP callback on hook fire.
+* Added: AI Async mode — queues LLM task via wp_schedule_single_event() (non-blocking).
+* Added: Smart serialization of hook arguments (WP_Post, WP_Comment, WP_User auto-converted).
+* Added: Event Listeners admin page showing agent, hook, priority, mode, status.
+* Added: Outcome logging for events (triggered/complete/error with timing).
+* Added: Security Monitor event listeners for failed logins and new user registration.
+
+= 1.4.0 - 2026-02-10 =
+* Added: Scheduled tasks infrastructure — agents define recurring tasks via get_scheduled_tasks().
+* Added: Autonomous cron execution — tasks with prompt field route through LLM with full tool access.
+* Added: Generic outcome logging — every task execution wrapped with start/complete/error timing.
+* Added: Schedule management core tool (list/pause/resume) available to all agents.
+* Added: Agent Tools admin page showing all tools across all agents.
+* Added: Scheduled Tasks admin page with Run Now button, mode (AI/Direct), and status.
+* Improved: Audit log timestamps, expandable details, dynamic filters, 30-day retention.
+* Improved: Agent responses logged in chat_complete audit entries.
+* Added: Security Monitor autonomous daily security scan with LLM reasoning.
+
 = 1.3.0 - 2026-02-09 =
-* Fixed: All WordPress naming convention violations - 100% compliant
-* Fixed: Prefixed all global variables in admin templates (agents.php, agents-add.php, audit.php)
-* Fixed: Prefixed all variables in uninstall.php for GDPR cleanup
-* Fixed: UnescapedDBParameter warning in Job_Manager cleanup method
-* Improved: Database query safety with proper phpcs:ignore annotations
-* Improved: Code quality and WordPress.org submission readiness
+* Added: Comprehensive test suite — 346 tests, 881 assertions, all passing.
+* Added: Add Agents page overhaul — upload feature (ZIP handler), WP-style card layout.
+* Added: CI/CD via GitHub Actions workflow.
+* Fixed: 8 source bugs found during test implementation.
+* Fixed: All WordPress naming convention violations — 100% compliant.
+* Fixed: Prefixed all global variables in admin templates.
+* Improved: Code quality and WordPress.org submission readiness.
 
 = 1.1.2 - 2026-02-02 =
 * Fixed: Automatic API key saving when returning from marketplace registration
@@ -136,6 +158,15 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 * Marketplace foundation.
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+New: Event listeners let agents react to WordPress hooks (login failures, new users, etc.). No breaking changes.
+
+= 1.4.0 =
+New: Scheduled tasks with autonomous AI execution, tools admin, and audit log improvements. No breaking changes.
+
+= 1.3.0 =
+Test suite added (346 tests). Add Agents page overhauled. 8 bugs fixed. No breaking changes.
 
 = 1.1.0 =
 Important: GDPR-compliant uninstall added. No data loss or breaking changes. Recommended update for all users.

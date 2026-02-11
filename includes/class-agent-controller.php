@@ -327,7 +327,7 @@ class Agent_Controller {
 			$estimated_cost
 		);
 
-		return array(
+		$result = array(
 			'response'    => $response,
 			'agent_id'    => $current_agent_id,
 			'agent_name'  => $this->current_agent->get_name(),
@@ -338,6 +338,22 @@ class Agent_Controller {
 			'tools_used'  => array_column( $tool_results, 'tool' ),
 			'iterations'  => $iterations,
 		);
+
+		// Surface any pending proposal from tool results to the chat UI.
+		foreach ( $tool_results as $tr ) {
+			if ( ! empty( $tr['result']['pending_proposal'] ) ) {
+				$result['pending_proposal'] = true;
+				$result['proposal']         = array(
+					'id'          => $tr['result']['proposal_id'],
+					'description' => $tr['result']['description'],
+					'diff'        => $tr['result']['diff'] ?? '',
+					'tool'        => $tr['result']['tool'],
+				);
+				break; // One proposal per response.
+			}
+		}
+
+		return $result;
 	}
 
 	/**

@@ -143,6 +143,24 @@ class REST_API {
 				),
 			)
 		);
+
+		// Approve or reject a user-space proposal.
+		register_rest_route(
+			'agentic/v1',
+			'/proposals/(?P<id>[a-f0-9-]+)',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_proposal' ),
+				'permission_callback' => array( $this, 'check_admin' ),
+				'args'                => array(
+					'action' => array(
+						'required' => true,
+						'type'     => 'string',
+						'enum'     => array( 'approve', 'reject' ),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -363,6 +381,29 @@ class REST_API {
 				),
 				200
 			);
+	}
+
+	/**
+	 * Handle a user-space proposal (approve or reject).
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response
+	 */
+	public function handle_proposal( \WP_REST_Request $request ): \WP_REST_Response {
+		$proposal_id = sanitize_text_field( $request->get_param( 'id' ) );
+		$action      = $request->get_param( 'action' );
+
+		if ( 'approve' === $action ) {
+			$result = Agent_Proposals::approve( $proposal_id );
+		} else {
+			$result = Agent_Proposals::reject( $proposal_id );
+		}
+
+		if ( ! empty( $result['error'] ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		}
+
+		return new \WP_REST_Response( $result, 200 );
 	}
 
 	/**

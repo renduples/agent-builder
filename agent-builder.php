@@ -398,6 +398,8 @@ final class Plugin {
 	private function load_components(): void {
 		include_once AGENTIC_PLUGIN_DIR . 'includes/class-llm-client.php';
 		include_once AGENTIC_PLUGIN_DIR . 'includes/class-audit-log.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-permissions.php';
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-proposals.php';
 		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-tools.php';
 		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-controller.php';
 		include_once AGENTIC_PLUGIN_DIR . 'includes/class-rest-api.php';

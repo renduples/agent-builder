@@ -66,6 +66,16 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 		update_option( 'agentic_allow_anonymous_chat', isset( $_POST['agentic_allow_anonymous_chat'] ) );
 	}
 
+	if ( 'permissions' === $agentic_save_tab ) {
+		$agentic_perm_scopes = \Agentic\Agent_Permissions::get_scopes();
+		$agentic_perm_values = array();
+		foreach ( array_keys( $agentic_perm_scopes ) as $agentic_scope_key ) {
+			$agentic_perm_values[ $agentic_scope_key ] = isset( $_POST[ 'agentic_perm_' . $agentic_scope_key ] );
+		}
+		$agentic_confirm_mode = sanitize_text_field( wp_unslash( $_POST['agentic_confirmation_mode'] ?? 'confirm' ) );
+		\Agentic\Agent_Permissions::save_settings( $agentic_perm_values, $agentic_confirm_mode );
+	}
+
 	// Handle system check completion flag.
 	if ( isset( $_POST['agentic_system_check_done'] ) ) {
 		update_option( 'agentic_system_check_done', true );
@@ -439,40 +449,88 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 		</table>
 
 		<?php elseif ( 'permissions' === $agentic_active_tab ) : ?>
-		<h2>Permissions</h2>
-		<p>Configure what actions the agent can perform autonomously vs. with approval. The builder is sandboxed to <code>wp-content/plugins</code> and <code>wp-content/themes</code>.</p>
-		
-		<table class="widefat" style="max-width: 600px;">
+		<?php
+		$agentic_perm_settings = \Agentic\Agent_Permissions::get_settings();
+		$agentic_perm_scopes   = \Agentic\Agent_Permissions::get_scopes();
+		?>
+		<h2>Agent Permissions</h2>
+		<p>Control what user-space write operations agents can perform. All changes are logged in the Audit Log.</p>
+
+		<div style="padding: 15px; background: #f0f6fc; border-left: 4px solid #2271b1; margin: 15px 0;">
+			<p style="margin: 0;"><strong>Two Zones:</strong></p>
+			<ul style="margin: 8px 0 0 20px;">
+				<li><strong>Plugin/Repo Code</strong> — Changes go through <code>request_code_change</code> (git branch → human review). Always available.</li>
+				<li><strong>User Space</strong> — Active theme files and custom plugins. Controlled by the permissions below.</li>
+			</ul>
+		</div>
+
+		<h3>Confirmation Mode</h3>
+		<table class="form-table">
+			<tr>
+				<th scope="row"><label for="agentic_confirmation_mode">When agents make changes</label></th>
+				<td>
+					<select name="agentic_confirmation_mode" id="agentic_confirmation_mode">
+						<option value="confirm" <?php selected( $agentic_perm_settings['confirmation_mode'], 'confirm' ); ?>>Always Confirm (Recommended)</option>
+						<option value="auto" <?php selected( $agentic_perm_settings['confirmation_mode'], 'auto' ); ?>>Auto-Approve</option>
+					</select>
+					<p class="description">
+						<strong>Always Confirm:</strong> Agent proposes the change → you see a diff in chat → click Approve or Reject.<br>
+						<strong>Auto-Approve:</strong> Agent executes immediately (audit-logged, backup created). Use with caution.
+					</p>
+				</td>
+			</tr>
+		</table>
+
+		<h3>User-Space Permissions</h3>
+		<p>Enable specific capabilities that agents can use on your site. All are <strong>disabled by default</strong>.</p>
+
+		<table class="widefat" style="max-width: 700px;">
 			<thead>
 				<tr>
-					<th>Action</th>
-					<th>Current Setting</th>
+					<th style="width: 40px;">Enabled</th>
+					<th>Permission</th>
+					<th>Description</th>
 				</tr>
 			</thead>
 			<tbody>
+			<?php foreach ( $agentic_perm_scopes as $agentic_scope_key => $agentic_scope_info ) : ?>
 				<tr>
-					<td>Read files from repository</td>
-					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Always allowed</td>
+					<td style="text-align: center;">
+						<input
+							type="checkbox"
+							name="agentic_perm_<?php echo esc_attr( $agentic_scope_key ); ?>"
+							id="agentic_perm_<?php echo esc_attr( $agentic_scope_key ); ?>"
+							value="1"
+							<?php checked( $agentic_perm_settings['permissions'][ $agentic_scope_key ] ?? false ); ?>
+						/>
+					</td>
+					<td><label for="agentic_perm_<?php echo esc_attr( $agentic_scope_key ); ?>"><strong><?php echo esc_html( $agentic_scope_info['label'] ); ?></strong></label></td>
+					<td><?php echo esc_html( $agentic_scope_info['description'] ); ?></td>
+				</tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+
+		<h3 style="margin-top: 30px;">Read-Only Capabilities (Always Allowed)</h3>
+		<table class="widefat" style="max-width: 700px;">
+			<tbody>
+				<tr>
+					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Read files from plugins/ and themes/</td>
 				</tr>
 				<tr>
-					<td>Search code</td>
-					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Always allowed</td>
+					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Search code</td>
 				</tr>
 				<tr>
-					<td>Query WordPress database</td>
-					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Always allowed</td>
+					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Query database (SELECT only)</td>
 				</tr>
 				<tr>
-					<td>Post comments</td>
-					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Autonomous</td>
+					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Read error log, site health, options, users</td>
 				</tr>
 				<tr>
-					<td>Update documentation (.md files)</td>
-					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> Autonomous</td>
+					<td><span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span> View WordPress posts, comments, cron events</td>
 				</tr>
 				<tr>
-					<td>Modify code files</td>
-					<td><span class="dashicons dashicons-warning" style="color: #f59e0b;"></span> Requires approval</td>
+					<td><span class="dashicons dashicons-warning" style="color: #f59e0b;"></span> Modify plugin/repo code → Requires approval via <code>request_code_change</code></td>
 				</tr>
 			</tbody>
 		</table>

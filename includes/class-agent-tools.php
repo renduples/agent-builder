@@ -406,6 +406,120 @@ class Agent_Tools {
 					),
 				),
 			),
+			// ---- User-space write tools (permission-gated) ----
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'write_file',
+					'description' => 'Write or create a file in user space — the active theme or the agentic-custom plugin directory. Requires admin permission. For plugin/repo code, use request_code_change instead.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'path'      => array(
+								'type'        => 'string',
+								'description' => 'Relative path from wp-content (e.g., "themes/flavor/style.css" or "plugins/agentic-custom/my-snippet.php")',
+							),
+							'content'   => array(
+								'type'        => 'string',
+								'description' => 'Complete file content to write',
+							),
+							'reasoning' => array(
+								'type'        => 'string',
+								'description' => 'Explanation of why this change is needed',
+							),
+						),
+						'required'   => array( 'path', 'content', 'reasoning' ),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'modify_option',
+					'description' => 'Create, update, or delete a WordPress option. Requires admin permission. Sensitive options (passwords, keys) are blocked.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'operation' => array(
+								'type'        => 'string',
+								'enum'        => array( 'set', 'delete' ),
+								'description' => 'Operation: set (create/update) or delete an option',
+							),
+							'name'      => array(
+								'type'        => 'string',
+								'description' => 'Option name',
+							),
+							'value'     => array(
+								'description' => 'Option value (required for set, ignored for delete). Can be string, number, boolean, array, or object.',
+							),
+							'reasoning' => array(
+								'type'        => 'string',
+								'description' => 'Explanation of why this change is needed',
+							),
+						),
+						'required'   => array( 'operation', 'name', 'reasoning' ),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'manage_transients',
+					'description' => 'List, delete individual, or flush all WordPress transients. Requires admin permission. Useful for fixing caching issues.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'operation' => array(
+								'type'        => 'string',
+								'enum'        => array( 'list', 'delete', 'flush' ),
+								'description' => 'Operation: list all transients, delete a specific one, or flush all',
+							),
+							'name'      => array(
+								'type'        => 'string',
+								'description' => 'Transient name (required for delete)',
+							),
+							'search'    => array(
+								'type'        => 'string',
+								'description' => 'Filter transient list by name pattern (optional, for list operation)',
+							),
+						),
+						'required'   => array( 'operation' ),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'modify_postmeta',
+					'description' => 'Update or delete post meta fields. Requires admin permission. Useful for fixing broken meta data, bulk updates, and troubleshooting.',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => array(
+							'operation' => array(
+								'type'        => 'string',
+								'enum'        => array( 'get', 'set', 'delete' ),
+								'description' => 'Operation: get (read), set (create/update), or delete post meta',
+							),
+							'post_id'   => array(
+								'type'        => 'integer',
+								'description' => 'Post ID',
+							),
+							'meta_key'  => array(
+								'type'        => 'string',
+								'description' => 'Meta key name',
+							),
+							'meta_value' => array(
+								'description' => 'Meta value (required for set operation)',
+							),
+							'reasoning' => array(
+								'type'        => 'string',
+								'description' => 'Explanation of why this change is needed (required for set/delete)',
+							),
+						),
+						'required'   => array( 'operation', 'post_id', 'meta_key' ),
+					),
+				),
+			),
 		);
 
 		// Get tools from activated agents via filter.
@@ -499,6 +613,13 @@ class Agent_Tools {
 
 			case 'get_option':
 				return $this->get_option( $arguments['name'] ?? '' );
+
+			// User-space write tools — permission-gated.
+			case 'write_file':
+			case 'modify_option':
+			case 'manage_transients':
+			case 'modify_postmeta':
+				return $this->execute_user_space( $name, $arguments, $agent_id );
 
 			default:
 				return new \WP_Error( 'unknown_tool', "Unknown tool: {$name}" );
@@ -1501,6 +1622,465 @@ class Agent_Tools {
 			'value'  => $display_value,
 			'type'   => gettype( $value ),
 		);
+	}
+
+	// -------------------------------------------------------------------------
+	// User-space write tools (permission-gated + confirmation)
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Execute a user-space write tool.
+	 *
+	 * Checks permissions, and if confirmation mode is enabled, creates a
+	 * proposal instead of executing immediately.
+	 *
+	 * @param string $tool_name      Tool name.
+	 * @param array  $arguments      Tool arguments.
+	 * @param string $agent_id       Agent ID.
+	 * @param bool   $skip_confirm   Skip confirmation (true when executing approved proposal).
+	 * @return array Result or proposal.
+	 */
+	public function execute_user_space( string $tool_name, array $arguments, string $agent_id = 'unknown', bool $skip_confirm = false ): array {
+		// Determine which permission scope is needed.
+		$scope = $this->get_required_scope( $tool_name, $arguments );
+
+		if ( $scope && ! Agent_Permissions::is_allowed( $scope ) ) {
+			$scopes = Agent_Permissions::get_scopes();
+			$label  = $scopes[ $scope ]['label'] ?? $scope;
+			return array(
+				'error'       => "Permission denied: \"{$label}\" is not enabled. An administrator can enable this in Settings → Permissions.",
+				'permission'  => $scope,
+				'requires_ui' => false,
+			);
+		}
+
+		// If confirmation mode is active and not pre-approved, create a proposal.
+		if ( ! $skip_confirm && Agent_Permissions::requires_confirmation() ) {
+			return $this->create_proposal( $tool_name, $arguments, $agent_id );
+		}
+
+		// Execute directly.
+		return $this->run_user_space_tool( $tool_name, $arguments, $agent_id );
+	}
+
+	/**
+	 * Determine which permission scope a user-space tool needs.
+	 *
+	 * @param string $tool_name Tool name.
+	 * @param array  $arguments Tool arguments.
+	 * @return string Scope key or empty string.
+	 */
+	private function get_required_scope( string $tool_name, array $arguments ): string {
+		switch ( $tool_name ) {
+			case 'write_file':
+				$path = $this->sanitize_path( $arguments['path'] ?? '' );
+				return Agent_Permissions::get_write_scope_for_path( $path );
+
+			case 'modify_option':
+				return 'modify_options';
+
+			case 'manage_transients':
+				$op = $arguments['operation'] ?? 'list';
+				return 'list' === $op ? '' : 'manage_transients'; // list is read-only.
+
+			case 'modify_postmeta':
+				$op = $arguments['operation'] ?? 'get';
+				return 'get' === $op ? '' : 'modify_postmeta'; // get is read-only.
+
+			default:
+				return '';
+		}
+	}
+
+	/**
+	 * Create a proposal for a user-space change.
+	 *
+	 * @param string $tool_name Tool name.
+	 * @param array  $arguments Tool arguments.
+	 * @param string $agent_id  Agent ID.
+	 * @return array Proposal result for the chat UI.
+	 */
+	private function create_proposal( string $tool_name, array $arguments, string $agent_id ): array {
+		$description = $this->describe_user_space_action( $tool_name, $arguments );
+		$diff        = '';
+
+		// Generate diff for file writes.
+		if ( 'write_file' === $tool_name && ! empty( $arguments['path'] ) && ! empty( $arguments['content'] ) ) {
+			$path      = $this->sanitize_path( $arguments['path'] );
+			$full_path = $this->repo_path . '/' . $path;
+			$old       = file_exists( $full_path ) ? file_get_contents( $full_path ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			$diff      = Agent_Proposals::generate_diff( $old, $arguments['content'], $path, $path . ' (proposed)' );
+		}
+
+		$proposal = Agent_Proposals::create( $tool_name, $arguments, $agent_id, $description, $diff );
+
+		return array(
+			'pending_proposal' => true,
+			'proposal_id'      => $proposal['id'],
+			'description'      => $description,
+			'diff'             => $diff,
+			'tool'             => $tool_name,
+			'message'          => "I'd like to make a change that requires your approval:\n\n**{$description}**\n\nPlease review and approve or reject this change.",
+		);
+	}
+
+	/**
+	 * Generate a human-readable description of a user-space action.
+	 *
+	 * @param string $tool_name Tool name.
+	 * @param array  $arguments Tool arguments.
+	 * @return string Description.
+	 */
+	private function describe_user_space_action( string $tool_name, array $arguments ): string {
+		switch ( $tool_name ) {
+			case 'write_file':
+				$path   = $arguments['path'] ?? 'unknown';
+				$reason = $arguments['reasoning'] ?? '';
+				$action = file_exists( $this->repo_path . '/' . $this->sanitize_path( $path ) ) ? 'Modify' : 'Create';
+				return "{$action} file: {$path}" . ( $reason ? " — {$reason}" : '' );
+
+			case 'modify_option':
+				$op   = $arguments['operation'] ?? 'set';
+				$name = $arguments['name'] ?? 'unknown';
+				return ( 'delete' === $op ? 'Delete' : 'Set' ) . " option: {$name}";
+
+			case 'manage_transients':
+				$op = $arguments['operation'] ?? 'list';
+				if ( 'flush' === $op ) {
+					return 'Flush all transients';
+				}
+				if ( 'delete' === $op ) {
+					return 'Delete transient: ' . ( $arguments['name'] ?? 'unknown' );
+				}
+				return 'List transients';
+
+			case 'modify_postmeta':
+				$op      = $arguments['operation'] ?? 'get';
+				$post_id = $arguments['post_id'] ?? 0;
+				$key     = $arguments['meta_key'] ?? 'unknown';
+				return ucfirst( $op ) . " post meta: {$key} on post #{$post_id}";
+
+			default:
+				return "Execute {$tool_name}";
+		}
+	}
+
+	/**
+	 * Run a user-space tool directly (after permission + confirmation checks).
+	 *
+	 * @param string $tool_name Tool name.
+	 * @param array  $arguments Tool arguments.
+	 * @param string $agent_id  Agent ID.
+	 * @return array Result.
+	 */
+	private function run_user_space_tool( string $tool_name, array $arguments, string $agent_id ): array {
+		switch ( $tool_name ) {
+			case 'write_file':
+				return $this->user_write_file( $arguments );
+
+			case 'modify_option':
+				return $this->user_modify_option( $arguments );
+
+			case 'manage_transients':
+				return $this->user_manage_transients( $arguments );
+
+			case 'modify_postmeta':
+				return $this->user_modify_postmeta( $arguments );
+
+			default:
+				return array( 'error' => "Unknown user-space tool: {$tool_name}" );
+		}
+	}
+
+	/**
+	 * Write a file in user space (active theme or agentic-custom plugin).
+	 *
+	 * @param array $args Arguments: path, content, reasoning.
+	 * @return array Result.
+	 */
+	private function user_write_file( array $args ): array {
+		$path    = $this->sanitize_path( $args['path'] ?? '' );
+		$content = $args['content'] ?? '';
+		$reason  = $args['reasoning'] ?? '';
+
+		if ( empty( $path ) || empty( $content ) ) {
+			return array( 'error' => 'Path and content are required.' );
+		}
+
+		if ( ! self::is_allowed_subpath( $path ) ) {
+			return array( 'error' => 'Path not allowed. Only plugins/ or themes/ are accessible.' );
+		}
+
+		if ( ! Agent_Permissions::is_user_space_path( $path ) ) {
+			return array(
+				'error' => 'This path is not in user space. Use request_code_change for plugin/repo code modifications that require review.',
+				'hint'  => 'User space includes: active theme files and plugins/agentic-custom/.',
+			);
+		}
+
+		$full_path = $this->repo_path . '/' . $path;
+
+		// Backup existing file.
+		if ( file_exists( $full_path ) ) {
+			Agent_Proposals::backup_file( $full_path );
+		}
+
+		// Ensure directory exists.
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
+		$dir = dirname( $full_path );
+		if ( ! $wp_filesystem->is_dir( $dir ) ) {
+			wp_mkdir_p( $dir );
+		}
+
+		$result = $wp_filesystem->put_contents( $full_path, $content, FS_CHMOD_FILE );
+
+		if ( false === $result ) {
+			return array( 'error' => 'Failed to write file: ' . $path );
+		}
+
+		$this->audit->log( 'system', 'user_space_write', $path, array(
+			'reasoning' => $reason,
+			'size'      => strlen( $content ),
+		) );
+
+		return array(
+			'success'   => true,
+			'path'      => $path,
+			'size'      => strlen( $content ),
+			'reasoning' => $reason,
+			'message'   => "File written successfully: {$path}",
+		);
+	}
+
+	/**
+	 * Modify a WordPress option.
+	 *
+	 * @param array $args Arguments: operation, name, value, reasoning.
+	 * @return array Result.
+	 */
+	private function user_modify_option( array $args ): array {
+		$operation = $args['operation'] ?? 'set';
+		$name      = $args['name'] ?? '';
+		$reason    = $args['reasoning'] ?? '';
+
+		if ( empty( $name ) ) {
+			return array( 'error' => 'Option name is required.' );
+		}
+
+		// Block sensitive options.
+		$sensitive_patterns = array(
+			'password', 'secret', 'api_key', 'apikey', 'auth_key', 'auth_salt',
+			'logged_in_key', 'logged_in_salt', 'nonce_key', 'nonce_salt',
+			'secure_auth_key', 'secure_auth_salt', 'stripe', 'paypal',
+		);
+
+		// Block critical WordPress options that should never be modified by agents.
+		$blocked_exact = array(
+			'siteurl', 'home', 'admin_email', 'users_can_register',
+			'default_role', 'db_version', 'initial_db_version',
+		);
+
+		if ( in_array( strtolower( $name ), $blocked_exact, true ) ) {
+			return array( 'error' => 'Cannot modify sensitive core WordPress options.' );
+		}
+
+		$lower_name = strtolower( $name );
+		foreach ( $sensitive_patterns as $pattern ) {
+			if ( false !== strpos( $lower_name, $pattern ) ) {
+				return array( 'error' => 'Cannot modify sensitive options containing passwords, keys, or secrets.' );
+			}
+		}
+
+		if ( 'delete' === $operation ) {
+			$existed = get_option( $name, null );
+			delete_option( $name );
+
+			$this->audit->log( 'system', 'option_deleted', $name, array( 'reasoning' => $reason ) );
+
+			return array(
+				'success'   => true,
+				'operation' => 'delete',
+				'name'      => $name,
+				'existed'   => null !== $existed,
+			);
+		}
+
+		// Set operation.
+		$value    = $args['value'] ?? '';
+		$old      = get_option( $name, null );
+		$updated  = update_option( $name, $value );
+
+		$this->audit->log( 'system', 'option_set', $name, array(
+			'reasoning' => $reason,
+			'old_type'  => null !== $old ? gettype( $old ) : 'none',
+			'new_type'  => gettype( $value ),
+		) );
+
+		return array(
+			'success'   => true,
+			'operation' => 'set',
+			'name'      => $name,
+			'updated'   => $updated,
+			'was_new'   => null === $old,
+		);
+	}
+
+	/**
+	 * Manage WordPress transients.
+	 *
+	 * @param array $args Arguments: operation, name, search.
+	 * @return array Result.
+	 */
+	private function user_manage_transients( array $args ): array {
+		global $wpdb;
+		$operation = $args['operation'] ?? 'list';
+
+		switch ( $operation ) {
+			case 'list':
+				$search = $args['search'] ?? '';
+				$where  = "option_name LIKE '_transient_%' AND option_name NOT LIKE '_transient_timeout_%'";
+
+				if ( $search ) {
+					$where .= $wpdb->prepare( " AND option_name LIKE %s", '%' . $wpdb->esc_like( $search ) . '%' );
+				}
+
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Dynamic WHERE clause built safely above.
+				$transients = $wpdb->get_results(
+					"SELECT option_name, LENGTH(option_value) AS size_bytes FROM {$wpdb->options} WHERE {$where} ORDER BY option_name LIMIT 100",
+					ARRAY_A
+				);
+
+				$result = array();
+				foreach ( $transients as $t ) {
+					$name    = str_replace( '_transient_', '', $t['option_name'] );
+					$timeout = get_option( '_transient_timeout_' . $name );
+					$result[] = array(
+						'name'       => $name,
+						'size_bytes' => (int) $t['size_bytes'],
+						'expires'    => $timeout ? wp_date( 'Y-m-d H:i:s', (int) $timeout ) : 'never',
+						'expired'    => $timeout ? ( time() > (int) $timeout ) : false,
+					);
+				}
+
+				return array(
+					'transients' => $result,
+					'count'      => count( $result ),
+				);
+
+			case 'delete':
+				$name = $args['name'] ?? '';
+				if ( empty( $name ) ) {
+					return array( 'error' => 'Transient name is required for delete.' );
+				}
+				$existed = get_transient( $name );
+				delete_transient( $name );
+
+				$this->audit->log( 'system', 'transient_deleted', $name );
+
+				return array(
+					'success' => true,
+					'name'    => $name,
+					'existed' => false !== $existed,
+				);
+
+			case 'flush':
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bulk transient cleanup.
+				$count = $wpdb->query(
+					"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_%' OR option_name LIKE '_site_transient_%'"
+				);
+
+				$this->audit->log( 'system', 'transients_flushed', 'all', array( 'deleted' => $count ) );
+
+				return array(
+					'success' => true,
+					'deleted' => $count,
+					'message' => "Flushed {$count} transient records.",
+				);
+
+			default:
+				return array( 'error' => 'Unknown operation: ' . $operation . '. Use list, delete, or flush.' );
+		}
+	}
+
+	/**
+	 * Modify post meta.
+	 *
+	 * @param array $args Arguments: operation, post_id, meta_key, meta_value, reasoning.
+	 * @return array Result.
+	 */
+	private function user_modify_postmeta( array $args ): array {
+		$operation  = $args['operation'] ?? 'get';
+		$post_id    = (int) ( $args['post_id'] ?? 0 );
+		$meta_key   = $args['meta_key'] ?? '';
+		$reason     = $args['reasoning'] ?? '';
+
+		if ( ! $post_id || empty( $meta_key ) ) {
+			return array( 'error' => 'post_id and meta_key are required.' );
+		}
+
+		// Verify post exists.
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return array( 'error' => "Post #{$post_id} not found." );
+		}
+
+		switch ( $operation ) {
+			case 'get':
+				$value  = get_post_meta( $post_id, $meta_key, true );
+				$exists = metadata_exists( 'post', $post_id, $meta_key );
+
+				return array(
+					'post_id'  => $post_id,
+					'meta_key' => $meta_key,
+					'exists'   => $exists,
+					'value'    => $exists ? $value : null,
+					'type'     => $exists ? gettype( $value ) : null,
+				);
+
+			case 'set':
+				$meta_value = $args['meta_value'] ?? '';
+				$old_value  = get_post_meta( $post_id, $meta_key, true );
+
+				update_post_meta( $post_id, $meta_key, $meta_value );
+
+				$this->audit->log( 'system', 'postmeta_set', $meta_key, array(
+					'post_id'   => $post_id,
+					'reasoning' => $reason,
+				) );
+
+				return array(
+					'success'   => true,
+					'post_id'   => $post_id,
+					'meta_key'  => $meta_key,
+					'operation' => 'set',
+					'was_new'   => '' === $old_value && ! metadata_exists( 'post', $post_id, $meta_key ),
+				);
+
+			case 'delete':
+				$existed = metadata_exists( 'post', $post_id, $meta_key );
+				delete_post_meta( $post_id, $meta_key );
+
+				$this->audit->log( 'system', 'postmeta_deleted', $meta_key, array(
+					'post_id'   => $post_id,
+					'reasoning' => $reason,
+				) );
+
+				return array(
+					'success'   => true,
+					'post_id'   => $post_id,
+					'meta_key'  => $meta_key,
+					'operation' => 'delete',
+					'existed'   => $existed,
+				);
+
+			default:
+				return array( 'error' => 'Unknown operation: ' . $operation . '. Use get, set, or delete.' );
+		}
 	}
 
 	/**

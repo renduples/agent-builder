@@ -1070,4 +1070,245 @@ class Test_Agent_Tools extends TestCase {
 		$this->assertEquals( 'hello', $result['value'] );
 		delete_option( 'agentic_test_option_str' );
 	}
+
+	// -------------------------------------------------------------------------
+	// User-space tool definitions
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test write_file tool is defined.
+	 */
+	public function test_write_file_tool_defined() {
+		$tools = $this->tools->get_tool_definitions();
+		$flat_names = array();
+		foreach ( $tools as $tool ) {
+			$flat_names[] = $tool['function']['name'] ?? $tool['name'] ?? '';
+		}
+		$this->assertContains( 'write_file', $flat_names );
+	}
+
+	/**
+	 * Test modify_option tool is defined.
+	 */
+	public function test_modify_option_tool_defined() {
+		$tools = $this->tools->get_tool_definitions();
+		$flat_names = array();
+		foreach ( $tools as $tool ) {
+			$flat_names[] = $tool['function']['name'] ?? $tool['name'] ?? '';
+		}
+		$this->assertContains( 'modify_option', $flat_names );
+	}
+
+	/**
+	 * Test manage_transients tool is defined.
+	 */
+	public function test_manage_transients_tool_defined() {
+		$tools = $this->tools->get_tool_definitions();
+		$flat_names = array();
+		foreach ( $tools as $tool ) {
+			$flat_names[] = $tool['function']['name'] ?? $tool['name'] ?? '';
+		}
+		$this->assertContains( 'manage_transients', $flat_names );
+	}
+
+	/**
+	 * Test modify_postmeta tool is defined.
+	 */
+	public function test_modify_postmeta_tool_defined() {
+		$tools = $this->tools->get_tool_definitions();
+		$flat_names = array();
+		foreach ( $tools as $tool ) {
+			$flat_names[] = $tool['function']['name'] ?? $tool['name'] ?? '';
+		}
+		$this->assertContains( 'modify_postmeta', $flat_names );
+	}
+
+	// -------------------------------------------------------------------------
+	// User-space permission checks
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test write_file with permission denied.
+	 */
+	public function test_write_file_permission_denied() {
+		// All permissions are disabled by default.
+		$result = $this->tools->execute( 'write_file', array(
+			'path'    => 'themes/' . get_stylesheet() . '/test.css',
+			'content' => 'body { color: red; }',
+		), 'test-agent' );
+
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'permission', strtolower( $result['error'] ) );
+	}
+
+	/**
+	 * Test modify_option with permission denied.
+	 */
+	public function test_modify_option_permission_denied() {
+		$result = $this->tools->execute( 'modify_option', array(
+			'name'      => 'agentic_test_opt',
+			'value'     => 'test',
+			'operation' => 'set',
+		), 'test-agent' );
+
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test manage_transients with permission denied.
+	 */
+	public function test_manage_transients_permission_denied() {
+		$result = $this->tools->execute( 'manage_transients', array(
+			'operation' => 'flush',
+		), 'test-agent' );
+
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test modify_postmeta with permission denied.
+	 */
+	public function test_modify_postmeta_permission_denied() {
+		$result = $this->tools->execute( 'modify_postmeta', array(
+			'post_id'   => 1,
+			'meta_key'  => 'test_key',
+			'meta_value' => 'test',
+			'operation' => 'set',
+		), 'test-agent' );
+
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	// -------------------------------------------------------------------------
+	// User-space tool execution (with permissions enabled)
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test modify_option succeeds in auto-approve mode with permission enabled.
+	 */
+	public function test_modify_option_auto_approve() {
+		\Agentic\Agent_Permissions::save_settings( array( 'modify_options' => true ), 'auto' );
+
+		$result = $this->tools->execute( 'modify_option', array(
+			'name'      => 'agentic_test_userspace_opt',
+			'value'     => 'hello world',
+			'operation' => 'set',
+		), 'test-agent' );
+
+		$this->assertTrue( $result['success'] ?? false, 'modify_option should succeed: ' . wp_json_encode( $result ) );
+		$this->assertEquals( 'hello world', get_option( 'agentic_test_userspace_opt' ) );
+
+		// Cleanup.
+		delete_option( 'agentic_test_userspace_opt' );
+		delete_option( \Agentic\Agent_Permissions::OPTION_KEY );
+	}
+
+	/**
+	 * Test modify_option creates proposal in confirm mode.
+	 */
+	public function test_modify_option_creates_proposal() {
+		\Agentic\Agent_Permissions::save_settings( array( 'modify_options' => true ), 'confirm' );
+
+		$result = $this->tools->execute( 'modify_option', array(
+			'name'      => 'agentic_test_prop',
+			'value'     => 'test',
+			'operation' => 'set',
+		), 'test-agent' );
+
+		$this->assertTrue( $result['pending_proposal'] ?? false );
+		$this->assertArrayHasKey( 'proposal_id', $result );
+		$this->assertArrayHasKey( 'description', $result );
+
+		// Cleanup.
+		delete_transient( 'agentic_proposal_' . $result['proposal_id'] );
+		delete_option( \Agentic\Agent_Permissions::OPTION_KEY );
+	}
+
+	/**
+	 * Test modify_option blocks sensitive options.
+	 */
+	public function test_modify_option_blocks_sensitive() {
+		\Agentic\Agent_Permissions::save_settings( array( 'modify_options' => true ), 'auto' );
+
+		$result = $this->tools->execute( 'modify_option', array(
+			'name'      => 'siteurl',
+			'value'     => 'http://evil.com',
+			'operation' => 'set',
+		), 'test-agent' );
+
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'sensitive', strtolower( $result['error'] ) );
+
+		// Also test pattern-based blocking.
+		$result2 = $this->tools->execute( 'modify_option', array(
+			'name'      => 'my_api_key_setting',
+			'value'     => 'sk-1234',
+			'operation' => 'set',
+		), 'test-agent' );
+
+		$this->assertArrayHasKey( 'error', $result2 );
+
+		delete_option( \Agentic\Agent_Permissions::OPTION_KEY );
+	}
+
+	/**
+	 * Test manage_transients list in auto mode.
+	 */
+	public function test_manage_transients_list() {
+		\Agentic\Agent_Permissions::save_settings( array( 'manage_transients' => true ), 'auto' );
+		set_transient( 'agentic_test_trans', 'value', 3600 );
+
+		$result = $this->tools->execute( 'manage_transients', array(
+			'operation' => 'list',
+			'search'    => 'agentic_test',
+		), 'test-agent' );
+
+		// List operation returns transients array, not 'success' key.
+		$this->assertArrayHasKey( 'transients', $result, 'manage_transients list should return transients: ' . wp_json_encode( $result ) );
+		$this->assertGreaterThanOrEqual( 1, $result['count'] );
+
+		// Cleanup.
+		delete_transient( 'agentic_test_trans' );
+		delete_option( \Agentic\Agent_Permissions::OPTION_KEY );
+	}
+
+	/**
+	 * Test modify_postmeta set in auto mode.
+	 */
+	public function test_modify_postmeta_set() {
+		\Agentic\Agent_Permissions::save_settings( array( 'modify_postmeta' => true ), 'auto' );
+
+		$post_id = self::factory()->post->create();
+
+		$result = $this->tools->execute( 'modify_postmeta', array(
+			'post_id'    => $post_id,
+			'meta_key'   => 'agentic_test_meta',
+			'meta_value' => 'test_value',
+			'operation'  => 'set',
+		), 'test-agent' );
+
+		$this->assertTrue( $result['success'] ?? false, 'modify_postmeta should succeed: ' . wp_json_encode( $result ) );
+		$this->assertEquals( 'test_value', get_post_meta( $post_id, 'agentic_test_meta', true ) );
+
+		// Cleanup.
+		delete_option( \Agentic\Agent_Permissions::OPTION_KEY );
+	}
+
+	/**
+	 * Test modify_postmeta with nonexistent post.
+	 */
+	public function test_modify_postmeta_nonexistent_post() {
+		\Agentic\Agent_Permissions::save_settings( array( 'modify_postmeta' => true ), 'auto' );
+
+		$result = $this->tools->execute( 'modify_postmeta', array(
+			'post_id'    => 999999,
+			'meta_key'   => 'test_key',
+			'meta_value' => 'test',
+			'operation'  => 'set',
+		), 'test-agent' );
+
+		$this->assertArrayHasKey( 'error', $result );
+
+		delete_option( \Agentic\Agent_Permissions::OPTION_KEY );
+	}
 }

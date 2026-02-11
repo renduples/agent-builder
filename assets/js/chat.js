@@ -156,6 +156,12 @@
                 });
                 div.appendChild(toolsDiv);
             }
+
+            // Show proposal card for pending user-space changes
+            if (meta.proposal) {
+                const proposalDiv = renderProposal(meta.proposal);
+                div.appendChild(proposalDiv);
+            }
         }
 
         messages.appendChild(div);
@@ -202,7 +208,8 @@
                     tokens: data.tokens_used,
                     cost: data.cost,
                     tools: data.tools_used,
-                    cached: data.cached || false
+                    cached: data.cached || false,
+                    proposal: data.pending_proposal ? data.proposal : null
                 };
 
                 // Add to UI
@@ -280,6 +287,118 @@
         // Clear messages except the first greeting
         while (messages.children.length > 1) {
             messages.removeChild(messages.lastChild);
+        }
+    }
+
+    // Render a proposal card with diff and approve/reject buttons
+    function renderProposal(proposal) {
+        const card = document.createElement('div');
+        card.className = 'agentic-proposal-card';
+        card.dataset.proposalId = proposal.id;
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'agentic-proposal-header';
+        header.innerHTML = '<span class="dashicons dashicons-editor-code"></span> <strong>Proposed Change</strong>';
+        card.appendChild(header);
+
+        // Description
+        const desc = document.createElement('div');
+        desc.className = 'agentic-proposal-desc';
+        desc.textContent = proposal.description || 'Agent wants to make a change.';
+        card.appendChild(desc);
+
+        // Diff view
+        if (proposal.diff) {
+            const diffToggle = document.createElement('button');
+            diffToggle.type = 'button';
+            diffToggle.className = 'agentic-proposal-toggle';
+            diffToggle.textContent = '▶ Show Diff';
+            card.appendChild(diffToggle);
+
+            const diffPre = document.createElement('pre');
+            diffPre.className = 'agentic-proposal-diff';
+            diffPre.style.display = 'none';
+            diffPre.innerHTML = formatDiff(proposal.diff);
+            card.appendChild(diffPre);
+
+            diffToggle.addEventListener('click', function() {
+                const visible = diffPre.style.display !== 'none';
+                diffPre.style.display = visible ? 'none' : 'block';
+                diffToggle.textContent = visible ? '▶ Show Diff' : '▼ Hide Diff';
+            });
+        }
+
+        // Action buttons
+        const actions = document.createElement('div');
+        actions.className = 'agentic-proposal-actions';
+
+        const approveBtn = document.createElement('button');
+        approveBtn.type = 'button';
+        approveBtn.className = 'agentic-proposal-btn agentic-proposal-approve';
+        approveBtn.innerHTML = '<span class="dashicons dashicons-yes"></span> Approve';
+        approveBtn.addEventListener('click', () => handleProposalAction(proposal.id, 'approve', card));
+
+        const rejectBtn = document.createElement('button');
+        rejectBtn.type = 'button';
+        rejectBtn.className = 'agentic-proposal-btn agentic-proposal-reject';
+        rejectBtn.innerHTML = '<span class="dashicons dashicons-no"></span> Reject';
+        rejectBtn.addEventListener('click', () => handleProposalAction(proposal.id, 'reject', card));
+
+        actions.appendChild(approveBtn);
+        actions.appendChild(rejectBtn);
+        card.appendChild(actions);
+
+        return card;
+    }
+
+    // Format diff with color highlighting
+    function formatDiff(diff) {
+        return diff.split('\n').map(line => {
+            const escaped = escapeHtml(line);
+            if (line.startsWith('+')) {
+                return '<span class="diff-add">' + escaped + '</span>';
+            } else if (line.startsWith('-')) {
+                return '<span class="diff-del">' + escaped + '</span>';
+            } else if (line.startsWith('@@')) {
+                return '<span class="diff-hunk">' + escaped + '</span>';
+            }
+            return escaped;
+        }).join('\n');
+    }
+
+    // Send approve/reject to REST API
+    async function handleProposalAction(proposalId, action, cardElement) {
+        const buttons = cardElement.querySelectorAll('.agentic-proposal-btn');
+        buttons.forEach(btn => btn.disabled = true);
+
+        try {
+            const response = await fetch(agenticChat.restUrl + 'proposals/' + proposalId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': agenticChat.nonce
+                },
+                body: JSON.stringify({ action: action })
+            });
+
+            const data = await response.json();
+
+            // Update card styling
+            cardElement.classList.add('agentic-proposal-' + (action === 'approve' ? 'approved' : 'rejected'));
+
+            // Replace buttons with status
+            const actionsDiv = cardElement.querySelector('.agentic-proposal-actions');
+            const statusText = action === 'approve' ? '✅ Approved — change applied.' : '❌ Rejected — no change made.';
+            actionsDiv.innerHTML = '<div class="agentic-proposal-status">' + statusText + '</div>';
+
+            if (data.error) {
+                actionsDiv.innerHTML = '<div class="agentic-proposal-status agentic-proposal-error">⚠️ ' + escapeHtml(data.error) + '</div>';
+            }
+        } catch (error) {
+            console.error('Proposal action error:', error);
+            buttons.forEach(btn => btn.disabled = false);
+            addMessage('Error processing proposal: ' + error.message, 'agent');
         }
     }
 

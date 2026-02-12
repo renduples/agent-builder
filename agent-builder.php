@@ -1249,6 +1249,7 @@ final class Plugin {
 // Initialize Job Manager.
 require_once AGENTIC_PLUGIN_DIR . 'includes/class-job-manager.php';
 require_once AGENTIC_PLUGIN_DIR . 'includes/interface-job-processor.php';
+require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-builder-job-processor.php';
 require_once AGENTIC_PLUGIN_DIR . 'includes/class-jobs-api.php';
 require_once AGENTIC_PLUGIN_DIR . 'includes/class-security-log.php';
 

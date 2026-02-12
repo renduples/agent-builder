@@ -35,7 +35,7 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 		$progress_callback( 5, 'Initializing agent builder...' );
 
 		// Get the agent builder agent.
-		$registry = Agent_Registry::get_instance();
+		$registry = \Agentic_Agent_Registry::get_instance();
 		$agent    = $registry->get_agent_instance( 'agent-builder' );
 
 		if ( ! $agent ) {

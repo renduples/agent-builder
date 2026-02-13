@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,11 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.6.1 - 2026-02-12 =
+* Fixed: Added missing require_once for Agent_Builder_Job_Processor class (caused "invalid or missing job processor" error).
+* Fixed: Corrected Agent_Registry class reference in job processor (namespaced vs global class).
+* Fixed: Ensured agent-builder job processor loads during plugin bootstrap.
 
 = 1.6.0 - 2026-02-11 =
 * Added: Two-zone architecture — plugin/repo code vs user-space changes.
@@ -174,6 +179,9 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 * Marketplace foundation.
 
 == Upgrade Notice ==
+
+= 1.6.1 =
+Patch: Fixed job processor loading and class reference bugs that prevented the agent builder from working.
 
 = 1.6.0 =
 New: Two-zone user-space permissions and proposals. Agents can now write theme files, modify options, manage transients, and update post meta — all permission-gated with confirmation diffs. No breaking changes.

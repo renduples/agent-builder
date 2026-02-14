@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Security Monitor
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Monitors your site for security issues, suspicious activity, and provides recommendations to harden your WordPress installation.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

@@ -132,7 +132,7 @@ if ( ! empty( $agentic_plugin_license_key ) ) {
 		<div class="agentic-card">
 			<h2>Marketplace</h2>
 			<?php
-			// Fetch marketplace stats from API.
+			// Fetch marketplace stats — derive from /agents endpoint for reliability.
 			$agentic_marketplace_stats = array(
 				'latest_agent'  => array(
 					'name' => 'N/A',
@@ -146,25 +146,69 @@ if ( ! empty( $agentic_plugin_license_key ) ) {
 				'user_revenue'  => 0.00,
 			);
 
-			// Get developer API key for user-specific stats.
+			// Get developer API key for user-specific stats (sales/revenue).
 			$agentic_dev_api_key = get_option( 'agentic_developer_api_key', '' );
 
-			$agentic_request_args = array( 'timeout' => 5 );
+			// Fetch user sales/revenue from stats endpoint if dev key exists.
 			if ( ! empty( $agentic_dev_api_key ) ) {
-				$agentic_request_args['headers'] = array(
-					'Authorization' => 'Bearer ' . $agentic_dev_api_key,
+				$agentic_stats_response = wp_remote_get(
+					'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/stats/dashboard',
+					array(
+						'timeout' => 5,
+						'headers' => array(
+							'Authorization' => 'Bearer ' . $agentic_dev_api_key,
+						),
+					)
 				);
+
+				if ( ! is_wp_error( $agentic_stats_response ) && 200 === wp_remote_retrieve_response_code( $agentic_stats_response ) ) {
+					$agentic_stats_data = json_decode( wp_remote_retrieve_body( $agentic_stats_response ), true );
+					if ( isset( $agentic_stats_data['success'] ) && $agentic_stats_data['success'] && isset( $agentic_stats_data['stats'] ) ) {
+						$agentic_marketplace_stats['user_sales']   = (int) ( $agentic_stats_data['stats']['user_sales'] ?? 0 );
+						$agentic_marketplace_stats['user_revenue'] = (float) ( $agentic_stats_data['stats']['user_revenue'] ?? 0 );
+					}
+				}
 			}
 
-			$agentic_response = wp_remote_get(
-				'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/stats/dashboard',
-				$agentic_request_args
+			// Fetch agents list to derive latest and most popular — more reliable than stats endpoint.
+			$agentic_agents_response = wp_remote_get(
+				'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/agents',
+				array( 'timeout' => 5 )
 			);
 
-			if ( ! is_wp_error( $agentic_response ) && 200 === wp_remote_retrieve_response_code( $agentic_response ) ) {
-				$agentic_data = json_decode( wp_remote_retrieve_body( $agentic_response ), true );
-				if ( isset( $agentic_data['success'] ) && $agentic_data['success'] ) {
-					$agentic_marketplace_stats = array_merge( $agentic_marketplace_stats, $agentic_data['stats'] ?? array() );
+			if ( ! is_wp_error( $agentic_agents_response ) && 200 === wp_remote_retrieve_response_code( $agentic_agents_response ) ) {
+				$agentic_agents_data = json_decode( wp_remote_retrieve_body( $agentic_agents_response ), true );
+				$agentic_agents_list = $agentic_agents_data['agents'] ?? array();
+
+				if ( ! empty( $agentic_agents_list ) ) {
+					// Latest agent = most recently updated.
+					$agentic_latest = $agentic_agents_list[0];
+					foreach ( $agentic_agents_list as $agentic_agent ) {
+						if ( ( $agentic_agent['last_updated'] ?? '' ) > ( $agentic_latest['last_updated'] ?? '' ) ) {
+							$agentic_latest = $agentic_agent;
+						}
+					}
+					$agentic_marketplace_stats['latest_agent'] = array(
+						'name' => $agentic_latest['name'] ?? 'N/A',
+						'url'  => $agentic_latest['url'] ?? '',
+					);
+
+					// Popular agent = most downloads, then highest rating as tiebreaker.
+					$agentic_popular = $agentic_agents_list[0];
+					foreach ( $agentic_agents_list as $agentic_agent ) {
+						$agentic_agent_downloads   = (int) ( $agentic_agent['downloads'] ?? 0 );
+						$agentic_popular_downloads = (int) ( $agentic_popular['downloads'] ?? 0 );
+						if ( $agentic_agent_downloads > $agentic_popular_downloads
+							|| ( $agentic_agent_downloads === $agentic_popular_downloads
+								&& (float) ( $agentic_agent['rating'] ?? 0 ) > (float) ( $agentic_popular['rating'] ?? 0 ) )
+						) {
+							$agentic_popular = $agentic_agent;
+						}
+					}
+					$agentic_marketplace_stats['popular_agent'] = array(
+						'name' => $agentic_popular['name'] ?? 'N/A',
+						'url'  => $agentic_popular['url'] ?? '',
+					);
 				}
 			}
 			?>

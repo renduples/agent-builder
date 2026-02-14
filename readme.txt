@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.6.2
+Stable tag: 1.6.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,17 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.6.3 - 2026-02-14 =
+* Improved: All 11 bundled agent system prompts rewritten with ecosystem context and scope boundaries.
+* Improved: Each agent now defers out-of-scope tasks to the appropriate sibling agent.
+* Improved: Prompts reference actual available tools and instruct agents to use real data.
+* Improved: Removed vague personality sections; replaced with concrete behavioural instructions.
+* Improved: Onboarding Agent prompt now lists all key classes, files, and bundled agents.
+* Improved: SEO Analyzer prompt adds specific meta length targets and schema markup guidance.
+* Improved: Theme Builder prompt adds accessibility (WCAG 2.1) and modern CSS layout guidance.
+* Improved: Dashboard marketplace stats now derived from /agents endpoint (fixes N/A display).
+* Changed: All bundled agents bumped from v1.0.0 to v1.1.0.
 
 = 1.6.2 - 2026-02-14 =
 * Fixed: 3 risky tests now include unconditional assertions (search_code_result_fields, get_error_log_line_limit, get_error_log_max_cap).
@@ -195,6 +206,9 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 * Marketplace foundation.
 
 == Upgrade Notice ==
+
+= 1.6.3 =
+Improved: All 11 agent system prompts rewritten with scope boundaries and ecosystem context. Dashboard marketplace stats fixed.
 
 = 1.6.2 =
 Patch: Fixed 3 risky tests, added missing changelog and git tag entries. Full green test suite.

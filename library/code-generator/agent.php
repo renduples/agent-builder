@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Code Generator
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Generates code snippets, custom functions, and helps with WordPress development tasks.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

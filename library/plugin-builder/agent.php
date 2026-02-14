@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Plugin Builder
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Creates complete WordPress plugins from natural language descriptions. Generates WPCS-compliant code with security best practices.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

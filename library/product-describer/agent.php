@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Product Describer
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Generates compelling product descriptions, optimizes WooCommerce listings, and enhances product pages for conversions.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

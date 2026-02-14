@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Content Assistant
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Helps draft, edit, and optimize blog posts and pages. Suggests improvements, fixes grammar, and enhances readability.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

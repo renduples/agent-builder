@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Social Media Manager
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Manages social media content for WordPress. Creates, schedules, and organizes posts for multiple platforms including LinkedIn, X/Twitter, Facebook, Medium, Dev.to, and more.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

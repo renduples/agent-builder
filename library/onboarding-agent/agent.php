@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Onboarding Agent
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Your guide to the Agent Builder ecosystem. Answers questions about the codebase, evaluates feature requests, and helps new developers get started.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

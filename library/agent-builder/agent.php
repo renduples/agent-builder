@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Agent Builder
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Meta-agent that creates new Agents from natural language descriptions. Generates compliant agent code, tools, and documentation.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

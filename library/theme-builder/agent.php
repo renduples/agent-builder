@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Theme Builder
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Builds and maintains WordPress themes. Creates new themes, edits templates, generates styles, and can clone starter themes from URLs.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

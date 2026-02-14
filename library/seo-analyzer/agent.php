@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: SEO Analyzer
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Analyzes content for SEO optimization, suggests keywords, and helps improve search rankings.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

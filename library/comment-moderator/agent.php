@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent Name: Comment Moderator
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Automatically moderates comments, detects spam, and helps maintain healthy discussions on your site.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com

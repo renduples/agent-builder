@@ -310,6 +310,8 @@ class Test_Agent_Tools extends TestCase {
 			array( 'pattern' => 'AGENTIC_PLUGIN_VERSION' )
 		);
 
+		$this->assertIsArray( $result );
+
 		if ( ! empty( $result['results'] ) ) {
 			$item = $result['results'][0];
 			$this->assertArrayHasKey( 'file', $item );
@@ -748,6 +750,7 @@ class Test_Agent_Tools extends TestCase {
 	 */
 	public function test_get_error_log_line_limit() {
 		$result = $this->tools->execute( 'get_error_log', array( 'lines' => 5 ) );
+		$this->assertIsArray( $result );
 		if ( isset( $result['lines'] ) ) {
 			$this->assertLessThanOrEqual( 5, count( $result['lines'] ) );
 		}
@@ -758,6 +761,7 @@ class Test_Agent_Tools extends TestCase {
 	 */
 	public function test_get_error_log_max_cap() {
 		$result = $this->tools->execute( 'get_error_log', array( 'lines' => 999 ) );
+		$this->assertIsArray( $result );
 		if ( isset( $result['lines'] ) ) {
 			$this->assertLessThanOrEqual( 200, count( $result['lines'] ) );
 		}

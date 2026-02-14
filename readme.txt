@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.6.1
+Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -75,6 +75,12 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 
 == Changelog ==
 
+= 1.6.2 - 2026-02-14 =
+* Fixed: 3 risky tests now include unconditional assertions (search_code_result_fields, get_error_log_line_limit, get_error_log_max_cap).
+* Fixed: Added missing v1.2.0 changelog entry.
+* Fixed: Added missing git tags for v1.4.0 and v1.5.0 releases.
+* Tests: 434 tests, 1,167 assertions, 0 failures, 0 risky.
+
 = 1.6.1 - 2026-02-12 =
 * Fixed: Added missing require_once for Agent_Builder_Job_Processor class (caused "invalid or missing job processor" error).
 * Fixed: Corrected Agent_Registry class reference in job processor (namespaced vs global class).
@@ -125,6 +131,16 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 * Fixed: All WordPress naming convention violations — 100% compliant.
 * Fixed: Prefixed all global variables in admin templates.
 * Improved: Code quality and WordPress.org submission readiness.
+
+= 1.2.0 - 2026-02-08 =
+* Added: Security Log system with database-backed event tracking (Security_Log class).
+* Added: Security Log admin page for viewing blocked messages, rate limits, PII warnings.
+* Added: Security statistics and analytics (top patterns, top IPs).
+* Added: Plugin Builder agent with full template system for generating WordPress plugins.
+* Added: Security log cleanup functionality (30-day retention).
+* Improved: Centralized security logging — replaced error_log() calls with Security_Log class.
+* Improved: Full PHPCS compliance for WordPress.org standards.
+* Fixed: Naming convention violations in uninstall.php.
 
 = 1.1.2 - 2026-02-02 =
 * Fixed: Automatic API key saving when returning from marketplace registration
@@ -179,6 +195,9 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 * Marketplace foundation.
 
 == Upgrade Notice ==
+
+= 1.6.2 =
+Patch: Fixed 3 risky tests, added missing changelog and git tag entries. Full green test suite.
 
 = 1.6.1 =
 Patch: Fixed job processor loading and class reference bugs that prevented the agent builder from working.

@@ -101,12 +101,13 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	 * Get welcome message
 	 */
 	public function get_welcome_message(): string {
-		return "Welcome to Agent Builder! I'm here to help you:\n\n" .
-				"- **Understand the codebase** - Ask about any file, class, or function\n" .
-				"- **Get started** - Learn the architecture and how to build agents\n" .
-				"- **Evaluate features** - Submit ideas and I'll assess feasibility\n" .
-				"- **Find documentation** - Navigate the project structure\n\n" .
-				'What would you like to know?';
+		return "Hi there! I'm the Onboarding Agent — here to help you get started.\n\n" .
+				"Here's what I can help you with:\n\n" .
+				"- **Agent Builder** \u2014 Build your first AI Agent right now\n" .
+				"- **Content Builder** \u2014 Create pages and posts to get you started\n" .
+				"- **Plugin Builder** \u2014 Build your first custom plugin for WordPress\n" .
+				"- **Theme Builder** \u2014 Get help choosing and installing a Theme\n\n" .
+				'Just type your question below or choose an option.';
 	}
 
 	/**
@@ -126,61 +127,6 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	 */
 	public function get_tools(): array {
 		return array(
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'read_file',
-					'description' => 'Read a file from the Agentic codebase to answer questions about it.',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'path' => array(
-								'type'        => 'string',
-								'description' => 'Relative path to the file (e.g., "includes/class-agent-base.php")',
-							),
-						),
-						'required'   => array( 'path' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'list_directory',
-					'description' => 'List contents of a directory to help navigate the codebase.',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'path' => array(
-								'type'        => 'string',
-								'description' => 'Relative path to the directory (e.g., "includes" or "library")',
-							),
-						),
-						'required'   => array( 'path' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'search_code',
-					'description' => 'Search for a pattern in the codebase to find relevant code.',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'pattern'   => array(
-								'type'        => 'string',
-								'description' => 'Search pattern (function name, class name, etc.)',
-							),
-							'file_type' => array(
-								'type'        => 'string',
-								'description' => 'Optional file extension to filter (php, js, md)',
-							),
-						),
-						'required'   => array( 'pattern' ),
-					),
-				),
-			),
 			array(
 				'type'     => 'function',
 				'function' => array(
@@ -225,152 +171,10 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	 */
 	public function execute_tool( string $tool_name, array $arguments ): ?array {
 		return match ( $tool_name ) {
-			'read_file'                => $this->tool_read_file( $arguments ),
-			'list_directory'           => $this->tool_list_directory( $arguments ),
-			'search_code'              => $this->tool_search_code( $arguments ),
 			'get_agent_list'           => $this->tool_get_agent_list(),
 			'evaluate_feature_request' => $this->tool_evaluate_feature( $arguments ),
 			default                    => null,
 		};
-	}
-
-	/**
-	 * Tool: Read file
-	 */
-	private function tool_read_file( array $args ): array {
-		$path      = $this->sanitize_path( $args['path'] ?? '' );
-		$base_path = WP_PLUGIN_DIR . '/agent-builder/';
-		$full_path = $base_path . $path;
-
-		if ( ! file_exists( $full_path ) ) {
-			return array(
-				'error' => 'File not found',
-				'path'  => $path,
-			);
-		}
-
-		if ( ! is_readable( $full_path ) ) {
-			return array(
-				'error' => 'File not readable',
-				'path'  => $path,
-			);
-		}
-
-		$content = file_get_contents( $full_path );
-		$size    = filesize( $full_path );
-
-		// Limit content size
-		if ( $size > 50000 ) {
-			$content = substr( $content, 0, 50000 ) . "\n\n[Content truncated - file too large]";
-		}
-
-		return array(
-			'path'    => $path,
-			'content' => $content,
-			'size'    => $size,
-			'lines'   => substr_count( $content, "\n" ) + 1,
-		);
-	}
-
-	/**
-	 * Tool: List directory
-	 */
-	private function tool_list_directory( array $args ): array {
-		$path      = $this->sanitize_path( $args['path'] ?? '' );
-		$base_path = WP_PLUGIN_DIR . '/agent-builder/';
-		$full_path = $base_path . $path;
-
-		if ( ! is_dir( $full_path ) ) {
-			return array(
-				'error' => 'Directory not found',
-				'path'  => $path,
-			);
-		}
-
-		$items = scandir( $full_path );
-		$items = array_diff( $items, array( '.', '..' ) );
-
-		$result = array();
-		foreach ( $items as $item ) {
-			$item_path = $full_path . '/' . $item;
-			$result[]  = array(
-				'name' => $item,
-				'type' => is_dir( $item_path ) ? 'directory' : 'file',
-				'size' => is_file( $item_path ) ? filesize( $item_path ) : null,
-			);
-		}
-
-		return array(
-			'path'  => $path ?: '/',
-			'items' => $result,
-			'count' => count( $result ),
-		);
-	}
-
-	/**
-	 * Tool: Search code
-	 */
-	private function tool_search_code( array $args ): array {
-		$pattern   = $args['pattern'] ?? '';
-		$file_type = $args['file_type'] ?? null;
-		$base_path = WP_PLUGIN_DIR . '/agent-builder/';
-
-		if ( empty( $pattern ) ) {
-			return array( 'error' => 'Search pattern required' );
-		}
-
-		$results  = array();
-		$iterator = new \RecursiveIteratorIterator(
-			new \RecursiveDirectoryIterator( $base_path )
-		);
-
-		$count = 0;
-		foreach ( $iterator as $file ) {
-			if ( $count >= 20 ) {
-				break;
-			}
-
-			if ( ! $file->isFile() ) {
-				continue;
-			}
-
-			if ( $file_type && $file->getExtension() !== $file_type ) {
-				continue;
-			}
-
-			// Skip vendor/node_modules
-			$path = $file->getPathname();
-			if ( strpos( $path, 'vendor/' ) !== false || strpos( $path, 'node_modules/' ) !== false ) {
-				continue;
-			}
-
-			$content = file_get_contents( $path );
-			if ( preg_match( "/{$pattern}/i", $content, $matches, PREG_OFFSET_CAPTURE ) ) {
-				$relative_path = str_replace( $base_path, '', $path );
-				$line_number   = substr_count( substr( $content, 0, $matches[0][1] ), "\n" ) + 1;
-
-				// Get context
-				$lines         = explode( "\n", $content );
-				$context_start = max( 0, $line_number - 3 );
-				$context_end   = min( count( $lines ), $line_number + 2 );
-				$context       = array_slice( $lines, $context_start, $context_end - $context_start );
-
-				$results[] = array(
-					'file'    => $relative_path,
-					'line'    => $line_number,
-					'match'   => $matches[0][0],
-					'context' => implode( "\n", $context ),
-				);
-				++$count;
-			}
-		}
-
-		return array(
-			'pattern' => $pattern,
-			'results' => $results,
-			'count'   => count( $results ),
-			'note'    => count( $results ) >= 20 ? 'Results limited to 20 matches' : null,
-		);
 	}
 
 	/**
@@ -484,16 +288,6 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	private function is_agent_active( string $agent_id ): bool {
 		$active_agents = get_option( 'agentic_active_agents', array() );
 		return in_array( $agent_id, $active_agents, true );
-	}
-
-	/**
-	 * Sanitize file path
-	 */
-	private function sanitize_path( string $path ): string {
-		$path = str_replace( '..', '', $path );
-		$path = preg_replace( '#/+#', '/', $path );
-		$path = ltrim( $path, '/' );
-		return $path;
 	}
 }
 

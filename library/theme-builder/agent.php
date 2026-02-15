@@ -1,13 +1,13 @@
 <?php
 /**
  * Agent Name: Theme Builder
- * Version: 1.1.0
- * Description: Builds and maintains WordPress themes. Creates new themes, edits templates, generates styles, and can clone starter themes from URLs.
+ * Version: 2.0.0
+ * Description: Helps beginners choose and customise WordPress themes using the Site Editor. Detects your active theme, recommends free FSE block themes, and guides you through visual customisation — no code needed.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com
- * Category: Developer
- * Tags: themes, css, styling, templates, design, sass, tailwind, blocks
- * Capabilities: edit_themes, install_themes
+ * Category: Starter
+ * Tags: themes, design, site-editor, beginner, customisation, block-themes
+ * Capabilities: read
  * Icon: 🎨
  * Requires PHP: 8.1
  * Requires at least: 6.4
@@ -21,10 +21,55 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Theme Builder Agent
  *
- * A true AI agent specialized in WordPress theme development.
- * Can create, edit, and maintain themes including all styling.
+ * A beginner-friendly agent that helps users choose and customise
+ * WordPress themes using the Site Editor. Does not install, download,
+ * or modify any files — guidance only.
  */
 class Agentic_Theme_Builder extends \Agentic\Agent_Base {
+
+	/**
+	 * Curated list of recommended free FSE block themes.
+	 *
+	 * @var array
+	 */
+	private const RECOMMENDED_THEMES = array(
+		array(
+			'name'        => 'Blocksy',
+			'slug'        => 'blocksy',
+			'description' => 'Fast, flexible, and feature-rich — great for any type of site with tons of customisation options.',
+			'best_for'    => 'Performance and flexibility',
+		),
+		array(
+			'name'        => 'Astra',
+			'slug'        => 'astra',
+			'description' => 'Lightweight and lightning-fast with a minimalist design that works for blogs, portfolios, and business sites.',
+			'best_for'    => 'Speed and minimalism',
+		),
+		array(
+			'name'        => 'Kadence',
+			'slug'        => 'kadence',
+			'description' => 'Modern starter templates and beautiful patterns — perfect for getting a professional look quickly.',
+			'best_for'    => 'Modern patterns and starter sites',
+		),
+		array(
+			'name'        => 'Spectra One',
+			'slug'        => 'flavor',
+			'description' => 'Clean, elegant design with a focus on simplicity — ideal for personal sites and portfolios.',
+			'best_for'    => 'Clean, simple design',
+		),
+		array(
+			'name'        => 'Neve FSE',
+			'slug'        => 'flavor',
+			'description' => 'Multipurpose starter theme with fast load times and easy-to-use block patterns.',
+			'best_for'    => 'Multipurpose starter sites',
+		),
+		array(
+			'name'        => 'Flavor',
+			'slug'        => 'flavor',
+			'description' => 'A beautiful starter block theme with clean typography and thoughtful spacing.',
+			'best_for'    => 'Blog and personal sites',
+		),
+	);
 
 	/**
 	 * Get system prompt from template file
@@ -34,8 +79,7 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 		if ( file_exists( $template_file ) ) {
 			return file_get_contents( $template_file );
 		}
-		// Fallback if template file not found
-		return 'You are the Theme Builder agent.';
+		return 'You are the Theme Builder agent. You help beginners choose and customise WordPress themes.';
 	}
 
 	/**
@@ -56,7 +100,14 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 * Get agent description
 	 */
 	public function get_description(): string {
-		return 'Builds and maintains WordPress themes including templates, styles, and theme.json configuration.';
+		return 'Helps you choose and customise your WordPress theme. Detects your active theme, recommends free block themes, and guides you through the Site Editor — no code needed.';
+	}
+
+	/**
+	 * Get agent version
+	 */
+	public function get_version(): string {
+		return '2.0.0';
 	}
 
 	/**
@@ -77,14 +128,14 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 * Get agent category
 	 */
 	public function get_category(): string {
-		return 'Developer';
+		return 'Starter';
 	}
 
 	/**
-	 * Get required capabilities
+	 * Get required capabilities — read-only, no elevated permissions needed
 	 */
 	public function get_required_capabilities(): array {
-		return array( 'edit_themes' );
+		return array( 'read' );
 	}
 
 	/**
@@ -92,13 +143,12 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 */
 	public function get_welcome_message(): string {
 		return "🎨 **Theme Builder**\n\n" .
-				"I help you create and customize WordPress themes!\n\n" .
-				"- **Create themes** from scratch or clone starters\n" .
-				"- **Edit templates** - header, footer, page templates\n" .
-				"- **Generate styles** - CSS, Sass, Tailwind\n" .
-				"- **Block themes** - theme.json configuration\n" .
-				"- **Child themes** - safely customize parent themes\n\n" .
-				'What would you like to build?';
+				"I'll help you pick the perfect look for your WordPress site — no coding needed!\n\n" .
+				"I can:\n" .
+				"- **Check your current theme** and suggest quick improvements\n" .
+				"- **Recommend free themes** that are easy to customise\n" .
+				"- **Walk you through** the Site Editor step by step\n\n" .
+				"Want me to check what theme you're using and give you some tips?";
 	}
 
 	/**
@@ -106,29 +156,41 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 */
 	public function get_suggested_prompts(): array {
 		return array(
-			'Create a minimal starter theme',
-			'Clone Flavor starter theme from GitHub',
-			'Create a child theme of flavor',
-			'Show me my installed themes',
+			'What theme am I using right now?',
+			'Recommend a good free theme for my site',
+			'How do I change my site colors?',
+			'Help me customise my homepage layout',
 		);
 	}
 
 	/**
-	 * Get available tools
+	 * Get available tools — read-only, no file writes or installs
 	 */
 	public function get_tools(): array {
 		return array(
 			array(
 				'type'     => 'function',
 				'function' => array(
-					'name'        => 'list_themes',
-					'description' => 'List installed themes with their details (name, version, status, type)',
+					'name'        => 'get_active_theme',
+					'description' => 'Get detailed information about the currently active WordPress theme, including whether it supports the Site Editor (block theme).',
+					'parameters'  => array(
+						'type'       => 'object',
+						'properties' => new \stdClass(),
+						'required'   => array(),
+					),
+				),
+			),
+			array(
+				'type'     => 'function',
+				'function' => array(
+					'name'        => 'get_recommended_themes',
+					'description' => 'Get a curated list of recommended free FSE block themes from WordPress.org with install links and descriptions.',
 					'parameters'  => array(
 						'type'       => 'object',
 						'properties' => array(
-							'include_inactive' => array(
-								'type'        => 'boolean',
-								'description' => 'Include inactive themes (default: true)',
+							'purpose' => array(
+								'type'        => 'string',
+								'description' => 'What the user wants their site for (e.g., "blog", "portfolio", "business", "shop"). Used to prioritise recommendations.',
 							),
 						),
 						'required'   => array(),
@@ -138,215 +200,29 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 			array(
 				'type'     => 'function',
 				'function' => array(
-					'name'        => 'get_theme_details',
-					'description' => 'Get detailed information about a specific theme including file structure',
+					'name'        => 'get_site_editor_guide',
+					'description' => 'Get step-by-step instructions for a specific Site Editor task (changing colors, editing header, customising homepage, etc.).',
 					'parameters'  => array(
 						'type'       => 'object',
 						'properties' => array(
-							'theme_slug' => array(
+							'task' => array(
 								'type'        => 'string',
-								'description' => 'Theme directory name/slug',
+								'description' => 'The customisation task the user wants to do (e.g., "change colors", "edit header", "customise homepage", "add navigation menu", "change fonts")',
 							),
 						),
-						'required'   => array( 'theme_slug' ),
+						'required'   => array( 'task' ),
 					),
 				),
 			),
 			array(
 				'type'     => 'function',
 				'function' => array(
-					'name'        => 'create_theme',
-					'description' => 'Create a new theme from scratch with basic structure',
+					'name'        => 'list_installed_themes',
+					'description' => 'List all themes currently installed on this WordPress site with their status.',
 					'parameters'  => array(
 						'type'       => 'object',
-						'properties' => array(
-							'name'        => array(
-								'type'        => 'string',
-								'description' => 'Theme name (e.g., "My Custom Theme")',
-							),
-							'slug'        => array(
-								'type'        => 'string',
-								'description' => 'Theme directory slug (e.g., "my-custom-theme")',
-							),
-							'description' => array(
-								'type'        => 'string',
-								'description' => 'Theme description',
-							),
-							'author'      => array(
-								'type'        => 'string',
-								'description' => 'Theme author name',
-							),
-							'type'        => array(
-								'type'        => 'string',
-								'enum'        => array( 'classic', 'block' ),
-								'description' => 'Theme type: classic (PHP templates) or block (FSE)',
-							),
-						),
-						'required'   => array( 'name', 'slug' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'clone_theme',
-					'description' => 'Clone a starter theme from a GitHub URL or WordPress.org',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'source'   => array(
-								'type'        => 'string',
-								'description' => 'GitHub URL (https://github.com/user/repo) or WordPress.org slug',
-							),
-							'new_name' => array(
-								'type'        => 'string',
-								'description' => 'New theme name after cloning',
-							),
-							'new_slug' => array(
-								'type'        => 'string',
-								'description' => 'New theme directory slug',
-							),
-						),
-						'required'   => array( 'source', 'new_name', 'new_slug' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'create_child_theme',
-					'description' => 'Create a child theme from an existing parent theme',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'parent_slug' => array(
-								'type'        => 'string',
-								'description' => 'Parent theme directory slug',
-							),
-							'child_name'  => array(
-								'type'        => 'string',
-								'description' => 'Child theme name',
-							),
-							'child_slug'  => array(
-								'type'        => 'string',
-								'description' => 'Child theme directory slug',
-							),
-						),
-						'required'   => array( 'parent_slug', 'child_name' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'read_theme_file',
-					'description' => 'Read the contents of a theme file',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'theme_slug' => array(
-								'type'        => 'string',
-								'description' => 'Theme directory slug',
-							),
-							'file_path'  => array(
-								'type'        => 'string',
-								'description' => 'Relative path to file within theme (e.g., "style.css", "templates/page.html")',
-							),
-						),
-						'required'   => array( 'theme_slug', 'file_path' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'write_theme_file',
-					'description' => 'Create or update a file in a theme. Use for templates, styles, and configuration.',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'theme_slug'  => array(
-								'type'        => 'string',
-								'description' => 'Theme directory slug',
-							),
-							'file_path'   => array(
-								'type'        => 'string',
-								'description' => 'Relative path to file (e.g., "style.css", "parts/header.html")',
-							),
-							'content'     => array(
-								'type'        => 'string',
-								'description' => 'File content to write',
-							),
-							'create_dirs' => array(
-								'type'        => 'boolean',
-								'description' => 'Create parent directories if needed (default: true)',
-							),
-						),
-						'required'   => array( 'theme_slug', 'file_path', 'content' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'generate_css',
-					'description' => 'Generate CSS code for a specific component or layout',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'component'    => array(
-								'type'        => 'string',
-								'description' => 'Component to style (e.g., "navigation", "hero section", "card grid")',
-							),
-							'requirements' => array(
-								'type'        => 'string',
-								'description' => 'Specific requirements (colors, fonts, layout, responsive behavior)',
-							),
-							'framework'    => array(
-								'type'        => 'string',
-								'enum'        => array( 'vanilla', 'tailwind', 'sass' ),
-								'description' => 'CSS framework to use',
-							),
-						),
-						'required'   => array( 'component' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'update_theme_json',
-					'description' => 'Update theme.json settings for block themes (colors, typography, spacing, etc.)',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'theme_slug' => array(
-								'type'        => 'string',
-								'description' => 'Theme directory slug',
-							),
-							'settings'   => array(
-								'type'        => 'object',
-								'description' => 'Settings to merge into theme.json (colors, typography, spacing, etc.)',
-							),
-						),
-						'required'   => array( 'theme_slug', 'settings' ),
-					),
-				),
-			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'activate_theme',
-					'description' => 'Activate a theme',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'theme_slug' => array(
-								'type'        => 'string',
-								'description' => 'Theme directory slug to activate',
-							),
-						),
-						'required'   => array( 'theme_slug' ),
+						'properties' => new \stdClass(),
+						'required'   => array(),
 					),
 				),
 			),
@@ -358,1077 +234,270 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 */
 	public function execute_tool( string $tool_name, array $arguments ): ?array {
 		return match ( $tool_name ) {
-			'list_themes'       => $this->tool_list_themes( $arguments ),
-			'get_theme_details' => $this->tool_get_theme_details( $arguments ),
-			'create_theme'      => $this->tool_create_theme( $arguments ),
-			'clone_theme'       => $this->tool_clone_theme( $arguments ),
-			'create_child_theme'=> $this->tool_create_child_theme( $arguments ),
-			'read_theme_file'   => $this->tool_read_theme_file( $arguments ),
-			'write_theme_file'  => $this->tool_write_theme_file( $arguments ),
-			'generate_css'      => $this->tool_generate_css( $arguments ),
-			'update_theme_json' => $this->tool_update_theme_json( $arguments ),
-			'activate_theme'    => $this->tool_activate_theme( $arguments ),
-			default             => array( 'error' => 'Unknown tool: ' . $tool_name ),
+			'get_active_theme'       => $this->tool_get_active_theme(),
+			'get_recommended_themes' => $this->tool_get_recommended_themes( $arguments ),
+			'get_site_editor_guide'  => $this->tool_get_site_editor_guide( $arguments ),
+			'list_installed_themes'  => $this->tool_list_installed_themes(),
+			default                  => array( 'error' => 'Unknown tool: ' . $tool_name ),
 		};
 	}
 
 	/**
-	 * List installed themes
+	 * Get active theme details
 	 */
-	private function tool_list_themes( array $args ): array {
-		$include_inactive = $args['include_inactive'] ?? true;
-		$themes           = wp_get_themes();
-		$active_theme     = get_stylesheet();
-		$parent_theme     = get_template();
+	private function tool_get_active_theme(): array {
+		$theme        = wp_get_theme();
+		$is_block     = method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme();
+		$parent       = $theme->parent();
+		$slug         = $theme->get_stylesheet();
+		$is_tt5       = in_array( $slug, array( 'twentytwentyfive', 'tt5' ), true );
+		$is_default   = str_starts_with( $slug, 'twenty' );
 
-		$result = array();
+		$info = array(
+			'name'           => $theme->get( 'Name' ),
+			'slug'           => $slug,
+			'version'        => $theme->get( 'Version' ),
+			'description'    => $theme->get( 'Description' ),
+			'author'         => $theme->get( 'Author' ),
+			'is_block_theme' => $is_block,
+			'is_child_theme' => (bool) $parent,
+			'parent_theme'   => $parent ? $parent->get( 'Name' ) : null,
+			'theme_uri'      => $theme->get( 'ThemeURI' ),
+			'supports_site_editor' => $is_block,
+		);
+
+		// Add contextual guidance for the LLM.
+		if ( $is_tt5 ) {
+			$info['agent_note'] = 'This is Twenty Twenty-Five — the WordPress 2026 default theme. Praise it as an excellent starting point. It has 70+ block patterns, multiple style variations, fluid typography, and strong accessibility. Guide the user to Appearance → Editor to start customising.';
+		} elseif ( $is_block ) {
+			$info['agent_note'] = 'This is an FSE block theme. The user can customise it in Appearance → Editor. Offer to help with colors, fonts, header, footer, or homepage layout.';
+		} elseif ( $is_default ) {
+			$info['agent_note'] = 'This is an older default WordPress theme (classic). Suggest upgrading to Twenty Twenty-Five or another modern block theme for the full Site Editor experience.';
+		} else {
+			$info['agent_note'] = 'This is a classic (non-block) theme. It does not support the full Site Editor. Suggest switching to a block theme for a better visual editing experience. Use get_recommended_themes to show options.';
+		}
+
+		return $info;
+	}
+
+	/**
+	 * Get recommended themes with install links
+	 */
+	private function tool_get_recommended_themes( array $args ): array {
+		$purpose = $args['purpose'] ?? '';
+
+		$themes = array();
+		foreach ( self::RECOMMENDED_THEMES as $theme ) {
+			$themes[] = array(
+				'name'        => $theme['name'],
+				'slug'        => $theme['slug'],
+				'description' => $theme['description'],
+				'best_for'    => $theme['best_for'],
+				'install_url' => 'https://wordpress.org/themes/' . $theme['slug'] . '/',
+				'type'        => 'Free FSE Block Theme',
+			);
+		}
+
+		// Always include Twenty Twenty-Five at the top.
+		array_unshift(
+			$themes,
+			array(
+				'name'        => 'Twenty Twenty-Five',
+				'slug'        => 'twentytwentyfive',
+				'description' => 'The official WordPress 2026 default — 70+ patterns, multiple style variations, fluid typography, and excellent accessibility. A great blank canvas.',
+				'best_for'    => 'Any type of site (the safe default)',
+				'install_url' => 'https://wordpress.org/themes/twentytwentyfive/',
+				'type'        => 'Free FSE Block Theme (Default)',
+			)
+		);
+
+		return array(
+			'themes'       => $themes,
+			'purpose'      => $purpose ?: 'general',
+			'install_note' => 'To install any of these: go to Appearance → Themes → Add New Theme, search for the name, click Install, then Activate.',
+			'next_step'    => 'After activating, go straight to Appearance → Editor to start tweaking!',
+		);
+	}
+
+	/**
+	 * Get Site Editor guide for a specific task
+	 */
+	private function tool_get_site_editor_guide( array $args ): array {
+		$task = strtolower( $args['task'] ?? '' );
+
+		if ( empty( $task ) ) {
+			return array( 'error' => 'Please specify what you want to customise.' );
+		}
+
+		$guides = array(
+			'change colors'       => array(
+				'title' => 'Change Your Site Colors',
+				'steps' => array(
+					'Go to **Appearance → Editor** in your WordPress admin.',
+					'Click **Styles** (the half-circle icon in the top-right).',
+					'Click **Colors** to see your color palette.',
+					'Click any color swatch to change it — try the Background, Text, or Accent colors.',
+					'Use **Browse styles** to try pre-made color schemes with one click.',
+					'Click **Save** when you\'re happy!',
+				),
+				'tip'   => 'Try the Browse styles button first — it lets you preview complete color schemes before committing.',
+			),
+			'change fonts'        => array(
+				'title' => 'Change Your Site Fonts',
+				'steps' => array(
+					'Go to **Appearance → Editor**.',
+					'Click **Styles** (half-circle icon, top-right).',
+					'Click **Typography**.',
+					'You\'ll see options for Headings, Body text, Links, etc.',
+					'Click any element to change its font family, size, weight, and line height.',
+					'Click **Save** when you\'re happy!',
+				),
+				'tip'   => 'Stick with 1–2 fonts for a clean, professional look. System fonts (like the defaults) load fastest.',
+			),
+			'edit header'         => array(
+				'title' => 'Customise Your Header',
+				'steps' => array(
+					'Go to **Appearance → Editor**.',
+					'Click **Patterns** in the left sidebar.',
+					'Click **Template Parts**, then click your **Header**.',
+					'You can now edit your header visually — add a site logo, change the navigation, add buttons, etc.',
+					'Click any block to modify it, or use the **+** button to add new blocks.',
+					'Click **Save** when you\'re happy!',
+				),
+				'tip'   => 'To add a logo, insert a "Site Logo" block. To change navigation links, click the Navigation block and edit menu items.',
+			),
+			'edit footer'         => array(
+				'title' => 'Customise Your Footer',
+				'steps' => array(
+					'Go to **Appearance → Editor**.',
+					'Click **Patterns** in the left sidebar.',
+					'Click **Template Parts**, then click your **Footer**.',
+					'Edit the footer visually — add social links, copyright text, extra navigation, etc.',
+					'Click **Save** when you\'re happy!',
+				),
+				'tip'   => 'Add a "Social Icons" block to display links to your social media profiles.',
+			),
+			'customise homepage'  => array(
+				'title' => 'Customise Your Homepage Layout',
+				'steps' => array(
+					'Go to **Appearance → Editor**.',
+					'Click **Pages** in the left sidebar.',
+					'Click your **Front Page** (homepage).',
+					'Now you can edit the homepage layout — add hero sections, feature grids, testimonials, etc.',
+					'Click the **+** button to browse block patterns — these are pre-designed sections you can insert with one click.',
+					'Rearrange sections by dragging blocks up or down.',
+					'Click **Save** when you\'re happy!',
+				),
+				'tip'   => 'Search patterns for "hero", "features", or "call to action" to find great homepage sections instantly.',
+			),
+			'add navigation menu' => array(
+				'title' => 'Set Up Your Navigation Menu',
+				'steps' => array(
+					'Go to **Appearance → Editor**.',
+					'Click on the **Navigation** block in your header (or find it in Patterns → Template Parts → Header).',
+					'Click the Navigation block to select it.',
+					'Use the **+** button inside it to add menu items — Pages, Posts, Custom Links, etc.',
+					'Drag items to reorder them.',
+					'Click **Save** when you\'re happy!',
+				),
+				'tip'   => 'You can create dropdown submenus by dragging a menu item slightly to the right to nest it under another.',
+			),
+			'browse styles'       => array(
+				'title' => 'Try Different Style Variations',
+				'steps' => array(
+					'Go to **Appearance → Editor**.',
+					'Click **Styles** (half-circle icon, top-right).',
+					'Click **Browse styles** to see all available variations.',
+					'Click any variation to preview it — this changes colors, fonts, and spacing all at once.',
+					'Pick one you like and click **Save**!',
+				),
+				'tip'   => 'Style variations are the fastest way to completely change your site\'s look. Twenty Twenty-Five comes with multiple variations built in.',
+			),
+		);
+
+		// Try to match the task to a guide.
+		$matched = null;
+		foreach ( $guides as $key => $guide ) {
+			if ( str_contains( $task, $key ) || str_contains( $key, $task ) ) {
+				$matched = $guide;
+				break;
+			}
+		}
+
+		// Fuzzy match by keywords.
+		if ( ! $matched ) {
+			$keyword_map = array(
+				'color'      => 'change colors',
+				'colour'     => 'change colors',
+				'font'       => 'change fonts',
+				'typography' => 'change fonts',
+				'header'     => 'edit header',
+				'logo'       => 'edit header',
+				'footer'     => 'edit footer',
+				'homepage'   => 'customise homepage',
+				'home page'  => 'customise homepage',
+				'front page' => 'customise homepage',
+				'landing'    => 'customise homepage',
+				'nav'        => 'add navigation menu',
+				'menu'       => 'add navigation menu',
+				'style'      => 'browse styles',
+				'variation'  => 'browse styles',
+				'layout'     => 'customise homepage',
+			);
+
+			foreach ( $keyword_map as $keyword => $guide_key ) {
+				if ( str_contains( $task, $keyword ) ) {
+					$matched = $guides[ $guide_key ];
+					break;
+				}
+			}
+		}
+
+		if ( ! $matched ) {
+			return array(
+				'title'          => 'Site Editor Customisation',
+				'general_note'   => "I don't have a specific guide for \"$task\" yet, but almost everything can be done in the Site Editor!",
+				'steps'          => array(
+					'Go to **Appearance → Editor** in your WordPress admin.',
+					'Look through **Styles** (colors, fonts), **Pages**, and **Patterns** (template parts).',
+					'Click any element on the page to select and edit it.',
+					'Use the **+** button to add new blocks and patterns.',
+					'Click **Save** when you\'re happy!',
+				),
+				'available_guides' => array_keys( $guides ),
+			);
+		}
+
+		return $matched;
+	}
+
+	/**
+	 * List all installed themes
+	 */
+	private function tool_list_installed_themes(): array {
+		$themes       = wp_get_themes();
+		$active_slug  = get_stylesheet();
+		$result       = array();
 
 		foreach ( $themes as $slug => $theme ) {
-			$is_active = ( $slug === $active_theme );
-
-			if ( ! $include_inactive && ! $is_active ) {
-				continue;
-			}
-
-			$is_block_theme = method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme();
+			$is_block = method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme();
 
 			$result[] = array(
-				'slug'        => $slug,
 				'name'        => $theme->get( 'Name' ),
+				'slug'        => $slug,
 				'version'     => $theme->get( 'Version' ),
-				'author'      => $theme->get( 'Author' ),
-				'description' => wp_trim_words( $theme->get( 'Description' ), 20 ),
-				'status'      => $is_active ? 'active' : 'inactive',
-				'type'        => $is_block_theme ? 'block' : 'classic',
-				'parent'      => $theme->parent() ? $theme->parent()->get_stylesheet() : null,
+				'status'      => ( $slug === $active_slug ) ? 'active' : 'inactive',
+				'type'        => $is_block ? 'Block (FSE)' : 'Classic',
 				'is_child'    => (bool) $theme->parent(),
+				'description' => wp_trim_words( $theme->get( 'Description' ), 15 ),
 			);
 		}
 
 		return array(
 			'themes'       => $result,
 			'total'        => count( $result ),
-			'active_theme' => $active_theme,
-		);
-	}
-
-	/**
-	 * Get detailed theme information
-	 */
-	private function tool_get_theme_details( array $args ): array {
-		$slug = $args['theme_slug'] ?? '';
-
-		if ( empty( $slug ) ) {
-			return array( 'error' => 'Theme slug required' );
-		}
-
-		$theme = wp_get_theme( $slug );
-
-		if ( ! $theme->exists() ) {
-			return array( 'error' => "Theme '$slug' not found" );
-		}
-
-		$theme_dir      = $theme->get_stylesheet_directory();
-		$is_block_theme = method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme();
-
-		// Get file structure
-		$files = $this->scan_theme_files( $theme_dir );
-
-		// Check for common files
-		$has_theme_json   = file_exists( $theme_dir . '/theme.json' );
-		$has_functions    = file_exists( $theme_dir . '/functions.php' );
-		$has_package_json = file_exists( $theme_dir . '/package.json' );
-
-		return array(
-			'slug'           => $slug,
-			'name'           => $theme->get( 'Name' ),
-			'version'        => $theme->get( 'Version' ),
-			'author'         => $theme->get( 'Author' ),
-			'author_uri'     => $theme->get( 'AuthorURI' ),
-			'description'    => $theme->get( 'Description' ),
-			'theme_uri'      => $theme->get( 'ThemeURI' ),
-			'text_domain'    => $theme->get( 'TextDomain' ),
-			'requires_wp'    => $theme->get( 'RequiresWP' ),
-			'requires_php'   => $theme->get( 'RequiresPHP' ),
-			'type'           => $is_block_theme ? 'block' : 'classic',
-			'parent'         => $theme->parent() ? $theme->parent()->get_stylesheet() : null,
-			'is_child'       => (bool) $theme->parent(),
-			'is_active'      => ( $slug === get_stylesheet() ),
-			'directory'      => $theme_dir,
-			'files'          => $files,
-			'has_theme_json' => $has_theme_json,
-			'has_functions'  => $has_functions,
-			'has_build'      => $has_package_json,
-		);
-	}
-
-	/**
-	 * Scan theme files recursively
-	 */
-	private function scan_theme_files( string $dir, string $prefix = '' ): array {
-		$files = array();
-		$items = @scandir( $dir );
-
-		if ( ! $items ) {
-			return $files;
-		}
-
-		// Skip certain directories
-		$skip = array( '.', '..', 'node_modules', '.git', 'vendor' );
-
-		foreach ( $items as $item ) {
-			if ( in_array( $item, $skip, true ) ) {
-				continue;
-			}
-
-			$path     = $dir . '/' . $item;
-			$relative = $prefix ? $prefix . '/' . $item : $item;
-
-			if ( is_dir( $path ) ) {
-				$files[ $item . '/' ] = $this->scan_theme_files( $path, $relative );
-			} else {
-				$files[] = $relative;
-			}
-		}
-
-		return $files;
-	}
-
-	/**
-	 * Create a new theme
-	 */
-	private function tool_create_theme( array $args ): array {
-		$name        = $args['name'] ?? '';
-		$slug        = $args['slug'] ?? sanitize_title( $name );
-		$description = $args['description'] ?? 'A custom WordPress theme';
-		$author      = $args['author'] ?? 'Theme Builder Agent';
-		$type        = $args['type'] ?? 'block';
-
-		if ( empty( $name ) || empty( $slug ) ) {
-			return array( 'error' => 'Theme name and slug are required' );
-		}
-
-		$theme_dir = get_theme_root() . '/' . $slug;
-
-		if ( is_dir( $theme_dir ) ) {
-			return array( 'error' => "Theme directory '$slug' already exists" );
-		}
-
-		// Create theme directory
-		if ( ! wp_mkdir_p( $theme_dir ) ) {
-			return array( 'error' => 'Failed to create theme directory' );
-		}
-
-		if ( $type === 'block' ) {
-			$this->create_block_theme( $theme_dir, $name, $slug, $description, $author );
-		} else {
-			$this->create_classic_theme( $theme_dir, $name, $slug, $description, $author );
-		}
-
-		return array(
-			'success'    => true,
-			'message'    => "Theme '$name' created successfully",
-			'slug'       => $slug,
-			'type'       => $type,
-			'directory'  => $theme_dir,
-			'next_steps' => array(
-				'Activate the theme in Appearance > Themes',
-				'Edit style.css to customize the design',
-				$type === 'block' ? 'Configure theme.json for colors and typography' : 'Edit template files (header.php, footer.php, etc.)',
-			),
-		);
-	}
-
-	/**
-	 * Create a block theme structure
-	 */
-	private function create_block_theme( string $dir, string $name, string $slug, string $desc, string $author ): void {
-		// style.css (required)
-		$style = "/*\n" .
-"Theme Name: $name\n" .
-"Theme URI: \n" .
-"Author: $author\n" .
-"Author URI: \n" .
-"Description: $desc\n" .
-"Version: 1.0.0\n" .
-"Requires at least: 6.0\n" .
-"Tested up to: 6.4\n" .
-"Requires PHP: 8.0\n" .
-"License: GNU General Public License v2 or later\n" .
-"License URI: http://www.gnu.org/licenses/gpl-2.0.html\n" .
-"Text Domain: $slug\n" .
-"*/";
-		global $wp_filesystem;
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		WP_Filesystem();
-		$wp_filesystem->put_contents( $dir . '/style.css', $style, FS_CHMOD_FILE );
-
-		// theme.json
-		$theme_json = array(
-			'$schema'       => 'https://schemas.wp.org/trunk/theme.json',
-			'version'       => 2,
-			'settings'      => array(
-				'appearanceTools' => true,
-				'color'           => array(
-					'palette' => array(
-						array(
-							'slug'  => 'primary',
-							'color' => '#0073aa',
-							'name'  => 'Primary',
-						),
-						array(
-							'slug'  => 'secondary',
-							'color' => '#23282d',
-							'name'  => 'Secondary',
-						),
-						array(
-							'slug'  => 'background',
-							'color' => '#ffffff',
-							'name'  => 'Background',
-						),
-						array(
-							'slug'  => 'foreground',
-							'color' => '#1e1e1e',
-							'name'  => 'Foreground',
-						),
-					),
-				),
-				'typography'      => array(
-					'fontFamilies' => array(
-						array(
-							'fontFamily' => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
-							'slug'       => 'system',
-							'name'       => 'System',
-						),
-					),
-				),
-				'layout'          => array(
-					'contentSize' => '800px',
-					'wideSize'    => '1200px',
-				),
-			),
-			'styles'        => array(
-				'color' => array(
-					'background' => 'var(--wp--preset--color--background)',
-					'text'       => 'var(--wp--preset--color--foreground)',
-				),
-			),
-			'templateParts' => array(
-				array(
-					'name'  => 'header',
-					'title' => 'Header',
-					'area'  => 'header',
-				),
-				array(
-					'name'  => 'footer',
-					'title' => 'Footer',
-					'area'  => 'footer',
-				),
-			),
-		);
-		$wp_filesystem->put_contents( $dir . '/theme.json', wp_json_encode( $theme_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ), FS_CHMOD_FILE );
-
-		// Create directories
-		wp_mkdir_p( $dir . '/templates' );
-		wp_mkdir_p( $dir . '/parts' );
-		wp_mkdir_p( $dir . '/assets/css' );
-		wp_mkdir_p( $dir . '/assets/js' );
-
-		// templates/index.html
-		$template_file = __DIR__ . '/templates/block-theme-index.html';
-		$index = file_exists( $template_file ) ? file_get_contents( $template_file ) : '';
-		$wp_filesystem->put_contents( $dir . '/templates/index.html', $index, FS_CHMOD_FILE );
-
-		// parts/header.html
-		$header = "<!-- wp:group {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|30\",\"bottom\":\"var:preset|spacing|30\"}}},\"layout\":{\"type\":\"constrained\"}} -->\n" .
-"<div class=\"wp-block-group\" style=\"padding-top:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30)\">\n" .
-"    <!-- wp:group {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"space-between\"}} -->\n" .
-"    <div class=\"wp-block-group\">\n" .
-"        <!-- wp:site-title /-->\n" .
-"        <!-- wp:navigation /-->\n" .
-"    </div>\n" .
-"    <!-- /wp:group -->\n" .
-"</div>\n" .
-"<!-- /wp:group -->";
-		$wp_filesystem->put_contents( $dir . '/parts/header.html', $header, FS_CHMOD_FILE );
-
-		// parts/footer.html
-		$footer = "<!-- wp:group {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|30\",\"bottom\":\"var:preset|spacing|30\"}}},\"backgroundColor\":\"secondary\",\"textColor\":\"background\",\"layout\":{\"type\":\"constrained\"}} -->\n" .
-"<div class=\"wp-block-group has-background-color has-secondary-background-color has-text-color has-background\" style=\"padding-top:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30)\">\n" .
-"    <!-- wp:paragraph {\"align\":\"center\"} -->\n" .
-"    <p class=\"has-text-align-center\">© {current_year} $name. All rights reserved.</p>\n" .
-"    <!-- /wp:paragraph -->\n" .
-"</div>\n" .
-"<!-- /wp:group -->";
-		$footer = str_replace( '{current_year}', wp_date( 'Y' ), $footer );
-		$wp_filesystem->put_contents( $dir . '/parts/footer.html', $footer, FS_CHMOD_FILE );
-
-		// functions.php (optional but useful)
-		$functions = "<?php\n" .
-"/**\n" .
-" * $name functions and definitions\n" .
-" *\n" .
-" * @package $slug\n" .
-" */\n\n" .
-"if ( ! defined( 'ABSPATH' ) ) {\n" .
-"    exit;\n" .
-"}\n\n" .
-"/**\n" .
-" * Enqueue theme assets\n" .
-" */\n" .
-"function {$slug}_enqueue_assets() {\n" .
-"    wp_enqueue_style(\n" .
-"        '$slug-style',\n" .
-"        get_stylesheet_uri(),\n" .
-"        [],\n" .
-"        wp_get_theme()->get( 'Version' )\n" .
-"    );\n" .
-"}\n" .
-"add_action( 'wp_enqueue_scripts', '{$slug}_enqueue_assets' );";
-		$functions = str_replace( '-', '_', $functions );
-		$wp_filesystem->put_contents( $dir . '/functions.php', $functions, FS_CHMOD_FILE );
-	}
-
-	/**
-	 * Create a classic theme structure
-	 */
-	private function create_classic_theme( string $dir, string $name, string $slug, string $desc, string $author ): void {
-		// style.css
-		$style = "/*\n" .
-"Theme Name: $name\n" .
-"Theme URI: \n" .
-"Author: $author\n" .
-"Author URI: \n" .
-"Description: $desc\n" .
-"Version: 1.0.0\n" .
-"Requires at least: 5.0\n" .
-"Tested up to: 6.4\n" .
-"Requires PHP: 7.4\n" .
-"License: GNU General Public License v2 or later\n" .
-"License URI: http://www.gnu.org/licenses/gpl-2.0.html\n" .
-"Text Domain: $slug\n" .
-"*/\n\n" .
-"/* Base Styles */\n" .
-"*,\n" .
-"*::before,\n" .
-"*::after {\n" .
-"    box-sizing: border-box;\n" .
-"}\n\n" .
-"body {\n" .
-"    margin: 0;\n" .
-"    font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif;\n" .
-"    font-size: 16px;\n" .
-"    line-height: 1.6;\n" .
-"    color: #1e1e1e;\n" .
-"    background-color: #ffffff;\n" .
-"}\n\n" .
-"a {\n" .
-"    color: #0073aa;\n" .
-"    text-decoration: none;\n" .
-"}\n\n" .
-"a:hover {\n" .
-"    text-decoration: underline;\n" .
-"}\n\n" .
-".site-header,\n" .
-".site-footer {\n" .
-"    padding: 1rem 2rem;\n" .
-"}\n\n" .
-".site-content {\n" .
-"    max-width: 800px;\n" .
-"    margin: 0 auto;\n" .
-"    padding: 2rem;\n" .
-"}";
-		global $wp_filesystem;
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		WP_Filesystem();
-		$wp_filesystem->put_contents( $dir . '/style.css', $style, FS_CHMOD_FILE );
-
-		// index.php
-		$index = "<?php\n" .
-"/**\n" .
-" * The main template file\n" .
-" *\n" .
-" * @package $slug\n" .
-" */\n\n" .
-"get_header();\n" .
-"?>\n\n" .
-"<main id=\"primary\" class=\"site-content\">\n" .
-"    <?php\n" .
-"    if ( have_posts() ) :\n" .
-"        while ( have_posts() ) :\n" .
-"            the_post();\n" .
-"            ?>\n" .
-"            <article id=\"post-<?php the_ID(); ?>\" <?php post_class(); ?>>\n" .
-"                <header class=\"entry-header\">\n" .
-"                    <?php the_title( '<h2 class=\"entry-title\"><a href=\"' . esc_url( get_permalink() ) . '\">', '</a></h2>' ); ?>\n" .
-"                </header>\n\n" .
-"                <div class=\"entry-content\">\n" .
-"                    <?php the_excerpt(); ?>\n" .
-"                </div>\n" .
-"            </article>\n" .
-"            <?php\n" .
-"        endwhile;\n\n" .
-"        the_posts_navigation();\n" .
-"    else :\n" .
-"        ?>\n" .
-"        <p><?php esc_html_e( 'No posts found.', '$slug' ); ?></p>\n" .
-"        <?php\n" .
-"    endif;\n" .
-"    ?>\n" .
-"</main>\n\n" .
-"<?php\n" .
-"get_footer();";
-		$wp_filesystem->put_contents( $dir . '/index.php', $index, FS_CHMOD_FILE );
-
-		// header.php
-		$header = "<?php\n" .
-"/**\n" .
-" * The header template\n" .
-" *\n" .
-" * @package $slug\n" .
-" */\n" .
-"?>\n" .
-"<!DOCTYPE html>\n" .
-"<html <?php language_attributes(); ?>>\n" .
-"<head>\n" .
-"    <meta charset=\"<?php bloginfo( 'charset' ); ?>\">\n" .
-"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" .
-"    <?php wp_head(); ?>\n" .
-"</head>\n" .
-"<body <?php body_class(); ?>>\n" .
-"<?php wp_body_open(); ?>\n\n" .
-"<header class=\"site-header\">\n" .
-"    <div class=\"site-branding\">\n" .
-"        <h1 class=\"site-title\">\n" .
-"            <a href=\"<?php echo esc_url( home_url( '/' ) ); ?>\">\n" .
-"                <?php bloginfo( 'name' ); ?>\n" .
-"            </a>\n" .
-"        </h1>\n" .
-"    </div>\n" .
-"    \n" .
-"    <nav class=\"site-navigation\">\n" .
-"        <?php\n" .
-"        wp_nav_menu( [\n" .
-"            'theme_location' => 'primary',\n" .
-"            'fallback_cb'    => false,\n" .
-"        ] );\n" .
-"        ?>\n" .
-"    </nav>\n" .
-"</header>";
-		$wp_filesystem->put_contents( $dir . '/header.php', $header, FS_CHMOD_FILE );
-
-		// footer.php
-		$footer = "<?php\n" .
-"/**\n" .
-" * The footer template\n" .
-" *\n" .
-" * @package $slug\n" .
-" */\n" .
-"?>\n\n" .
-"<footer class=\"site-footer\">\n" .
-"    <p>&copy; <?php echo wp_date( 'Y' ); ?> <?php bloginfo( 'name' ); ?>. All rights reserved.</p>\n" .
-"</footer>\n\n" .
-"<?php wp_footer(); ?>\n" .
-"</body>\n" .
-"</html>";
-		$wp_filesystem->put_contents( $dir . '/footer.php', $footer, FS_CHMOD_FILE );
-
-		// functions.php
-		$func_slug = str_replace( '-', '_', $slug );
-		$functions = "<?php\n" .
-"/**\n" .
-" * $name functions and definitions\n" .
-" *\n" .
-" * @package $slug\n" .
-" */\n\n" .
-"if ( ! defined( 'ABSPATH' ) ) {\n" .
-"    exit;\n" .
-"}\n\n" .
-"/**\n" .
-" * Theme setup\n" .
-" */\n" .
-"function {$func_slug}_setup() {\n" .
-"    // Add theme support\n" .
-"    add_theme_support( 'title-tag' );\n" .
-"    add_theme_support( 'post-thumbnails' );\n" .
-"    add_theme_support( 'html5', [ 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption' ] );\n" .
-"    add_theme_support( 'customize-selective-refresh-widgets' );\n\n" .
-"    // Register navigation menus\n" .
-"    register_nav_menus( [\n" .
-"        'primary' => esc_html__( 'Primary Menu', '$slug' ),\n" .
-"        'footer'  => esc_html__( 'Footer Menu', '$slug' ),\n" .
-"    ] );\n" .
-"}\n" .
-"add_action( 'after_setup_theme', '{$func_slug}_setup' );\n\n" .
-"/**\n" .
-" * Enqueue styles and scripts\n" .
-" */\n" .
-"function {$func_slug}_scripts() {\n" .
-"    wp_enqueue_style(\n" .
-"        '$slug-style',\n" .
-"        get_stylesheet_uri(),\n" .
-"        [],\n" .
-"        wp_get_theme()->get( 'Version' )\n" .
-"    );\n" .
-"}\n" .
-"add_action( 'wp_enqueue_scripts', '{$func_slug}_scripts' );";
-		$wp_filesystem->put_contents( $dir . '/functions.php', $functions, FS_CHMOD_FILE );
-	}
-
-	/**
-	 * Clone a theme from GitHub or WordPress.org
-	 */
-	private function tool_clone_theme( array $args ): array {
-		$source   = $args['source'] ?? '';
-		$new_name = $args['new_name'] ?? '';
-		$new_slug = $args['new_slug'] ?? sanitize_title( $new_name );
-
-		if ( empty( $source ) || empty( $new_name ) ) {
-			return array( 'error' => 'Source URL and new theme name are required' );
-		}
-
-		$theme_dir = get_theme_root() . '/' . $new_slug;
-
-		if ( is_dir( $theme_dir ) ) {
-			return array( 'error' => "Theme directory '$new_slug' already exists" );
-		}
-
-		// Handle GitHub URLs
-		if ( strpos( $source, 'github.com' ) !== false ) {
-			return $this->clone_from_github( $source, $theme_dir, $new_name, $new_slug );
-		}
-
-		// Handle WordPress.org themes
-		return $this->clone_from_wporg( $source, $theme_dir, $new_name, $new_slug );
-	}
-
-	/**
-	 * Clone theme from GitHub
-	 */
-	private function clone_from_github( string $url, string $dest, string $name, string $slug ): array {
-		// Convert to zip download URL
-		// https://github.com/user/repo -> https://github.com/user/repo/archive/refs/heads/main.zip
-		$zip_url = rtrim( $url, '/' ) . '/archive/refs/heads/main.zip';
-
-		// Try 'master' if 'main' fails
-		$response = wp_remote_get( $zip_url, array( 'timeout' => 30 ) );
-
-		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-			$zip_url  = rtrim( $url, '/' ) . '/archive/refs/heads/master.zip';
-			$response = wp_remote_get( $zip_url, array( 'timeout' => 30 ) );
-		}
-
-		if ( is_wp_error( $response ) ) {
-			return array( 'error' => 'Failed to download from GitHub: ' . $response->get_error_message() );
-		}
-
-		if ( wp_remote_retrieve_response_code( $response ) !== 200 ) {
-			return array( 'error' => 'Failed to download from GitHub. Check the URL is correct and the repository is public.' );
-		}
-
-		$zip_content = wp_remote_retrieve_body( $response );
-
-		// Save to temp file
-		global $wp_filesystem;
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		WP_Filesystem();
-		
-		$temp_file = wp_tempnam( 'theme' );
-		$wp_filesystem->put_contents( $temp_file, $zip_content );
-
-		// Extract
-		$result = $this->extract_and_rename_theme( $temp_file, $dest, $name, $slug );
-
-		// Cleanup
-		$wp_filesystem->delete( $temp_file );
-
-		return $result;
-	}
-
-	/**
-	 * Clone theme from WordPress.org
-	 */
-	private function clone_from_wporg( string $theme_slug, string $dest, string $name, string $slug ): array {
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		require_once ABSPATH . 'wp-admin/includes/theme.php';
-
-		// Get theme info from WordPress.org API
-		$api = themes_api( 'theme_information', array( 'slug' => $theme_slug ) );
-
-		if ( is_wp_error( $api ) ) {
-			return array( 'error' => 'Theme not found on WordPress.org: ' . $api->get_error_message() );
-		}
-
-		$download_url = $api->download_link;
-		$response     = wp_remote_get( $download_url, array( 'timeout' => 30 ) );
-
-		if ( is_wp_error( $response ) ) {
-			return array( 'error' => 'Failed to download theme: ' . $response->get_error_message() );
-		}
-
-		$zip_content = wp_remote_retrieve_body( $response );
-
-		// Save to temp file
-		global $wp_filesystem;
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		WP_Filesystem();
-		
-		$temp_file = wp_tempnam( 'theme' );
-		$wp_filesystem->put_contents( $temp_file, $zip_content );
-
-		// Extract
-		$result = $this->extract_and_rename_theme( $temp_file, $dest, $name, $slug );
-
-		// Cleanup
-		$wp_filesystem->delete( $temp_file );
-
-		return $result;
-	}
-
-	/**
-	 * Extract zip and rename theme
-	 */
-	private function extract_and_rename_theme( string $zip_file, string $dest, string $name, string $slug ): array {
-		WP_Filesystem();
-		global $wp_filesystem;
-
-		$temp_dir = get_temp_dir() . 'theme_extract_' . uniqid();
-		wp_mkdir_p( $temp_dir );
-
-		$unzip_result = unzip_file( $zip_file, $temp_dir );
-
-		if ( is_wp_error( $unzip_result ) ) {
-			$wp_filesystem->rmdir( $temp_dir, true );
-			return array( 'error' => 'Failed to extract theme: ' . $unzip_result->get_error_message() );
-		}
-
-		// Find the extracted folder (usually repo-main or repo-master)
-		$extracted  = @scandir( $temp_dir );
-		$source_dir = null;
-
-		foreach ( $extracted as $item ) {
-			if ( $item !== '.' && $item !== '..' && is_dir( $temp_dir . '/' . $item ) ) {
-				$source_dir = $temp_dir . '/' . $item;
-				break;
-			}
-		}
-
-		if ( ! $source_dir ) {
-			$wp_filesystem->rmdir( $temp_dir, true );
-			return array( 'error' => 'Could not find extracted theme folder' );
-		}
-
-		// Move to themes directory
-		if ( ! $wp_filesystem->move( $source_dir, $dest ) ) {
-			$wp_filesystem->rmdir( $temp_dir, true );
-			return array( 'error' => 'Failed to move theme to themes directory' );
-		}
-
-		// Update style.css with new name
-		$style_file = $dest . '/style.css';
-		if ( file_exists( $style_file ) ) {
-			$style_content = file_get_contents( $style_file );
-
-			// Update Theme Name
-			$style_content = preg_replace(
-				'/Theme Name:\s*.+/i',
-				'Theme Name: ' . $name,
-				$style_content
-			);
-
-			// Update Text Domain
-			$style_content = preg_replace(
-				'/Text Domain:\s*.+/i',
-				'Text Domain: ' . $slug,
-				$style_content
-			);
-
-			$wp_filesystem->put_contents( $style_file, $style_content, FS_CHMOD_FILE );
-		}
-
-		// Cleanup temp dir
-		$wp_filesystem->rmdir( $temp_dir, true );
-
-		return array(
-			'success'    => true,
-			'message'    => "Theme '$name' cloned successfully",
-			'slug'       => $slug,
-			'directory'  => $dest,
-			'next_steps' => array(
-				'Review and customize the theme files',
-				'Update branding in style.css',
-				'Activate in Appearance > Themes',
-			),
-		);
-	}
-
-	/**
-	 * Create a child theme
-	 */
-	private function tool_create_child_theme( array $args ): array {
-		$parent_slug = $args['parent_slug'] ?? '';
-		$child_name  = $args['child_name'] ?? '';
-		$child_slug  = $args['child_slug'] ?? sanitize_title( $child_name );
-
-		if ( empty( $parent_slug ) || empty( $child_name ) ) {
-			return array( 'error' => 'Parent theme slug and child theme name are required' );
-		}
-
-		$parent = wp_get_theme( $parent_slug );
-
-		if ( ! $parent->exists() ) {
-			return array( 'error' => "Parent theme '$parent_slug' not found" );
-		}
-
-		if ( empty( $child_slug ) ) {
-			$child_slug = $parent_slug . '-child';
-		}
-
-		$child_dir = get_theme_root() . '/' . $child_slug;
-
-		if ( is_dir( $child_dir ) ) {
-			return array( 'error' => "Child theme directory '$child_slug' already exists" );
-		}
-
-		wp_mkdir_p( $child_dir );
-
-		// style.css
-		$style = "/*\n" .
-"Theme Name: $child_name\n" .
-"Template: $parent_slug\n" .
-"Description: Child theme of {$parent->get('Name')}\n" .
-"Version: 1.0.0\n" .
-"Author: Theme Builder Agent\n" .
-"Text Domain: $child_slug\n" .
-"*/\n\n" .
-"/* Add your custom styles below */";
-		global $wp_filesystem;
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		WP_Filesystem();
-		$wp_filesystem->put_contents( $child_dir . '/style.css', $style, FS_CHMOD_FILE );
-
-		// functions.php
-		$func_slug = str_replace( '-', '_', $child_slug );
-		$functions = "<?php\n" .
-"/**\n" .
-" * $child_name functions\n" .
-" *\n" .
-" * @package $child_slug\n" .
-" */\n\n" .
-"if ( ! defined( 'ABSPATH' ) ) {\n" .
-"    exit;\n" .
-"}\n\n" .
-"/**\n" .
-" * Enqueue parent and child theme styles\n" .
-" */\n" .
-"function {$func_slug}_enqueue_styles() {\n" .
-"    // Parent theme style\n" .
-"    wp_enqueue_style(\n" .
-"        '$parent_slug-style',\n" .
-"        get_template_directory_uri() . '/style.css',\n" .
-"        [],\n" .
-"        wp_get_theme( '$parent_slug' )->get( 'Version' )\n" .
-"    );\n\n" .
-"    // Child theme style\n" .
-"    wp_enqueue_style(\n" .
-"        '$child_slug-style',\n" .
-"        get_stylesheet_uri(),\n" .
-"        [ '$parent_slug-style' ],\n" .
-"        wp_get_theme()->get( 'Version' )\n" .
-"    );\n" .
-"}\n" .
-"add_action( 'wp_enqueue_scripts', '{$func_slug}_enqueue_styles' );\n\n" .
-"// Add your custom functions below";
-		$wp_filesystem->put_contents( $child_dir . '/functions.php', $functions, FS_CHMOD_FILE );
-
-		return array(
-			'success'    => true,
-			'message'    => "Child theme '$child_name' created",
-			'slug'       => $child_slug,
-			'parent'     => $parent_slug,
-			'directory'  => $child_dir,
-			'next_steps' => array(
-				'Activate the child theme in Appearance > Themes',
-				'Add custom CSS to style.css',
-				'Override templates by copying them from the parent',
-			),
-		);
-	}
-
-	/**
-	 * Read a theme file
-	 */
-	private function tool_read_theme_file( array $args ): array {
-		$theme_slug = $args['theme_slug'] ?? '';
-		$file_path  = $args['file_path'] ?? '';
-
-		if ( empty( $theme_slug ) || empty( $file_path ) ) {
-			return array( 'error' => 'Theme slug and file path are required' );
-		}
-
-		$theme = wp_get_theme( $theme_slug );
-
-		if ( ! $theme->exists() ) {
-			return array( 'error' => "Theme '$theme_slug' not found" );
-		}
-
-		$full_path = $theme->get_stylesheet_directory() . '/' . ltrim( $file_path, '/' );
-
-		// Security: ensure we're reading within theme directory
-		$real_path = realpath( $full_path );
-		$theme_dir = realpath( $theme->get_stylesheet_directory() );
-
-		if ( ! $real_path || strpos( $real_path, $theme_dir ) !== 0 ) {
-			return array( 'error' => 'Invalid file path' );
-		}
-
-		if ( ! file_exists( $full_path ) ) {
-			return array( 'error' => "File '$file_path' not found in theme" );
-		}
-
-		$content = file_get_contents( $full_path );
-
-		return array(
-			'file'    => $file_path,
-			'theme'   => $theme_slug,
-			'content' => $content,
-			'size'    => strlen( $content ),
-			'type'    => pathinfo( $file_path, PATHINFO_EXTENSION ),
-		);
-	}
-
-	/**
-	 * Write a theme file
-	 */
-	private function tool_write_theme_file( array $args ): array {
-		$theme_slug  = $args['theme_slug'] ?? '';
-		$file_path   = $args['file_path'] ?? '';
-		$content     = $args['content'] ?? '';
-		$create_dirs = $args['create_dirs'] ?? true;
-
-		if ( empty( $theme_slug ) || empty( $file_path ) ) {
-			return array( 'error' => 'Theme slug and file path are required' );
-		}
-
-		$theme = wp_get_theme( $theme_slug );
-
-		if ( ! $theme->exists() ) {
-			return array( 'error' => "Theme '$theme_slug' not found" );
-		}
-
-		$theme_dir = $theme->get_stylesheet_directory();
-		$full_path = $theme_dir . '/' . ltrim( $file_path, '/' );
-
-		// Security: ensure we're writing within theme directory
-		$normalized = realpath( dirname( $full_path ) ) ?: dirname( $full_path );
-		if ( strpos( $normalized, realpath( $theme_dir ) ?: $theme_dir ) !== 0 &&
-			strpos( dirname( $full_path ), $theme_dir ) !== 0 ) {
-			return array( 'error' => 'Invalid file path - must be within theme directory' );
-		}
-
-		// Create directories if needed
-		$dir = dirname( $full_path );
-		if ( $create_dirs && ! is_dir( $dir ) ) {
-			if ( ! wp_mkdir_p( $dir ) ) {
-				return array( 'error' => 'Failed to create directory: ' . dirname( $file_path ) );
-			}
-		}
-
-		global $wp_filesystem;
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		WP_Filesystem();
-
-		$existed = file_exists( $full_path );
-		$result  = $wp_filesystem->put_contents( $full_path, $content, FS_CHMOD_FILE );
-
-		if ( $result === false ) {
-			return array( 'error' => 'Failed to write file' );
-		}
-
-		return array(
-			'success' => true,
-			'file'    => $file_path,
-			'theme'   => $theme_slug,
-			'action'  => $existed ? 'updated' : 'created',
-			'bytes'   => strlen( $content ),
-		);
-	}
-
-	/**
-	 * Generate CSS for a component (returns structured data, actual CSS generated by LLM)
-	 */
-	private function tool_generate_css( array $args ): array {
-		$component    = $args['component'] ?? '';
-		$requirements = $args['requirements'] ?? '';
-		$framework    = $args['framework'] ?? 'vanilla';
-
-		if ( empty( $component ) ) {
-			return array( 'error' => 'Component type required' );
-		}
-
-		// This is a helper tool - the LLM will use this info to generate actual CSS
-		return array(
-			'component'    => $component,
-			'requirements' => $requirements,
-			'framework'    => $framework,
-			'guidance'     => $this->get_css_guidance( $component, $framework ),
-		);
-	}
-
-	/**
-	 * Get CSS generation guidance
-	 */
-	private function get_css_guidance( string $component, string $framework ): array {
-		$base_guidance = array(
-			'navigation'   => array(
-				'selectors'  => array( '.site-navigation', '.nav-menu', '.menu-item' ),
-				'properties' => array( 'display: flex', 'gap', 'list-style: none' ),
-				'responsive' => 'Consider mobile hamburger menu',
-			),
-			'hero section' => array(
-				'selectors'  => array( '.hero', '.hero-content', '.hero-title' ),
-				'properties' => array( 'min-height', 'background', 'text-align: center' ),
-				'responsive' => 'Stack content on mobile',
-			),
-			'card grid'    => array(
-				'selectors'  => array( '.card-grid', '.card', '.card-image', '.card-content' ),
-				'properties' => array( 'display: grid', 'grid-template-columns', 'gap' ),
-				'responsive' => 'Single column on mobile, 2-3 on larger screens',
-			),
-			'footer'       => array(
-				'selectors'  => array( '.site-footer', '.footer-widgets', '.footer-copyright' ),
-				'properties' => array( 'background', 'padding', 'color' ),
-				'responsive' => 'Stack columns on mobile',
-			),
-		);
-
-		$guidance = $base_guidance[ strtolower( $component ) ] ?? array(
-			'selectors'  => array( '.' . sanitize_title( $component ) ),
-			'properties' => array(),
-			'responsive' => 'Consider mobile-first approach',
-		);
-
-		if ( $framework === 'tailwind' ) {
-			$guidance['note'] = 'Use Tailwind utility classes instead of custom CSS';
-		} elseif ( $framework === 'sass' ) {
-			$guidance['note'] = 'Use Sass features like variables, nesting, and mixins';
-		}
-
-		return $guidance;
-	}
-
-	/**
-	 * Update theme.json
-	 */
-	private function tool_update_theme_json( array $args ): array {
-		$theme_slug = $args['theme_slug'] ?? '';
-		$settings   = $args['settings'] ?? array();
-
-		if ( empty( $theme_slug ) ) {
-			return array( 'error' => 'Theme slug required' );
-		}
-
-		$theme = wp_get_theme( $theme_slug );
-
-		if ( ! $theme->exists() ) {
-			return array( 'error' => "Theme '$theme_slug' not found" );
-		}
-
-		$json_path = $theme->get_stylesheet_directory() . '/theme.json';
-
-		// Load existing or create new
-		if ( file_exists( $json_path ) ) {
-			$existing = json_decode( file_get_contents( $json_path ), true );
-			if ( ! $existing ) {
-				return array( 'error' => 'Failed to parse existing theme.json' );
-			}
-		} else {
-			$existing = array(
-				'$schema' => 'https://schemas.wp.org/trunk/theme.json',
-				'version' => 2,
-			);
-		}
-
-		// Deep merge settings
-		$merged = $this->array_merge_deep( $existing, $settings );
-
-		// Write back
-		global $wp_filesystem;
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		WP_Filesystem();
-
-		$result = $wp_filesystem->put_contents(
-			$json_path,
-			wp_json_encode( $merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
-			FS_CHMOD_FILE
-		);
-
-		if ( $result === false ) {
-			return array( 'error' => 'Failed to write theme.json' );
-		}
-
-		return array(
-			'success' => true,
-			'message' => 'theme.json updated',
-			'theme'   => $theme_slug,
-			'changes' => array_keys( $settings ),
-		);
-	}
-
-	/**
-	 * Deep merge arrays
-	 */
-	private function array_merge_deep( array $array1, array $array2 ): array {
-		foreach ( $array2 as $key => $value ) {
-			if ( is_array( $value ) && isset( $array1[ $key ] ) && is_array( $array1[ $key ] ) ) {
-				$array1[ $key ] = $this->array_merge_deep( $array1[ $key ], $value );
-			} else {
-				$array1[ $key ] = $value;
-			}
-		}
-		return $array1;
-	}
-
-	/**
-	 * Activate a theme
-	 */
-	private function tool_activate_theme( array $args ): array {
-		$theme_slug = $args['theme_slug'] ?? '';
-
-		if ( empty( $theme_slug ) ) {
-			return array( 'error' => 'Theme slug required' );
-		}
-
-		$theme = wp_get_theme( $theme_slug );
-
-		if ( ! $theme->exists() ) {
-			return array( 'error' => "Theme '$theme_slug' not found" );
-		}
-
-		if ( ! current_user_can( 'switch_themes' ) ) {
-			return array( 'error' => 'You do not have permission to switch themes' );
-		}
-
-		switch_theme( $theme_slug );
-
-		return array(
-			'success' => true,
-			'message' => "Theme '{$theme->get('Name')}' activated",
-			'slug'    => $theme_slug,
+			'active_theme' => $active_slug,
+			'agent_note'   => 'Present this as a simple list. Highlight the active theme. If there are block themes available that are not active, mention those as options. If only classic themes are installed, suggest getting a modern block theme.',
 		);
 	}
 }

@@ -61,7 +61,10 @@
         history     = [];
         pendingImage = null;
 
-        buildOverlay(displayName);
+        // Use the agent's real name for the window title (from welcomeMessages keys or fallback).
+        var agentNames = (typeof agenticChat !== 'undefined' && agenticChat.agentNames) || {};
+        var title = agentNames[slug] || displayName;
+        buildOverlay(title);
         loadHistory();
 
         // Show with slight delay for CSS transition.
@@ -212,14 +215,6 @@
             if (meta.tokens) metaDiv.innerHTML += '<span>Tokens: ' + meta.tokens + '</span> ';
             if (meta.cost)   metaDiv.innerHTML += '<span>$' + meta.cost.toFixed(6) + '</span>';
             div.appendChild(metaDiv);
-
-            if (meta.tools && meta.tools.length) {
-                const toolsDiv = el('div', { className: 'agentic-overlay-tools' });
-                meta.tools.forEach(function (t) {
-                    toolsDiv.appendChild(el('span', { className: 'agentic-overlay-tool-tag', textContent: t }));
-                });
-                div.appendChild(toolsDiv);
-            }
         }
 
         msgs.appendChild(div);
@@ -334,14 +329,56 @@
     function loadHistory() {
         if (!activeAgent) return;
         var raw = localStorage.getItem('agentic_overlay_history_' + activeAgent);
-        if (!raw) return;
-        try {
-            history = JSON.parse(raw);
-            history.forEach(function (m) {
-                addMessage(m.content, m.role === 'user' ? 'user' : 'agent');
+        if (raw) {
+            try {
+                history = JSON.parse(raw);
+                history.forEach(function (m) {
+                    addMessage(m.content, m.role === 'user' ? 'user' : 'agent');
+                });
+            } catch (e) {
+                history = [];
+            }
+        }
+
+        // Show welcome message for new conversations.
+        if (!history.length) {
+            showWelcomeMessage();
+        }
+    }
+
+    function showWelcomeMessage() {
+        if (!activeAgent) return;
+        var messages = (typeof agenticChat !== 'undefined' && agenticChat.welcomeMessages) || {};
+        var msg = messages[activeAgent];
+        if (!msg) return;
+        addMessage(msg, 'agent');
+
+        // Add quick-action buttons for onboarding agent.
+        if (activeAgent === 'onboarding-agent') {
+            var msgs = document.getElementById('agentic-overlay-msgs');
+            if (!msgs) return;
+            var btnsWrap = el('div', { className: 'agentic-overlay-quick-actions' });
+            var actions = [
+                { label: 'Agent Builder', slug: 'agent-builder' },
+                { label: 'Content Builder', slug: 'content-builder' },
+                { label: 'Plugin Builder', slug: 'plugin-builder' },
+                { label: 'Theme Builder', slug: 'theme-builder' }
+            ];
+            actions.forEach(function (action) {
+                var btn = el('button', { className: 'agentic-overlay-quick-btn', textContent: action.label });
+                btn.addEventListener('click', function () {
+                    // Close onboarding overlay and open the selected agent.
+                    closeOverlay();
+                    var names = (typeof agenticChat !== 'undefined' && agenticChat.agentNames) || {};
+                    var displayName = names[action.slug] || action.label;
+                    setTimeout(function () {
+                        openOverlay(action.slug, displayName);
+                    }, 300);
+                });
+                btnsWrap.appendChild(btn);
             });
-        } catch (e) {
-            history = [];
+            msgs.appendChild(btnsWrap);
+            msgs.scrollTop = msgs.scrollHeight;
         }
     }
 
@@ -353,6 +390,7 @@
         localStorage.setItem('agentic_overlay_session_' + activeAgent, sessionId);
         var msgs = document.getElementById('agentic-overlay-msgs');
         if (msgs) msgs.innerHTML = '';
+        showWelcomeMessage();
     }
 
     /* ------------------------------------------------------------------ */

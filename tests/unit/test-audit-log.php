@@ -73,7 +73,7 @@ class Test_Audit_Log extends TestCase {
 		);
 
 		$this->assertEquals( 'content-builder', $row['agent_id'] );
-		$this->assertEquals( 'analyze_page', $row['action'] );
+		$this->assertEquals( 'draft_post', $row['action'] );
 		$this->assertEquals( 'post', $row['target_type'] );
 		$this->assertEquals( '42', $row['target_id'] );
 		$this->assertEquals( 'User requested SEO analysis', $row['reasoning'] );

@@ -122,9 +122,21 @@ class Agent_Controller {
 		}
 
 		// Merge core tools (already filtered by get_tool_definitions).
+		// Skip any core tool whose name matches an agent-specific tool to avoid duplicates.
+		$agent_tool_names = array();
+		foreach ( $tools as $tool ) {
+			$name = $tool['function']['name'] ?? $tool['name'] ?? '';
+			if ( $name ) {
+				$agent_tool_names[] = $name;
+			}
+		}
+
 		$core_tool_defs = $this->core_tools->get_tool_definitions();
 		foreach ( $core_tool_defs as $core_tool ) {
-			$tools[] = $core_tool;
+			$core_name = $core_tool['function']['name'] ?? $core_tool['name'] ?? '';
+			if ( ! in_array( $core_name, $agent_tool_names, true ) ) {
+				$tools[] = $core_tool;
+			}
 		}
 
 		return $tools;

@@ -93,10 +93,10 @@ WordPress Installation
 │   │       ├── includes/
 │   │       │   ├── class-agent-base.php (Extend this)
 │   │       │   ├── class-agent-controller.php (Orchestration)
-│   │       │   ├── class-openai-client.php (LLM integration)
+│   │       │   ├── class-llm-client.php (Multi-provider LLM)
 │   │       │   ├── class-audit-log.php (Compliance)
 │   │       │   ├── class-approval-queue.php (Safety)
-│   │       │   └── ... (10+ more core classes)
+│   │       │   └── ... (17 more core classes)
 │   │       ├── library/ (Bundled agents)
 │   │       │   ├── content-builder/agent.php
 │   │       │   ├── theme-builder/agent.php
@@ -226,7 +226,7 @@ We welcome contributions! See our [Contributing Guidelines](https://github.com/r
 
 Start with these quick wins:
 
-1. **Use a pre-built agent** (5 min) – Enable one of the 10 included agents
+1. **Use a pre-built agent** (5 min) – Enable one of the 5 included agents
 2. **Customize an agent** (15 min) – Modify an existing agent slightly
 3. **Build your own agent** (45 min) – Create a simple custom agent
 4. **Publish your agent** (10 min) – Submit to marketplace

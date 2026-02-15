@@ -5,7 +5,7 @@
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
  * Description:       Build AI agents without writing code. Describe the AI agent you want and let WordPress build it for you.
- * Version:           1.7.3
+ * Version:           1.7.4
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agent Builder Team
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'AGENTIC_PLUGIN_VERSION', '1.7.3' );
+define( 'AGENTIC_PLUGIN_VERSION', '1.7.4' );
 define( 'AGENTIC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENTIC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AGENTIC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -498,13 +498,34 @@ final class Plugin {
 			)
 		);
 
-		foreach ( $active_slugs as $slug ) {
+		// Sort so onboarding-agent appears first (as "Helper").
+		$sorted_slugs = $active_slugs;
+		usort(
+			$sorted_slugs,
+			function ( $a, $b ) {
+				if ( 'onboarding-agent' === $a ) {
+					return -1;
+				}
+				if ( 'onboarding-agent' === $b ) {
+					return 1;
+				}
+				return 0;
+			}
+		);
+
+		foreach ( $sorted_slugs as $slug ) {
 			if ( ! isset( $all_agents[ $slug ] ) ) {
 				continue;
 			}
 			$agent_info = $all_agents[ $slug ];
-			$name       = $agent_info['name'] ?? ucwords( str_replace( '-', ' ', $slug ) );
 			$icon       = $agent_info['icon'] ?? '🤖';
+
+			// Show onboarding-agent as "Helper" for a friendlier label.
+			if ( 'onboarding-agent' === $slug ) {
+				$name = __( 'Helper', 'agent-builder' );
+			} else {
+				$name = $agent_info['name'] ?? ucwords( str_replace( '-', ' ', $slug ) );
+			}
 
 			$wp_admin_bar->add_node(
 				array(
@@ -1211,14 +1232,31 @@ final class Plugin {
 			true
 		);
 
+		// Build welcome messages and agent names map for active agents.
+		$agentic_welcome_messages = array();
+		$agentic_agent_names      = array();
+		$agentic_registry         = \Agentic_Agent_Registry::get_instance();
+		$agentic_registry->load_active_agents();
+
+		$agentic_instances = $agentic_registry->get_all_instances();
+		foreach ( $agentic_instances as $agentic_instance ) {
+			$agentic_agent_names[ $agentic_instance->get_id() ] = $agentic_instance->get_name();
+			$agentic_msg = $agentic_instance->get_welcome_message();
+			if ( $agentic_msg ) {
+				$agentic_welcome_messages[ $agentic_instance->get_id() ] = $agentic_msg;
+			}
+		}
+
 		wp_localize_script(
 			'agentic-chat-overlay',
 			'agenticChat',
 			array(
-				'restUrl'  => rest_url( 'agentic/v1/' ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'userId'   => get_current_user_id(),
-				'userName' => wp_get_current_user()->display_name,
+				'restUrl'         => rest_url( 'agentic/v1/' ),
+				'nonce'           => wp_create_nonce( 'wp_rest' ),
+				'userId'          => get_current_user_id(),
+				'userName'        => wp_get_current_user()->display_name,
+				'welcomeMessages' => $agentic_welcome_messages,
+				'agentNames'      => $agentic_agent_names,
 			)
 		);
 	}
@@ -1266,6 +1304,9 @@ final class Plugin {
 		add_option( 'agentic_llm_provider', 'openai' );
 		add_option( 'agentic_llm_api_key', '' );
 		add_option( 'agentic_model', 'gpt-4o' );
+
+		// Activate all bundled library agents.
+		$this->activate_bundled_agents();
 
 		// Create database tables.
 		$this->create_tables();
@@ -1328,6 +1369,52 @@ final class Plugin {
 
 		// Flush rewrite rules.
 		flush_rewrite_rules();
+	}
+
+	/**
+	 * Activate all bundled library agents on plugin activation.
+	 *
+	 * Scans the library directory and ensures every bundled agent
+	 * is present in the agentic_active_agents option.
+	 *
+	 * @return void
+	 */
+	private function activate_bundled_agents(): void {
+		$library_dir = plugin_dir_path( __FILE__ ) . 'library';
+
+		if ( ! is_dir( $library_dir ) ) {
+			return;
+		}
+
+		$folders = scandir( $library_dir );
+
+		if ( ! is_array( $folders ) ) {
+			return;
+		}
+
+		$bundled_slugs = array();
+
+		foreach ( $folders as $folder ) {
+			if ( '.' === $folder || '..' === $folder || 'README.md' === $folder ) {
+				continue;
+			}
+
+			$agent_path = $library_dir . '/' . $folder;
+
+			// Must be a directory with an agent.php file.
+			if ( is_dir( $agent_path ) && file_exists( $agent_path . '/agent.php' ) ) {
+				$bundled_slugs[] = $folder;
+			}
+		}
+
+		if ( empty( $bundled_slugs ) ) {
+			return;
+		}
+
+		$active_agents = get_option( 'agentic_active_agents', array() );
+		$merged        = array_unique( array_merge( $active_agents, $bundled_slugs ) );
+
+		update_option( 'agentic_active_agents', array_values( $merged ) );
 	}
 
 	/**

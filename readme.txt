@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.7.3
+Stable tag: 1.7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,18 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.7.4 - 2026-02-15 =
+* Added: Bundled agents auto-activate on plugin activation.
+* Added: Welcome messages in admin bar chat overlay for all agents.
+* Added: Onboarding Agent quick-action buttons to launch Agent Builder, Content Builder, Plugin Builder, and Theme Builder directly.
+* Added: "Helper" label for Onboarding Agent in admin bar menu (friendlier for new users).
+* Added: Agent names map for overlay window titles (shows real agent name, not menu label).
+* Fixed: Duplicate tool definition error — agent-specific tools now take priority over core tools with the same name.
+* Removed: Tool tags from chat overlay (tokens/cost still visible for admins).
+* Removed: Redundant read_file, list_directory, search_code tools from Onboarding Agent (uses core tools instead).
+* Improved: Onboarding Agent welcome message rewritten for beginners.
+* Improved: Tool deduplication in Agent Controller prevents LLM API errors.
 
 = 1.7.3 - 2026-02-15 =
 * Streamlined: Removed 6 non-essential bundled agents (Comment Moderator, Product Describer, SEO Analyzer, Security Monitor, Social Media Manager, Code Generator) to focus on the 5 most impactful agents.

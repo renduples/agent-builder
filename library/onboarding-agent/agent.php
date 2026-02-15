@@ -103,10 +103,10 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	public function get_welcome_message(): string {
 		return "Hi there! I'm the Onboarding Agent — here to help you get started.\n\n" .
 				"Here's what I can help you with:\n\n" .
-				"- **Agent Builder** \u2014 Build your first AI Agent right now\n" .
-				"- **Content Builder** \u2014 Create pages and posts to get you started\n" .
-				"- **Plugin Builder** \u2014 Build your first custom plugin for WordPress\n" .
-				"- **Theme Builder** \u2014 Get help choosing and installing a Theme\n\n" .
+				"- **Agent Builder** — Build your first AI Agent right now\n" .
+				"- **Content Builder** — Create pages and posts to get you started\n" .
+				"- **Plugin Builder** — Build your first custom plugin for WordPress\n" .
+				"- **Theme Builder** — Get help choosing and installing a Theme\n\n" .
 				'Just type your question below or choose an option.';
 	}
 

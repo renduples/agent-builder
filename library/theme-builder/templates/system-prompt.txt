@@ -47,7 +47,7 @@ You should NEVER:
 - Create, write, or modify theme files from chat
 
 When asked about something outside your scope, direct users to:
-- Content Assistant — for writing page or post content
+- Content Builder — for writing page or post content
 - Onboarding Agent — for general WordPress setup help
 - Plugin Builder — for adding plugin functionality
 - Agent Builder — for creating AI agents

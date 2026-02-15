@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.6.3
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,20 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.7.0 - 2026-02-14 =
+* Added: License_Client class for client-side license enforcement.
+* Added: Periodic license revalidation via wp_cron (every 12 hours).
+* Added: 72-hour cached fallback when license server is unreachable.
+* Added: Update gating — blocks plugin updates without a valid license.
+* Added: Feature degradation — user-space agents disabled when license is invalid or expired.
+* Added: Admin notices for expired, revoked, or missing licenses with renewal links.
+* Added: License tab in Settings with activate/deactivate UI and status display.
+* Added: HMAC-signed API requests with site_hash for tamper resistance.
+* Improved: Dashboard uses License_Client for status display.
+* Improved: Agent Registry skips non-bundled agents when license invalid (with debug logging).
+* Security: Fail-open design — cached last-known-good state, never breaks customer sites.
+* Tests: 457 tests, 1,211 assertions (23 new License_Client tests).
 
 = 1.6.3 - 2026-02-14 =
 * Improved: All 11 bundled agent system prompts rewritten with ecosystem context and scope boundaries.

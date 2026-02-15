@@ -1,0 +1,36 @@
+# Files and folders to exclude from the WordPress.org distribution ZIP.
+# Used by `wp dist-archive` and similar build tools.
+
+# Development tooling
+.git
+.github
+.gitignore
+.distignore
+composer.json
+composer.lock
+phpcs.xml
+phpunit.xml.dist
+.phpunit.result.cache
+
+# Tests
+tests/
+bin/
+
+# Documentation / dev files
+CLAUDE.md
+compliancy-check-*.md
+README.md
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Node / build
+node_modules/
+package.json
+package-lock.json
+
+# Vendor (dev-only deps)
+vendor/

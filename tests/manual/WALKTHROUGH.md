@@ -108,7 +108,7 @@ Navigate to http://agentic.test/wp-admin/ → Agent Builder menu.
 ### 3.7 Scheduled Tasks
 1. Go to **Scheduled Tasks**
 2. **Expected:** Table shows all agent tasks with columns: Agent, Task, Schedule, Mode, Status, Next Run, Actions
-3. Verify Security Monitor's "Daily Security Scan" appears with mode **🤖 AI** (has prompt)
+3. Verify any active agent tasks appear with correct mode (🤖 AI if prompt-based, ⚙️ Direct otherwise)
 4. Check Status column: **Active** (green) if cron is registered, **Not Scheduled** (red) otherwise
 5. Click **Run Now** on a task → success notice appears
 6. Go to Audit Log → confirm `scheduled_task_start` and `scheduled_task_complete` entries logged with duration
@@ -117,9 +117,7 @@ Navigate to http://agentic.test/wp-admin/ → Agent Builder menu.
 ### 3.8 Event Listeners
 1. Go to **Event Listeners**
 2. **Expected:** Table shows all agent listeners with columns: Agent, Listener, WordPress Hook, Priority, Mode, Status
-3. Verify Security Monitor shows two listeners:
-   - "Failed Login Monitor" on hook `wp_login_failed` — mode **⚙️ Direct**
-   - "New User Alert" on hook `user_register` — mode **⚙️ Direct**
+3. Verify any agents with event listeners appear with correct hook names and modes
 4. All listeners should show Status **Active** (green)
 5. Info box at bottom explains Direct vs AI Async mode, serialization, and outcome logging
 
@@ -127,21 +125,18 @@ Navigate to http://agentic.test/wp-admin/ → Agent Builder menu.
 1. Go to **Agent Tools**
 2. **Expected:** Table shows all tools across all agents with type (Core/Agent), parameters, used-by
 3. Verify core tools listed: `read_file`, `list_directory`, `search_code`, `get_posts`, `get_comments`, `create_comment`, `update_documentation`, `request_code_change`, `manage_schedules`
-4. Verify agent-specific tools appear (e.g., Security Monitor's `security_scan`)
+4. Verify agent-specific tools appear for active agents
 
 ### 3.10 System Check
 1. Go to **System Status**
 2. **Expected:** PHP version, WordPress version, MySQL version, required extensions all show green checks
 
 ### 3.11 Event Listener Integration (end-to-end)
-1. Ensure Security Monitor is activated
-2. Log out and attempt a login with a wrong password
-3. Log back in, go to **Audit Log**
-4. **Expected:** `failed_login_detected` entry from Security Monitor with username, IP, timestamp
-5. Create a new test user via WP-CLI: `wp user create testlistener test@test.com --role=subscriber`
-6. Check Audit Log again
-7. **Expected:** `new_user_detected` entry with user_id, user_login, roles
-8. Clean up: `wp user delete testlistener --yes`
+1. Ensure an agent with event listeners is activated
+2. Trigger the relevant WordPress hook (e.g., create a post, add a comment)
+3. Go to **Audit Log**
+4. **Expected:** Event listener entries from the agent with relevant context data
+5. Verify the listener processed correctly and logged its outcome
 
 **Section Pass/Fail:** _______  
 **Notes:** _______________________________

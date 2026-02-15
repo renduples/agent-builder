@@ -103,8 +103,8 @@ Everything is logged:
 ```
 {
   "timestamp": "2026-01-25 10:30:45",
-  "agent_id": "seo-analyzer",
-  "action": "analyze_post",
+  "agent_id": "content-builder",
+  "action": "draft_post",
   "target_id": 123,
   "reasoning": "User requested SEO check for homepage",
   "status": "success",

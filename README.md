@@ -52,20 +52,15 @@ That's it. Your primary AI agent is live.
 
 ## 🎯 What You Can Build
 
-The Agent Builder comes with **10 pre-built agents** to jumpstart development:
+The Agent Builder comes with **5 pre-built agents** to jumpstart development:
 
 | Agent | Use Case |
 |-------|----------|
-| **SEO Analyzer** | Automatic on-page SEO audits |
-| **Content Assistant** | AI-powered post drafting & optimization |
-| **Product Describer** | WooCommerce product descriptions |
-| **Social Media Agent** | Schedule & auto-compose social posts |
-| **Code Generator** | Custom code generation for devs |
+| **Content Builder** | AI-powered post drafting & optimization |
 | **Theme Builder** | Quick WordPress theme customization |
-| **Security Monitor** | AI vulnerability scanning |
-| **Comment Moderator** | Smart spam detection & responses |
 | **Agent Builder** | Visual agent builder (meta) |
 | **Onboarding Agent** | Your guide to the Agent Builder ecosystem |
+| **Plugin Builder** | Generate complete WordPress plugins |
 
 ---
 
@@ -102,11 +97,10 @@ WordPress Installation
 │   │       │   ├── class-audit-log.php (Compliance)
 │   │       │   ├── class-approval-queue.php (Safety)
 │   │       │   └── ... (10+ more core classes)
-│   │       ├── library/ (Bundled agents - 10 pre-built)
-│   │       │   ├── seo-analyzer/agent.php
-│   │       │   ├── content-assistant/agent.php
-│   │       │   ├── social-media/agent.php
-│   │       │   └── ... (7 more)
+│   │       ├── library/ (Bundled agents)
+│   │       │   ├── content-builder/agent.php
+│   │       │   ├── theme-builder/agent.php
+│   │       │   └── ... (more)
 │   │       ├── admin/ (Dashboard UI)
 │   │       └── templates/
 │   │           └── chat-interface.php (User interface)
@@ -280,7 +274,7 @@ This is an **independent community project** — not affiliated with or endorsed
 1. **Install**: cd wp-content/plugins `git clone https://github.com/renduples/agent-builder.git`
 2. **Activate**: Go to WordPress admin → Plugins
 3. **Configure**: Add API key in Settings
-4. **Test**: Try the SEO Analyzer or Content Assistant
+4. **Test**: Try the Content Builder or Theme Builder
 5. **Build**: Create your first custom agent
 6. **Share**: Submit your agent to the marketplace
 

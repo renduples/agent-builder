@@ -295,7 +295,7 @@ class Agentic_Agent_Builder extends \Agentic\Agent_Base {
 						'properties' => array(
 							'agent_slug' => array(
 								'type'        => 'string',
-								'description' => 'Agent slug to read (e.g., "security-monitor")',
+								'description' => 'Agent slug to read (e.g., "content-builder")',
 							),
 						),
 						'required'   => array( 'agent_slug' ),
@@ -1407,10 +1407,10 @@ $params_code . "\n" .
 			$template = file_exists( $template_file ) ? file_get_contents( $template_file ) : '';
 		} else {
 			// Full template with examples
-			$template = file_get_contents( $this->get_library_path() . 'security-monitor/agent.php' );
+			$template = file_get_contents( $this->get_library_path() . 'content-builder/agent.php' );
 			// Sanitize for template use
-			$template = preg_replace( '/Security Monitor/', '[AGENT_NAME]', $template );
-			$template = preg_replace( '/security-monitor/', '[SLUG]', $template );
+			$template = preg_replace( '/Content Builder/', '[AGENT_NAME]', $template );
+			$template = preg_replace( '/content-builder/', '[SLUG]', $template );
 		}
 
 		return array(
@@ -1587,7 +1587,7 @@ $expertise . "\n\n" .
 		}
 
 		// Don't allow deleting built-in agents
-		$protected = array( 'security-monitor', 'content-assistant', 'seo-analyzer', 'onboarding-agent', 'agent-builder' );
+		$protected = array( 'content-builder', 'onboarding-agent', 'agent-builder' );
 		if ( in_array( $slug, $protected, true ) ) {
 			return array( 'error' => "Cannot delete protected agent: {$slug}" );
 		}

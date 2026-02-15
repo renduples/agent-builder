@@ -93,9 +93,9 @@ class Shortcodes {
 	 *
 	 * Usage:
 	 * [agentic_chat]
-	 * [agentic_chat agent="security-monitor"]
-	 * [agentic_chat agent="product-describer" style="popup"]
-	 * [agentic_chat agent="seo-analyzer" height="400px"]
+	 * [agentic_chat agent="content-builder"]
+	 * [agentic_chat agent="content-builder" style="popup"]
+	 * [agentic_chat agent="content-builder" height="400px"]
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output.
@@ -244,8 +244,8 @@ class Shortcodes {
 	 * Render ask shortcode (one-shot query).
 	 *
 	 * Usage:
-	 * [agentic_ask agent="seo-analyzer" question="Analyze this page for SEO"]
-	 * [agentic_ask agent="product-describer" question="Describe this product" context="product_id:123"]
+	 * [agentic_ask agent="content-builder" question="Summarize this post"]
+	 * [agentic_ask agent="content-builder" question="Draft a summary" context="post_id:123"]
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output.

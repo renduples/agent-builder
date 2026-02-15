@@ -30,7 +30,7 @@ Agents can now respond to WordPress events in real time. This is the third invoc
 - **Smart serialization** — `WP_Post`, `WP_Comment`, `WP_User` objects auto-converted to clean arrays; large strings truncated; unknown objects reduced to class name
 - **Outcome logging** — Every event trigger logged with `event_listener_triggered`, `event_listener_complete`, `event_listener_error` entries including timing
 - **Event Listeners admin page** — Table showing Agent, Listener, WordPress Hook, Priority, Mode (AI Async / Direct), Status
-- **Security Monitor** — First agent with event listeners: `wp_login_failed` (logs failed login IP + username) and `user_register` (logs new user registration with roles)
+- Agents can define event listeners for WordPress hooks like `wp_login_failed` and `user_register`
 
 ### Three Agent Invocation Methods
 
@@ -66,7 +66,7 @@ Major release adding time-based autonomy to agents.
 - **Tools admin page** — Shows all tools across all agents with type (Core / Agent), parameters, used-by columns
 - **Scheduled Tasks admin page** — Table with Agent, Task, Schedule, Mode (AI / Direct), Status, Next Run, Run Now button
 - **Audit log improvements** — Actual timestamps via `wp_date()`, expandable details (600×300px scrollable), dynamic agent/action filter dropdowns, 30-day retention, agent responses logged in `chat_complete` entries
-- **Security Monitor** — First agent with autonomous scheduled task (daily security scan with LLM reasoning and tool calls)
+- Agents can define autonomous scheduled tasks with LLM reasoning and tool calls
 
 ### Cron Architecture
 

@@ -61,7 +61,7 @@ class Test_Approval_Queue extends TestCase {
 	public function test_add_stores_all_fields() {
 		$params = array( 'path' => 'index.php', 'content' => '<?php echo "hi";' );
 		$id     = $this->queue->add(
-			'code-generator',
+			'content-builder',
 			'create_file',
 			$params,
 			'Generated new file',
@@ -74,7 +74,7 @@ class Test_Approval_Queue extends TestCase {
 			ARRAY_A
 		);
 
-		$this->assertEquals( 'code-generator', $row['agent_id'] );
+		$this->assertEquals( 'content-builder', $row['agent_id'] );
 		$this->assertEquals( 'create_file', $row['action'] );
 		$this->assertEquals( 'pending', $row['status'] );
 		$this->assertEquals( 'Generated new file', $row['reasoning'] );

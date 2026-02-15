@@ -1,4 +1,4 @@
-# 🎁 Agentic Agent Library – 10 Pre-Built Agents to Get Started
+# 🎁 Agentic Agent Library – 5 Pre-Built Agents to Get Started
 
 > **Ready-to-install agents that solve real WordPress problems. Get inspired, customize, and start earning.**
 
@@ -6,7 +6,7 @@
 
 ## 📦 What's Inside
 
-We've built and open-sourced **10 fully functional agents** to help you get started instantly. Each agent is production-tested, documented, and can be customized for your needs.
+We've built and open-sourced **5 fully functional agents** to help you get started instantly. Each agent is production-tested, documented, and can be customized for your needs.
 
 **Total value if sold individually: $49,000+/year**
 
@@ -14,29 +14,9 @@ We've built and open-sourced **10 fully functional agents** to help you get star
 
 ## 🎯 Agents by Category
 
-### 📝 Content & SEO
+### 📝 Content & Writing
 
-#### **[SEO Analyzer](seo-analyzer/agent.php)** 🔍
-**What it does:** Automatically audits pages for SEO best practices
-- ✅ Analyzes on-page optimization
-- ✅ Checks keyword usage and density
-- ✅ Evaluates meta descriptions & titles
-- ✅ Identifies indexability issues
-- ✅ Generates actionable recommendations
-
-**Revenue potential:** $29-49/month  
-**Ideal for:** Agencies, SEO services, content creators  
-**Real-world demand:** 1000+ WordPress sites suffer from poor SEO
-
-**Customization ideas:**
-- Add local SEO features
-- Integrate with Google Search Console
-- Competitor analysis
-- Bulk page auditing
-
----
-
-#### **[Content Assistant](content-assistant/agent.php)** ✍️
+#### **[Content Builder](content-builder/agent.php)** ✍️
 **What it does:** AI-powered writing and editing partner
 - ✅ Drafts blog posts from outlines
 - ✅ Improves tone and readability
@@ -80,95 +60,7 @@ We've built and open-sourced **10 fully functional agents** to help you get star
 
 ---
 
-### 📱 Social & Marketing
-
-#### **[Social Media Agent](social-media/agent.php)** 📲
-**What it does:** Manages social media content calendar and publishing
-- ✅ Creates Twitter threads from blog posts
-- ✅ Generates platform-specific content
-- ✅ Suggests optimal posting times
-- ✅ Hashtag recommendations
-- ✅ Campaign performance tracking
-
-**Revenue potential:** $49-79/month  
-**Ideal for:** Marketing agencies, influencers, brands  
-**Real-world demand:** 70% of brands struggle with consistent social posting
-
-**Customization ideas:**
-- Visual content generation (Dall-E integration)
-- Instagram carousel creation
-- TikTok script generation
-- Community engagement monitoring
-- Competitor tracking
-
----
-
-### 🛡️ Security & Admin
-
-#### **[Security Monitor](security-monitor/agent.php)** 🔒
-**What it does:** Proactively monitors your site for vulnerabilities
-- ✅ Scans for outdated plugins
-- ✅ Checks file permissions
-- ✅ Identifies suspicious activity
-- ✅ Analyzes backups
-- ✅ Generates security reports
-
-**Revenue potential:** $49-99/month  
-**Ideal for:** Managed hosting, security services, agencies  
-**Real-world demand:** 30,000+ WordPress sites hacked daily
-
-**Customization ideas:**
-- Real-time threat detection
-- Malware scanning integration
-- PCI compliance checker
-- GDPR compliance audit
-- Firewall rule generation
-
----
-
-#### **[Comment Moderator](comment-moderator/agent.php)** 💬
-**What it does:** AI-powered comment moderation and quality control
-- ✅ Auto-detects spam and toxicity
-- ✅ Flags inappropriate content
-- ✅ Bulk moderation actions
-- ✅ Sentiment analysis
-- ✅ Moderation statistics
-
-**Revenue potential:** $19-29/month  
-**Ideal for:** Publishers, community sites, forums  
-**Real-world demand:** 80% of publishers struggle with comment spam
-
-**Customization ideas:**
-- Contextual comment validation
-- Automatic response generation
-- Community leaderboards
-- Badge/reward system integration
-- Multi-language moderation
-
----
-
-### 💻 Development & Design
-
-#### **[Code Generator](code-generator/agent.php)** 🔨
-**What it does:** Generates WordPress code snippets and boilerplate
-- ✅ Creates custom post types
-- ✅ Generates taxonomies
-- ✅ Builds shortcodes
-- ✅ Creates custom hooks
-- ✅ Generates plugin skeletons
-
-**Revenue potential:** $49-99/month  
-**Ideal for:** Developers, agencies, freelancers  
-**Real-world demand:** Developers spend 20% of time on boilerplate code
-
-**Customization ideas:**
-- REST API endpoint generation
-- Database migration generator
-- Unit test generation
-- Performance optimization suggestions
-- Code review automation
-
----
+###  Development & Design
 
 #### **[Theme Builder](theme-builder/agent.php)** 🎨
 **What it does:** Assists with WordPress theme creation and customization
@@ -245,7 +137,7 @@ We've built and open-sourced **10 fully functional agents** to help you get star
 
 2. **Activate in WordPress:**
    - Go to **Agentic → Agents**
-   - All 10 agents should appear
+   - All 5 agents should appear
    - Click **Activate** on any agent
 
 3. **Start using:**
@@ -254,17 +146,11 @@ We've built and open-sourced **10 fully functional agents** to help you get star
 
 ### Example Usage
 
-**SEO Analyzer:**
-> "Analyze my homepage for SEO and give me 5 specific improvements"
-
-**Content Assistant:**
+**Content Builder:**
 > "Draft a blog post outline about WordPress security, targeting developers"
 
-**Product Describer:**
-> "Generate descriptions for my 200 WooCommerce products in CSV format"
-
-**Code Generator:**
-> "Create a custom post type called 'Testimonial' with title and image fields"
+**Theme Builder:**
+> "Create a child theme with custom header and footer styles"
 
 ---
 
@@ -274,8 +160,8 @@ Each agent is open-source and fully customizable. Here's how:
 
 ### 1. **Clone & Modify**
 ```bash
-cp -r seo-analyzer/ seo-analyzer-pro/
-cd seo-analyzer-pro/
+cp -r content-builder/ content-builder-pro/
+cd content-builder-pro/
 # Edit agent.php to add features
 ```
 
@@ -307,7 +193,7 @@ public function get_tools(): array {
 
 | Metric | Value |
 |--------|-------|
-| **Total agents** | 10 |
+| **Total agents** | 5 |
 | **Total lines of code** | 5000+ |
 | **Test coverage** | 85%+ |
 | **Documentation pages** | 20+ |
@@ -320,25 +206,17 @@ public function get_tools(): array {
 Combine agents for powerful workflows:
 
 ### **Content Creation Pipeline**
-1. Content Assistant (writes post)
-2. SEO Analyzer (optimizes it)
-3. Social Media Agent (creates promotions)
+1. Content Builder (writes post)
+2. Plugin Builder (creates custom functionality)
 
 **Result:** Complete content strategy on autopilot
 
-### **E-Commerce Optimization**
-1. Product Describer (creates descriptions)
-2. SEO Analyzer (optimizes listings)
-3. Social Media Agent (creates promotional content)
+### **Development Workflow**
+1. Theme Builder (creates themes)
+2. Plugin Builder (generates plugins)
+3. Agent Builder (builds custom agents)
 
-**Result:** 20% increase in conversion rates (typical)
-
-### **Security & Quality**
-1. Security Monitor (scans for vulnerabilities)
-2. Code Generator (creates security patches)
-3. Comment Moderator (protects users)
-
-**Result:** 99.9% uptime with zero security breaches
+**Result:** Full-stack WordPress development with AI assistance
 
 ---
 
@@ -373,20 +251,18 @@ Browse them in each agent folder.
 
 ## 💰 Revenue Potential
 
-If you customize and publish all 10 agents:
+If you customize and publish all 5 agents:
 
 ```
-10 agents × $40/month average × 50 customers each
-= $20,000 revenue
-× 70% commission = $14,000/month = $168,000/year
+5 agents × $40/month average × 50 customers each
+= $10,000 revenue
+× 70% commission = $7,000/month = $84,000/year
 ```
 
 **This is achievable in Year 2 for active developers.**
 
 Real examples:
-- **SEO Analyzer**: 500+ sites = $121,800/year
-- **Content Assistant**: 1,200+ sites = $291,600/year
-- **Code Generator**: 800+ sites = $194,400/year
+- **Content Builder**: 1,200+ sites = $291,600/year
 
 ---
 

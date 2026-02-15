@@ -55,8 +55,8 @@ class Test_Audit_Log extends TestCase {
 	public function test_log_with_all_parameters() {
 		$details = array( 'id' => 42, 'content' => 'Hello world' );
 		$id      = $this->log->log(
-			'seo-analyzer',
-			'analyze_page',
+			'content-builder',
+			'draft_post',
 			'post',
 			$details,
 			'User requested SEO analysis',
@@ -72,7 +72,7 @@ class Test_Audit_Log extends TestCase {
 			ARRAY_A
 		);
 
-		$this->assertEquals( 'seo-analyzer', $row['agent_id'] );
+		$this->assertEquals( 'content-builder', $row['agent_id'] );
 		$this->assertEquals( 'analyze_page', $row['action'] );
 		$this->assertEquals( 'post', $row['target_type'] );
 		$this->assertEquals( '42', $row['target_id'] );

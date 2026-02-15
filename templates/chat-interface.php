@@ -168,18 +168,8 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 					</div>
 					<div class="agent-preview-card">
 						<span class="agent-icon">✍️</span>
-						<span class="agent-name">Content Assistant</span>
+						<span class="agent-name">Content Builder</span>
 						<span class="agent-desc">Write blog posts & pages</span>
-					</div>
-					<div class="agent-preview-card">
-						<span class="agent-icon">📈</span>
-						<span class="agent-name">SEO Analyzer</span>
-						<span class="agent-desc">Optimize for search</span>
-					</div>
-					<div class="agent-preview-card">
-						<span class="agent-icon">🛡️</span>
-						<span class="agent-name">Security Monitor</span>
-						<span class="agent-desc">Protect your site</span>
 					</div>
 				</div>
 			</div>

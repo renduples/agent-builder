@@ -163,7 +163,7 @@ agent-builder/
 │   ├── class-agent-base.php  # Extend this
 │   ├── class-*.php           # Other core
 ├── library/                  # Pre-built agents
-│   ├── seo-analyzer/
+│   ├── content-builder/
 │   ├── your-agent/           # Your agent here
 ├── admin/                    # Dashboard pages
 ├── templates/                # Frontend templates

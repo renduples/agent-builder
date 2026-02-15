@@ -37,7 +37,7 @@ If applicable, add a screenshot or short video showing the issue.
 - **WordPress Version**: [e.g., 6.4]
 - **PHP Version**: [e.g., 8.1]
 - **Agent Builder Version**: [e.g., 0.1.0]
-- **Agent(s) Affected**: [e.g., SEO Analyzer, Content Assistant]
+- **Agent(s) Affected**: [e.g., Content Builder, Theme Builder]
 - **Operating System**: [e.g., macOS, Windows, Linux]
 - **Browser**: [e.g., Chrome 120]
 

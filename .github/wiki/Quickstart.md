@@ -80,11 +80,11 @@ You should now see **Agentic** in the left menu! 🎉
 
 1. Click **Agentic → Agents**
 2. You should see **10 pre-built agents** listed
-3. Click **Activate** on "SEO Analyzer"
+3. Click **Activate** on "Content Builder"
 4. Go to **Agentic → Agent Chat**
 5. Type something like:
 
-> Analyze the SEO of my homepage and give me 5 specific improvements
+> Ask me to write a blog post about WordPress security best practices
 
 **Hit enter and watch the magic happen!** ✨
 
@@ -95,9 +95,9 @@ You should now see **Agentic** in the left menu! 🎉
 You've just run your first AI agent. Here's what happened:
 
 1. Your message went to [OpenAI](https://platform.openai.com) or [Anthropic](https://anthropic.com)
-2. The SEO Analyzer agent reasoned about your request
-3. It analyzed your site's SEO
-4. It returned recommendations
+2. The Content Builder agent reasoned about your request
+3. It drafted your content
+4. It returned the result
 5. **Everything is logged in Agentic → Audit Log**
 
 ---
@@ -108,11 +108,9 @@ You've just run your first AI agent. Here's what happened:
 
 Go to **Agentic → Agents** and activate:
 
-- **Content Assistant** – Draft blog posts
-- **Product Describer** – Generate WooCommerce descriptions  
-- **Code Generator** – Create WordPress code
-- **Social Media Agent** – Plan social content
-- **Security Monitor** – Scan for vulnerabilities
+- **Content Builder** – Draft blog posts
+- **Theme Builder** – Build WordPress themes
+- **Plugin Builder** – Generate WordPress plugins
 
 Try them in **Agentic → Agent Chat**
 
@@ -218,7 +216,7 @@ Once you're comfortable, explore:
 ## 🚀 Pro Tips
 
 ### Tip 1: Start Small
-Try the SEO Analyzer or Content Assistant first. They're simple and show you what's possible.
+Try the Content Builder or Theme Builder first. They're simple and show you what's possible.
 
 ### Tip 2: Test in Admin First
 Always test new agents in **Agentic → Agent Chat** (admin-only) before enabling on your site.
@@ -238,7 +236,7 @@ The best way to learn is from other developers. Join [GitHub Discussions](https:
 
 - [ ] Plugin installed & activated
 - [ ] API key added in Settings
-- [ ] SEO Analyzer activated
+- [ ] Content Builder activated
 - [ ] Chat with agent works
 - [ ] Audit log shows agent actions
 - [ ] Tried at least 2 different agents
@@ -269,11 +267,7 @@ The best way to learn is from other developers. Join [GitHub Discussions](https:
 
 ## 🌟 Success Stories
 
-**"I built a Product Describer variant and got 100 customers in month 1"** — Sarah M.
-
-**"Customized the Code Generator for our agency. Saved 10+ hours/week."** — Dev Team
-
-**"Used the SEO Analyzer to optimize our 500+ products."** — E-commerce Owner
+**"Customized the Content Builder for our agency. Saved 10+ hours/week."** — Dev Team
 
 **Ready to write your own success story?** Let's go! 🚀
 

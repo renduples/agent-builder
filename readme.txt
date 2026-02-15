@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,11 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.7.3 - 2026-02-15 =
+* Streamlined: Removed 6 non-essential bundled agents (Comment Moderator, Product Describer, SEO Analyzer, Security Monitor, Social Media Manager, Code Generator) to focus on the 5 most impactful agents.
+* Changed: Renamed Content Assistant agent to Content Builder for clarity.
+* Final bundled agents: Content Builder, Theme Builder, Agent Builder, Onboarding Agent, Plugin Builder.
 
 = 1.7.2 - 2026-02-15 =
 * Added: Admin bar "AI Agents" quick-chat overlay — chat with any active agent from any page.

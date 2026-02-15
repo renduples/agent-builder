@@ -186,11 +186,12 @@ class Agent_Controller {
 	/**
 	 * Process a chat message
 	 *
-	 * @param string $message    User message.
-	 * @param array  $history    Conversation history.
-	 * @param int    $user_id    User ID.
-	 * @param string $session_id Session identifier.
-	 * @param string $agent_id   Agent ID (optional, uses current agent if not set).
+	 * @param string     $message    User message.
+	 * @param array      $history    Conversation history.
+	 * @param int        $user_id    User ID.
+	 * @param string     $session_id Session identifier.
+	 * @param string     $agent_id   Agent ID (optional, uses current agent if not set).
+	 * @param array|null $image_data Image data for vision models (optional).
 	 * @return array Response data.
 	 */
 	public function chat( string $message, array $history = array(), int $user_id = 0, string $session_id = '', string $agent_id = '', ?array $image_data = null ): array {
@@ -242,8 +243,8 @@ class Agent_Controller {
 		// Add current message (multimodal if image attached).
 		if ( $image_data ) {
 			// Check if the current model supports vision.
-			$model          = $this->llm->get_model();
-			$vision_models  = array(
+			$model           = $this->llm->get_model();
+			$vision_models   = array(
 				// xAI.
 				'grok-2-vision',
 				'grok-2-vision-latest',
@@ -288,8 +289,8 @@ class Agent_Controller {
 					'google'    => 'gemini-1.5-pro',
 					'mistral'   => 'pixtral-large-latest',
 				);
-				$provider       = $this->llm->get_provider();
-				$vision_model   = $vision_fallbacks[ $provider ] ?? null;
+				$provider         = $this->llm->get_provider();
+				$vision_model     = $vision_fallbacks[ $provider ] ?? null;
 
 				if ( $vision_model ) {
 					$this->llm->set_model( $vision_model );
@@ -508,7 +509,7 @@ class Agent_Controller {
 		$autonomous_context = "\n\n[AUTONOMOUS MODE]\n"
 			. "You are running autonomously as a scheduled task (task: {$task_id}). "
 			. "There is no human user in this conversation.\n"
-			. "Execute the requested task using your available tools, then provide "
+			. 'Execute the requested task using your available tools, then provide '
 			. "a concise summary of what you did and any findings.\n";
 
 		$system_prompt = $agent->get_system_prompt() . $autonomous_context;

@@ -310,7 +310,7 @@ class Test_Marketplace_Client extends TestCase {
 			'validated_at'     => current_time( 'mysql' ),
 		);
 
-		$licenses                = get_option( 'agentic_licenses', array() );
+		$licenses                  = get_option( 'agentic_licenses', array() );
 		$licenses['premium-agent'] = $license_data;
 		update_option( 'agentic_licenses', $licenses );
 
@@ -326,8 +326,14 @@ class Test_Marketplace_Client extends TestCase {
 		update_option(
 			'agentic_licenses',
 			array(
-				'agent-a' => array( 'license_key' => 'key-a', 'status' => 'active' ),
-				'agent-b' => array( 'license_key' => 'key-b', 'status' => 'active' ),
+				'agent-a' => array(
+					'license_key' => 'key-a',
+					'status'      => 'active',
+				),
+				'agent-b' => array(
+					'license_key' => 'key-b',
+					'status'      => 'active',
+				),
 			)
 		);
 

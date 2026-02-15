@@ -392,7 +392,7 @@ class LLM_Client {
 				// Google uses different format.
 				$contents = array();
 				foreach ( $messages as $msg ) {
-					$parts = $this->convert_content_for_google( $msg['content'] );
+					$parts      = $this->convert_content_for_google( $msg['content'] );
 					$contents[] = array(
 						'role'  => 'user' === $msg['role'] ? 'user' : 'model',
 						'parts' => $parts,
@@ -440,7 +440,7 @@ class LLM_Client {
 					'text' => $part['text'] ?? '',
 				);
 			} elseif ( 'image_url' === ( $part['type'] ?? '' ) ) {
-				$url = $part['image_url']['url'] ?? '';
+				$url        = $part['image_url']['url'] ?? '';
 				$media_type = '';
 				$b64_data   = '';
 

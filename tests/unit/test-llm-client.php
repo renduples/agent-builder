@@ -90,7 +90,12 @@ class Test_LLM_Client extends TestCase {
 	 */
 	public function test_chat_returns_error_when_not_configured() {
 		$client   = new LLM_Client();
-		$messages = array( array( 'role' => 'user', 'content' => 'Hello' ) );
+		$messages = array(
+			array(
+				'role'    => 'user',
+				'content' => 'Hello',
+			),
+		);
 		$result   = $client->chat( $messages );
 
 		$this->assertWPError( $result );
@@ -196,8 +201,14 @@ class Test_LLM_Client extends TestCase {
 		update_option( 'agentic_model', 'gpt-4o' );
 		$client   = new LLM_Client();
 		$messages = array(
-			array( 'role' => 'system', 'content' => 'You are helpful.' ),
-			array( 'role' => 'user', 'content' => 'Hello' ),
+			array(
+				'role'    => 'system',
+				'content' => 'You are helpful.',
+			),
+			array(
+				'role'    => 'user',
+				'content' => 'Hello',
+			),
 		);
 
 		$body = $client->format_request_for_provider( 'openai', $messages );
@@ -217,8 +228,14 @@ class Test_LLM_Client extends TestCase {
 		update_option( 'agentic_model', 'claude-3-5-sonnet-20241022' );
 		$client   = new LLM_Client();
 		$messages = array(
-			array( 'role' => 'system', 'content' => 'You are helpful.' ),
-			array( 'role' => 'user', 'content' => 'Hello' ),
+			array(
+				'role'    => 'system',
+				'content' => 'You are helpful.',
+			),
+			array(
+				'role'    => 'user',
+				'content' => 'Hello',
+			),
 		);
 
 		$body = $client->format_request_for_provider( 'anthropic', $messages );
@@ -236,7 +253,10 @@ class Test_LLM_Client extends TestCase {
 	public function test_format_google_request() {
 		$client   = new LLM_Client();
 		$messages = array(
-			array( 'role' => 'user', 'content' => 'Hello' ),
+			array(
+				'role'    => 'user',
+				'content' => 'Hello',
+			),
 		);
 
 		$body = $client->format_request_for_provider( 'google', $messages );
@@ -296,7 +316,12 @@ class Test_LLM_Client extends TestCase {
 	public function test_stream_chat_not_implemented() {
 		$client = new LLM_Client();
 		$result = $client->stream_chat(
-			array( array( 'role' => 'user', 'content' => 'Hello' ) ),
+			array(
+				array(
+					'role'    => 'user',
+					'content' => 'Hello',
+				),
+			),
 			function () {}
 		);
 

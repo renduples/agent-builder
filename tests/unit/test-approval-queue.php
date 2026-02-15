@@ -47,7 +47,10 @@ class Test_Approval_Queue extends TestCase {
 		$id = $this->queue->add(
 			'onboarding-agent',
 			'code_change',
-			array( 'path' => 'style.css', 'content' => 'body { color: red; }' ),
+			array(
+				'path'    => 'style.css',
+				'content' => 'body { color: red; }',
+			),
 			'User requested color change'
 		);
 
@@ -59,7 +62,10 @@ class Test_Approval_Queue extends TestCase {
 	 * Test add stores all fields correctly.
 	 */
 	public function test_add_stores_all_fields() {
-		$params = array( 'path' => 'index.php', 'content' => '<?php echo "hi";' );
+		$params = array(
+			'path'    => 'index.php',
+			'content' => '<?php echo "hi";',
+		);
 		$id     = $this->queue->add(
 			'content-builder',
 			'create_file',

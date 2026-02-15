@@ -60,7 +60,7 @@ class Test_Agent_Proposals extends TestCase {
 	 * Test create stores proposal in transient.
 	 */
 	public function test_create_stores_transient() {
-		$proposal = Agent_Proposals::create( 'modify_option', array( 'name' => 'test' ), 'test-agent', 'Set an option' );
+		$proposal                  = Agent_Proposals::create( 'modify_option', array( 'name' => 'test' ), 'test-agent', 'Set an option' );
 		$this->created_proposals[] = $proposal['id'];
 
 		$stored = get_transient( 'agentic_proposal_' . $proposal['id'] );
@@ -72,8 +72,8 @@ class Test_Agent_Proposals extends TestCase {
 	 * Test create stores diff when provided.
 	 */
 	public function test_create_with_diff() {
-		$diff     = "--- old\n+++ new\n-removed\n+added";
-		$proposal = Agent_Proposals::create( 'write_file', array(), 'test-agent', 'Apply diff', $diff );
+		$diff                      = "--- old\n+++ new\n-removed\n+added";
+		$proposal                  = Agent_Proposals::create( 'write_file', array(), 'test-agent', 'Apply diff', $diff );
 		$this->created_proposals[] = $proposal['id'];
 
 		$this->assertEquals( $diff, $proposal['diff'] );
@@ -87,7 +87,7 @@ class Test_Agent_Proposals extends TestCase {
 	 * Test get retrieves existing proposal.
 	 */
 	public function test_get_existing_proposal() {
-		$proposal = Agent_Proposals::create( 'write_file', array(), 'test-agent', 'Get test' );
+		$proposal                  = Agent_Proposals::create( 'write_file', array(), 'test-agent', 'Get test' );
 		$this->created_proposals[] = $proposal['id'];
 
 		$retrieved = Agent_Proposals::get( $proposal['id'] );
@@ -187,14 +187,17 @@ class Test_Agent_Proposals extends TestCase {
 		// Should have headers.
 		$this->assertStringContainsString( '---', $diff );
 		// With identical content, there should be no actual change lines (lines starting with +/- without header prefix).
-		$lines = explode( "\n", $diff );
-		$change_lines = array_filter( $lines, function( $line ) {
-			// Skip diff header lines.
-			if ( str_starts_with( $line, '---' ) || str_starts_with( $line, '+++' ) ) {
-				return false;
+		$lines        = explode( "\n", $diff );
+		$change_lines = array_filter(
+			$lines,
+			function ( $line ) {
+				// Skip diff header lines.
+				if ( str_starts_with( $line, '---' ) || str_starts_with( $line, '+++' ) ) {
+					return false;
+				}
+				return str_starts_with( $line, '+' ) || str_starts_with( $line, '-' );
 			}
-			return str_starts_with( $line, '+' ) || str_starts_with( $line, '-' );
-		} );
+		);
 		$this->assertCount( 0, $change_lines, 'Identical content should produce no change lines' );
 	}
 

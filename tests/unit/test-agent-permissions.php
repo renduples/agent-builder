@@ -212,7 +212,7 @@ class Test_Agent_Permissions extends TestCase {
 	public function test_is_user_space_path_strips_traversal() {
 		// Path traversal `..` is stripped, so the cleaned path still matches.
 		// This is by design — the path normalizes to themes/<active>/style.css.
-		$theme = get_stylesheet();
+		$theme  = get_stylesheet();
 		$result = Agent_Permissions::is_user_space_path( "../../themes/{$theme}/style.css" );
 		// After stripping '..', path becomes 'themes/<theme>/style.css' which IS user-space.
 		$this->assertTrue( $result );

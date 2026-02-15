@@ -80,7 +80,10 @@ class Test_Job_Manager extends TestCase {
 	 * Test job request_data is deserialized.
 	 */
 	public function test_job_request_data_deserialized() {
-		$data   = array( 'prompt' => 'Write a poem', 'temperature' => 0.7 );
+		$data   = array(
+			'prompt'      => 'Write a poem',
+			'temperature' => 0.7,
+		);
 		$job_id = Job_Manager::create_job(
 			array(
 				'user_id'      => 1,
@@ -245,9 +248,24 @@ class Test_Job_Manager extends TestCase {
 	public function test_get_user_jobs() {
 		$user_id = $this->factory->user->create();
 
-		Job_Manager::create_job( array( 'user_id' => $user_id, 'agent_id' => 'agent-1' ) );
-		Job_Manager::create_job( array( 'user_id' => $user_id, 'agent_id' => 'agent-2' ) );
-		Job_Manager::create_job( array( 'user_id' => 999, 'agent_id' => 'agent-3' ) );
+		Job_Manager::create_job(
+			array(
+				'user_id'  => $user_id,
+				'agent_id' => 'agent-1',
+			)
+		);
+		Job_Manager::create_job(
+			array(
+				'user_id'  => $user_id,
+				'agent_id' => 'agent-2',
+			)
+		);
+		Job_Manager::create_job(
+			array(
+				'user_id'  => 999,
+				'agent_id' => 'agent-3',
+			)
+		);
 
 		wp_cache_flush();
 		$jobs = Job_Manager::get_user_jobs( $user_id );
@@ -264,8 +282,18 @@ class Test_Job_Manager extends TestCase {
 	public function test_get_user_jobs_with_status_filter() {
 		$user_id = $this->factory->user->create();
 
-		$job1 = Job_Manager::create_job( array( 'user_id' => $user_id, 'agent_id' => 'agent-1' ) );
-		$job2 = Job_Manager::create_job( array( 'user_id' => $user_id, 'agent_id' => 'agent-2' ) );
+		$job1 = Job_Manager::create_job(
+			array(
+				'user_id'  => $user_id,
+				'agent_id' => 'agent-1',
+			)
+		);
+		$job2 = Job_Manager::create_job(
+			array(
+				'user_id'  => $user_id,
+				'agent_id' => 'agent-2',
+			)
+		);
 
 		Job_Manager::update_job( $job1, array( 'status' => Job_Manager::STATUS_COMPLETED ) );
 
@@ -282,9 +310,24 @@ class Test_Job_Manager extends TestCase {
 	public function test_get_stats() {
 		$user_id = $this->factory->user->create();
 
-		$job1 = Job_Manager::create_job( array( 'user_id' => $user_id, 'agent_id' => 'test' ) );
-		$job2 = Job_Manager::create_job( array( 'user_id' => $user_id, 'agent_id' => 'test' ) );
-		$job3 = Job_Manager::create_job( array( 'user_id' => $user_id, 'agent_id' => 'test' ) );
+		$job1 = Job_Manager::create_job(
+			array(
+				'user_id'  => $user_id,
+				'agent_id' => 'test',
+			)
+		);
+		$job2 = Job_Manager::create_job(
+			array(
+				'user_id'  => $user_id,
+				'agent_id' => 'test',
+			)
+		);
+		$job3 = Job_Manager::create_job(
+			array(
+				'user_id'  => $user_id,
+				'agent_id' => 'test',
+			)
+		);
 
 		Job_Manager::update_job( $job1, array( 'status' => Job_Manager::STATUS_COMPLETED ) );
 		Job_Manager::update_job( $job2, array( 'status' => Job_Manager::STATUS_FAILED ) );

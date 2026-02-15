@@ -189,7 +189,7 @@ final class Plugin {
 		}
 
 		$tool_name = sanitize_text_field( wp_unslash( $_POST['tool'] ?? '' ) );
-		$enabled   = (bool) ( $_POST['enabled'] ?? true );
+		$enabled   = (bool) ( isset( $_POST['enabled'] ) ? rest_sanitize_boolean( wp_unslash( $_POST['enabled'] ) ) : true );
 
 		if ( empty( $tool_name ) ) {
 			wp_send_json_error( __( 'Missing tool name.', 'agent-builder' ) );
@@ -202,10 +202,8 @@ final class Plugin {
 
 		if ( $enabled ) {
 			$disabled_tools = array_values( array_diff( $disabled_tools, array( $tool_name ) ) );
-		} else {
-			if ( ! in_array( $tool_name, $disabled_tools, true ) ) {
+		} elseif ( ! in_array( $tool_name, $disabled_tools, true ) ) {
 				$disabled_tools[] = $tool_name;
-			}
 		}
 
 		update_option( 'agentic_disabled_tools', $disabled_tools );
@@ -299,8 +297,8 @@ final class Plugin {
 				$response_text = $decoded['response'];
 			} elseif ( str_starts_with( $details['result'], '{"response":"' ) ) {
 				// Handle truncated JSON from older audit entries.
-				$inner = substr( $details['result'], 14 );
-				$inner = rtrim( $inner, '"}' );
+				$inner         = substr( $details['result'], 14 );
+				$inner         = rtrim( $inner, '"}' );
 				$response_text = str_replace(
 					array( '\\n', '\\t', '\\/', '\\"', '\\\\' ),
 					array( "\n", "\t", '/', '"', '\\' ),
@@ -322,9 +320,9 @@ final class Plugin {
 
 		wp_send_json_success(
 			array(
-				'duration'    => $duration,
-				'duration_s'  => $details['duration_s'] ?? null,
-				'response'    => $response_text,
+				'duration'   => $duration,
+				'duration_s' => $details['duration_s'] ?? null,
+				'response'   => $response_text,
 			)
 		);
 	}
@@ -479,9 +477,9 @@ final class Plugin {
 		}
 
 		// — "AI Agents" quick-chat menu (opens overlay) —
-		$registry      = \Agentic_Agent_Registry::get_instance();
-		$active_slugs  = $registry->get_active_agents();
-		$all_agents    = $registry->get_installed_agents();
+		$registry     = \Agentic_Agent_Registry::get_instance();
+		$active_slugs = $registry->get_active_agents();
+		$all_agents   = $registry->get_installed_agents();
 
 		if ( empty( $active_slugs ) ) {
 			return;
@@ -763,7 +761,10 @@ final class Plugin {
 			// Fallback to direct callback if no prompt or LLM not configured.
 			if ( null === $result && method_exists( $agent, $task['callback'] ) ) {
 				call_user_func( array( $agent, $task['callback'] ) );
-				$result = array( 'mode' => 'direct', 'status' => 'completed' );
+				$result = array(
+					'mode'   => 'direct',
+					'status' => 'completed',
+				);
 			}
 
 			$duration = round( microtime( true ) - $start, 3 );
@@ -946,8 +947,8 @@ final class Plugin {
 		}
 
 		// Build context-enriched prompt.
-		$context_json  = wp_json_encode( $hook_args, JSON_PRETTY_PRINT );
-		$full_prompt   = $prompt . "\n\n[EVENT CONTEXT]\n" . $context_json;
+		$context_json = wp_json_encode( $hook_args, JSON_PRETTY_PRINT );
+		$full_prompt  = $prompt . "\n\n[EVENT CONTEXT]\n" . $context_json;
 
 		$start = microtime( true );
 
@@ -961,7 +962,10 @@ final class Plugin {
 				foreach ( $listeners as $listener ) {
 					if ( $listener['id'] === $listener_id && method_exists( $agent, $listener['callback'] ) ) {
 						call_user_func( array( $agent, $listener['callback'] ), ...$hook_args );
-						$result = array( 'mode' => 'direct_fallback', 'status' => 'completed' );
+						$result = array(
+							'mode'   => 'direct_fallback',
+							'status' => 'completed',
+						);
 						break;
 					}
 				}
@@ -1018,10 +1022,10 @@ final class Plugin {
 				);
 			} elseif ( $value instanceof \WP_Comment ) {
 				$sanitized[ $key ] = array(
-					'_type'          => 'WP_Comment',
-					'comment_ID'     => $value->comment_ID,
+					'_type'           => 'WP_Comment',
+					'comment_ID'      => $value->comment_ID,
 					'comment_post_ID' => $value->comment_post_ID,
-					'comment_author' => $value->comment_author,
+					'comment_author'  => $value->comment_author,
 					'comment_content' => substr( $value->comment_content, 0, 500 ),
 				);
 			} elseif ( $value instanceof \WP_User ) {
@@ -1033,7 +1037,10 @@ final class Plugin {
 					'roles'        => $value->roles,
 				);
 			} elseif ( is_object( $value ) ) {
-				$sanitized[ $key ] = array( '_type' => get_class( $value ), '_note' => 'Object serialized to class name only' );
+				$sanitized[ $key ] = array(
+					'_type' => get_class( $value ),
+					'_note' => 'Object serialized to class name only',
+				);
 			} elseif ( is_string( $value ) && strlen( $value ) > 1000 ) {
 				$sanitized[ $key ] = substr( $value, 0, 1000 ) . '... [truncated]';
 			} else {
@@ -1048,10 +1055,11 @@ final class Plugin {
 	 * Register cron events when an agent is activated
 	 *
 	 * @param string     $slug  Agent slug.
-	 * @param array|null $agent Agent data.
+	 * @param array|null $agent Agent data (unused, required by hook signature).
 	 * @return void
 	 */
 	public function on_agent_activated_schedule( string $slug, $agent ): void {
+		unset( $agent ); // Unused parameter required by hook signature.
 		$registry = \Agentic_Agent_Registry::get_instance();
 		$instance = $registry->get_agent_instance( $slug );
 
@@ -1064,10 +1072,11 @@ final class Plugin {
 	 * Unregister cron events when an agent is deactivated
 	 *
 	 * @param string     $slug  Agent slug.
-	 * @param array|null $agent Agent data.
+	 * @param array|null $agent Agent data (unused, required by hook signature).
 	 * @return void
 	 */
 	public function on_agent_deactivated_schedule( string $slug, $agent ): void {
+		unset( $agent ); // Unused parameter required by hook signature.
 		$registry = \Agentic_Agent_Registry::get_instance();
 		$instance = $registry->get_agent_instance( $slug );
 
@@ -1241,7 +1250,7 @@ final class Plugin {
 		$agentic_instances = $agentic_registry->get_all_instances();
 		foreach ( $agentic_instances as $agentic_instance ) {
 			$agentic_agent_names[ $agentic_instance->get_id() ] = $agentic_instance->get_name();
-			$agentic_msg = $agentic_instance->get_welcome_message();
+			$agentic_msg                                        = $agentic_instance->get_welcome_message();
 			if ( $agentic_msg ) {
 				$agentic_welcome_messages[ $agentic_instance->get_id() ] = $agentic_msg;
 			}

@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Handle delete action.
 if ( isset( $_POST['agentic_delete_shortcode'], $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'agentic_manage_shortcodes' ) ) {
-	$agentic_delete_id   = isset( $_POST['agentic_shortcode_id'] ) ? (int) sanitize_text_field( wp_unslash( $_POST['agentic_shortcode_id'] ) ) : 0;
+	$agentic_delete_id   = isset( $_POST['agentic_shortcode_id'] ) ? (int) wp_unslash( $_POST['agentic_shortcode_id'] ) : 0;
 	$agentic_deployments = get_option( 'agentic_shortcode_deployments', array() );
 	$agentic_deployments = array_filter( $agentic_deployments, fn( $d ) => $d['id'] !== $agentic_delete_id );
 	update_option( 'agentic_shortcode_deployments', array_values( $agentic_deployments ) );

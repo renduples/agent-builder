@@ -189,7 +189,7 @@ final class Plugin {
 		}
 
 		$tool_name = sanitize_text_field( wp_unslash( $_POST['tool'] ?? '' ) );
-		$enabled   = (bool) ( isset( $_POST['enabled'] ) ? sanitize_text_field( wp_unslash( $_POST['enabled'] ) ) : true );
+		$enabled   = (bool) ( isset( $_POST['enabled'] ) ? rest_sanitize_boolean( wp_unslash( $_POST['enabled'] ) ) : true );
 
 		if ( empty( $tool_name ) ) {
 			wp_send_json_error( __( 'Missing tool name.', 'agent-builder' ) );

@@ -69,7 +69,8 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 		if ( ! isset( $_FILES['agentzip']['tmp_name'] ) || ! is_uploaded_file( $_FILES['agentzip']['tmp_name'] ) ) {
 			$agentic_upload_error = __( 'Invalid file upload.', 'agent-builder' );
 		} else {
-			$agentic_unzip = unzip_file( sanitize_text_field( wp_unslash( $_FILES['agentzip']['tmp_name'] ) ), $agentic_tmp_dir );
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- File path already validated by is_uploaded_file, do not sanitize as it can corrupt the path.
+			$agentic_unzip = unzip_file( $_FILES["agentzip"]["tmp_name"], $agentic_tmp_dir );
 
 			if ( is_wp_error( $agentic_unzip ) ) {
 				$agentic_upload_error = $agentic_unzip->get_error_message();

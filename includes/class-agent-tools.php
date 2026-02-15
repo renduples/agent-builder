@@ -2037,11 +2037,9 @@ class Agent_Tools {
 
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- Dynamic WHERE clause built safely above with prepare() and table name is $wpdb->options which is trusted.
 				$transients = $wpdb->get_results(
-					// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
 					"SELECT option_name, LENGTH(option_value) AS size_bytes FROM {$wpdb->options} WHERE {$where} ORDER BY option_name LIMIT 100",
 					ARRAY_A
 				);
-				// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 				$result = array();
 				foreach ( $transients as $t ) {

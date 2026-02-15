@@ -47,8 +47,8 @@ class Marketplace_Client {
 	 */
 	public function __construct() {
 		// Allow override for local development.
-		$this->api_base = defined( 'AGENTIC_MARKETPLACE_URL' )
-			? AGENTIC_MARKETPLACE_URL
+		$this->api_base = defined( 'AGENTIC_API_BASE' )
+			? AGENTIC_API_BASE
 			: 'https://agentic-plugin.com';
 
 		add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
@@ -197,9 +197,18 @@ class Marketplace_Client {
 
 			// Call the server validation endpoint directly (bypass GET cache).
 			$url      = trailingslashit( $this->api_base ) . 'wp-json/agentic-marketplace/v1/licenses/validate';
+			$version  = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
 			$response = wp_remote_post( $url, array(
 				'timeout' => 15,
-				'headers' => array( 'Accept' => 'application/json' ),
+				'headers' => array(
+					'Accept'                    => 'application/json',
+					'X-Agentic-Site-URL'        => $site_url,
+					'X-Agentic-Site-Name'       => get_bloginfo( 'name' ),
+					'X-Agentic-Plugin-Version'  => $version,
+					'X-Agentic-WP-Version'      => get_bloginfo( 'version' ),
+					'X-Agentic-PHP-Version'     => PHP_VERSION,
+					'User-Agent'                => 'AgentBuilder/' . $version . '; ' . $site_url,
+				),
 				'body'    => $params,
 			) );
 
@@ -986,10 +995,19 @@ class Marketplace_Client {
 	private function api_request( string $endpoint, array $params = array(), string $method = 'GET' ): array|\WP_Error {
 		$url = trailingslashit( $this->api_base ) . 'wp-json/agentic-marketplace/v1/' . $endpoint;
 
+		$version = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
+		$site_url = home_url();
+
 		$args = array(
 			'timeout' => 30,
 			'headers' => array(
-				'Accept' => 'application/json',
+				'Accept'                    => 'application/json',
+				'X-Agentic-Site-URL'        => $site_url,
+				'X-Agentic-Site-Name'       => get_bloginfo( 'name' ),
+				'X-Agentic-Plugin-Version'  => $version,
+				'X-Agentic-WP-Version'      => get_bloginfo( 'version' ),
+				'X-Agentic-PHP-Version'     => PHP_VERSION,
+				'User-Agent'                => 'AgentBuilder/' . $version . '; ' . $site_url,
 			),
 		);
 

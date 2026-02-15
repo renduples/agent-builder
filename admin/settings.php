@@ -212,7 +212,7 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 		<p class="description" style="margin-top: 16px;">Without a license, the core plugin and all bundled agents work normally. Only marketplace premium agents and auto-updates require a license.</p>
 
 		<script>
-		(function() {
+		document.addEventListener('DOMContentLoaded', function() {
 			const input = document.getElementById('agentic_license_key_input');
 			const deactivateBtn = document.getElementById('agentic-deactivate-license');
 
@@ -221,6 +221,10 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			const submitBtn = form.querySelector('input[type="submit"], .button-primary[type="submit"]');
 			if (submitBtn) {
 				submitBtn.addEventListener('click', function(e) {
+					// Only intercept when on the License tab.
+					const tabInput = form.querySelector('input[name="tab"]');
+					if (!tabInput || tabInput.value !== 'license') return;
+
 					e.preventDefault();
 					const key = input.value.trim();
 					if (!key) { alert('Please enter a license key.'); return; }
@@ -275,7 +279,7 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 					.catch(() => location.reload());
 				});
 			}
-		})();
+		});
 		</script>
 
 		<?php elseif ( 'general' === $agentic_active_tab ) : ?>

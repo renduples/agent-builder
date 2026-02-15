@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,12 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.7.1 - 2026-02-15 =
+* Improved: All API calls now send site identification headers (X-Agentic-Site-URL, Site-Name, Plugin-Version, WP-Version, PHP-Version, User-Agent).
+* Improved: License activation error messages now include HTTP status code and server error detail.
+* Fixed: License tab JS timing — changed from IIFE to DOMContentLoaded to prevent button race condition.
+* Fixed: License_Client and Marketplace_Client use AGENTIC_API_BASE instead of AGENTIC_MARKETPLACE_URL.
 
 = 1.7.0 - 2026-02-14 =
 * Added: License_Client class for client-side license enforcement.

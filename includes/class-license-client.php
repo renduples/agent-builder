@@ -105,8 +105,8 @@ class License_Client {
 	 * Constructor — registers all hooks.
 	 */
 	private function __construct() {
-		$this->api_base = defined( 'AGENTIC_MARKETPLACE_URL' )
-			? AGENTIC_MARKETPLACE_URL
+		$this->api_base = defined( 'AGENTIC_API_BASE' )
+			? AGENTIC_API_BASE
 			: 'https://agentic-plugin.com';
 
 		// Schedule daily revalidation cron.
@@ -245,6 +245,7 @@ class License_Client {
 			$this->api_base . '/wp-json/agentic-license/v1/validate',
 			array(
 				'timeout' => 15,
+				'headers' => $this->get_site_headers(),
 				'body'    => array(
 					'license_key' => $license_key,
 					'site_url'    => $site_url,
@@ -527,6 +528,7 @@ class License_Client {
 			$this->api_base . '/wp-json/agentic-license/v1/activate',
 			array(
 				'timeout' => 15,
+				'headers' => $this->get_site_headers(),
 				'body'    => array(
 					'license_key' => $license_key,
 					'site_url'    => home_url(),
@@ -539,13 +541,22 @@ class License_Client {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( __( 'Could not connect to license server. Please try again.', 'agent-builder' ) );
+			wp_send_json_error( sprintf(
+				/* translators: %s: error message */
+				__( 'Could not connect to license server: %s', 'agent-builder' ),
+				$response->get_error_message()
+			) );
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$http_code = wp_remote_retrieve_response_code( $response );
 
 		if ( empty( $body['activated'] ) ) {
-			$message = $body['message'] ?? __( 'License activation failed.', 'agent-builder' );
+			$message = $body['message'] ?? sprintf(
+				/* translators: %d: HTTP status code */
+				__( 'License activation failed (HTTP %d).', 'agent-builder' ),
+				$http_code
+			);
 			wp_send_json_error( $message );
 		}
 
@@ -590,6 +601,7 @@ class License_Client {
 				$this->api_base . '/wp-json/agentic-license/v1/deactivate',
 				array(
 					'timeout' => 10,
+					'headers' => $this->get_site_headers(),
 					'body'    => array(
 						'license_key' => $license_key,
 						'site_url'    => home_url(),
@@ -611,6 +623,25 @@ class License_Client {
 	// =========================================================================
 	// INTERNAL HELPERS
 	// =========================================================================
+
+	/**
+	 * Get standard identifying headers sent with every API request.
+	 *
+	 * @return array Headers array for wp_remote_* calls.
+	 */
+	private function get_site_headers(): array {
+		$site_url = home_url();
+		$version  = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
+
+		return array(
+			'X-Agentic-Site-URL'        => $site_url,
+			'X-Agentic-Site-Name'       => get_bloginfo( 'name' ),
+			'X-Agentic-Plugin-Version'  => $version,
+			'X-Agentic-WP-Version'      => get_bloginfo( 'version' ),
+			'X-Agentic-PHP-Version'     => PHP_VERSION,
+			'User-Agent'                => 'AgentBuilder/' . $version . '; ' . $site_url,
+		);
+	}
 
 	/**
 	 * Evaluate license status from stored data, including grace period logic.

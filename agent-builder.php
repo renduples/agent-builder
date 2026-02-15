@@ -5,7 +5,7 @@
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
  * Description:       Build AI agents without writing code. Describe the AI agent you want and let WordPress build it for you.
- * Version:           1.7.0
+ * Version:           1.7.1
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agent Builder Team
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'AGENTIC_PLUGIN_VERSION', '1.7.0' );
+define( 'AGENTIC_PLUGIN_VERSION', '1.7.1' );
 define( 'AGENTIC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENTIC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AGENTIC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -79,6 +79,8 @@ final class Plugin {
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'admin_bar_menu', array( $this, 'admin_bar_menu' ), 100 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_adminbar_chat_overlay' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_adminbar_chat_overlay' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 		add_filter( 'the_content', array( $this, 'render_chat_interface' ) );
@@ -476,54 +478,46 @@ final class Plugin {
 			return;
 		}
 
-		// Add parent menu.
+		// — "AI Agents" quick-chat menu (opens overlay) —
+		$registry      = \Agentic_Agent_Registry::get_instance();
+		$active_slugs  = $registry->get_active_agents();
+		$all_agents    = $registry->get_installed_agents();
+
+		if ( empty( $active_slugs ) ) {
+			return;
+		}
+
 		$wp_admin_bar->add_node(
 			array(
-				'id'    => 'agentic',
-				'title' => '<span class="ab-icon dashicons dashicons-superhero" style="font-size: 18px; line-height: 1.3;"></span>' . __( 'Agents', 'agent-builder' ),
-				'href'  => admin_url( 'admin.php?page=agentic-agents' ),
+				'id'    => 'agentic-chat-bar',
+				'title' => '<span class="ab-icon dashicons dashicons-format-chat" style="font-size: 18px; line-height: 1.3;"></span>' . __( 'AI Agents', 'agent-builder' ),
+				'href'  => '#',
 				'meta'  => array(
-					'title' => __( 'Agent Builder', 'agent-builder' ),
+					'title' => __( 'Chat with an AI Agent', 'agent-builder' ),
 				),
 			)
 		);
 
-		// Add submenu items.
-		$wp_admin_bar->add_node(
-			array(
-				'id'     => 'agentic-agents',
-				'parent' => 'agentic',
-				'title'  => __( 'Installed Agents', 'agent-builder' ),
-				'href'   => admin_url( 'admin.php?page=agentic-agents' ),
-			)
-		);
+		foreach ( $active_slugs as $slug ) {
+			if ( ! isset( $all_agents[ $slug ] ) ) {
+				continue;
+			}
+			$agent_info = $all_agents[ $slug ];
+			$name       = $agent_info['name'] ?? ucwords( str_replace( '-', ' ', $slug ) );
+			$icon       = $agent_info['icon'] ?? '🤖';
 
-		$wp_admin_bar->add_node(
-			array(
-				'id'     => 'agentic-add-new',
-				'parent' => 'agentic',
-				'title'  => __( 'Add Agent', 'agent-builder' ),
-				'href'   => admin_url( 'admin.php?page=agentic-agents-add' ),
-			)
-		);
-
-		$wp_admin_bar->add_node(
-			array(
-				'id'     => 'agentic-audit',
-				'parent' => 'agentic',
-				'title'  => __( 'Audit Log', 'agent-builder' ),
-				'href'   => admin_url( 'admin.php?page=agentic-audit' ),
-			)
-		);
-
-		$wp_admin_bar->add_node(
-			array(
-				'id'     => 'agentic-settings',
-				'parent' => 'agentic',
-				'title'  => __( 'Settings', 'agent-builder' ),
-				'href'   => admin_url( 'admin.php?page=agentic-settings' ),
-			)
-		);
+			$wp_admin_bar->add_node(
+				array(
+					'id'     => 'agentic-chat-' . $slug,
+					'parent' => 'agentic-chat-bar',
+					'title'  => $icon . ' ' . esc_html( $name ),
+					'href'   => '#agentic-chat-' . $slug,
+					'meta'   => array(
+						'class' => 'agentic-chat-trigger-bar',
+					),
+				)
+			);
+		}
 	}
 
 	/**
@@ -1108,14 +1102,14 @@ final class Plugin {
 			'agentic-chat',
 			AGENTIC_PLUGIN_URL . 'assets/css/chat.css',
 			array(),
-			AGENTIC_PLUGIN_VERSION
+			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/chat.css' )
 		);
 
 		wp_enqueue_script(
 			'agentic-chat',
 			AGENTIC_PLUGIN_URL . 'assets/js/chat.js',
 			array(),
-			AGENTIC_PLUGIN_VERSION,
+			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/chat.js' ),
 			true
 		);
 
@@ -1147,7 +1141,7 @@ final class Plugin {
 			'agentic-settings',
 			AGENTIC_PLUGIN_URL . 'assets/js/settings.js',
 			array(),
-			AGENTIC_PLUGIN_VERSION,
+			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/settings.js' ),
 			true
 		);
 
@@ -1165,14 +1159,14 @@ final class Plugin {
 				'agentic-chat',
 				AGENTIC_PLUGIN_URL . 'assets/css/chat.css',
 				array(),
-				AGENTIC_PLUGIN_VERSION
+				(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/chat.css' )
 			);
 
 			wp_enqueue_script(
 				'agentic-chat',
 				AGENTIC_PLUGIN_URL . 'assets/js/chat.js',
 				array(),
-				AGENTIC_PLUGIN_VERSION,
+				(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/chat.js' ),
 				true
 			);
 
@@ -1187,6 +1181,46 @@ final class Plugin {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Enqueue assets for admin-bar chat overlay
+	 *
+	 * Loads on every page where the admin bar is visible so that clicking
+	 * an "AI Agents" sub-menu item opens an overlay chat panel.
+	 *
+	 * @return void
+	 */
+	public function enqueue_adminbar_chat_overlay(): void {
+		if ( ! is_admin_bar_showing() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'agentic-chat-overlay',
+			AGENTIC_PLUGIN_URL . 'assets/css/chat-overlay.css',
+			array(),
+			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/chat-overlay.css' )
+		);
+
+		wp_enqueue_script(
+			'agentic-chat-overlay',
+			AGENTIC_PLUGIN_URL . 'assets/js/chat-overlay.js',
+			array(),
+			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/chat-overlay.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'agentic-chat-overlay',
+			'agenticChat',
+			array(
+				'restUrl'  => rest_url( 'agentic/v1/' ),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'userId'   => get_current_user_id(),
+				'userName' => wp_get_current_user()->display_name,
+			)
+		);
 	}
 
 	/**

@@ -162,7 +162,7 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 				<?php echo empty( $agentic_filter_type ) ? 'class="current"' : ''; ?>>
 				<?php
 				/* translators: %d: number of tools */
-				printf( esc_html__( 'All (%d)', 'agent-builder' ), $agentic_total_tools );
+				printf( esc_html__( 'All (%d)', 'agent-builder' ), (int) $agentic_total_tools );
 				?>
 			</a> |
 		</li>
@@ -171,7 +171,7 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 				<?php echo 'core' === $agentic_filter_type ? 'class="current"' : ''; ?>>
 				<?php
 				/* translators: %d: number of core tools */
-				printf( esc_html__( 'Core (%d)', 'agent-builder' ), $agentic_core_count );
+				printf( esc_html__( 'Core (%d)', 'agent-builder' ), (int) $agentic_core_count );
 				?>
 			</a> |
 		</li>
@@ -180,7 +180,7 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 				<?php echo 'agent' === $agentic_filter_type ? 'class="current"' : ''; ?>>
 				<?php
 				/* translators: %d: number of agent tools */
-				printf( esc_html__( 'Agent (%d)', 'agent-builder' ), $agentic_agent_count );
+				printf( esc_html__( 'Agent (%d)', 'agent-builder' ), (int) $agentic_agent_count );
 				?>
 			</a>
 		</li>

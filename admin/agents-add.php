@@ -63,85 +63,91 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 		$agentic_tmp_dir = $agentic_agents_dir . '/__upload_tmp_' . wp_generate_password( 8, false );
 		wp_mkdir_p( $agentic_tmp_dir );
 
-		$agentic_unzip = unzip_file( $_FILES['agentzip']['tmp_name'], $agentic_tmp_dir );
-
-		if ( is_wp_error( $agentic_unzip ) ) {
-			$agentic_upload_error = $agentic_unzip->get_error_message();
+		// Validate and sanitize the uploaded file.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- is_uploaded_file() validates the file path directly from $_FILES, sanitization not required for validation.
+		if ( ! isset( $_FILES['agentzip']['tmp_name'] ) || ! is_uploaded_file( $_FILES['agentzip']['tmp_name'] ) ) {
+			$agentic_upload_error = __( 'Invalid file upload.', 'agent-builder' );
 		} else {
-			// Find agent.php — could be at root or inside a subfolder.
-			$agentic_agent_file = null;
-			$agentic_agent_root = null;
+			$agentic_unzip = unzip_file( sanitize_text_field( wp_unslash( $_FILES['agentzip']['tmp_name'] ) ), $agentic_tmp_dir );
 
-			if ( file_exists( $agentic_tmp_dir . '/agent.php' ) ) {
-				$agentic_agent_file = $agentic_tmp_dir . '/agent.php';
-				$agentic_agent_root = $agentic_tmp_dir;
+			if ( is_wp_error( $agentic_unzip ) ) {
+				$agentic_upload_error = $agentic_unzip->get_error_message();
 			} else {
-				// Check one level deep (zip contains a folder).
-				$agentic_subdirs = glob( $agentic_tmp_dir . '/*', GLOB_ONLYDIR );
-				foreach ( $agentic_subdirs as $agentic_subdir ) {
-					if ( file_exists( $agentic_subdir . '/agent.php' ) ) {
-						$agentic_agent_file = $agentic_subdir . '/agent.php';
-						$agentic_agent_root = $agentic_subdir;
-						break;
-					}
-				}
-			}
+				// Find agent.php — could be at root or inside a subfolder.
+				$agentic_agent_file = null;
+				$agentic_agent_root = null;
 
-			if ( ! $agentic_agent_file ) {
-				$agentic_upload_error = __( 'The uploaded zip does not contain a valid agent. An agent.php file is required.', 'agent-builder' );
-			} else {
-				// Read agent headers.
-				$agentic_headers = array(
-					'name'        => 'Agent Name',
-					'version'     => 'Version',
-					'description' => 'Description',
-					'author'      => 'Author',
-				);
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-				$agentic_agent_contents = file_get_contents( $agentic_agent_file );
-				$agentic_parsed_headers = array();
-				foreach ( $agentic_headers as $agentic_hkey => $agentic_hlabel ) {
-					if ( preg_match( '/^\s*\*?\s*' . preg_quote( $agentic_hlabel, '/' ) . ':\s*(.+)$/mi', $agentic_agent_contents, $agentic_hmatch ) ) {
-						$agentic_parsed_headers[ $agentic_hkey ] = trim( $agentic_hmatch[1] );
-					}
-				}
-
-				if ( empty( $agentic_parsed_headers['name'] ) ) {
-					$agentic_upload_error = __( 'The agent.php file is missing a required "Agent Name" header.', 'agent-builder' );
+				if ( file_exists( $agentic_tmp_dir . '/agent.php' ) ) {
+					$agentic_agent_file = $agentic_tmp_dir . '/agent.php';
+					$agentic_agent_root = $agentic_tmp_dir;
 				} else {
-					// Derive slug from folder name or sanitize the agent name.
-					$agentic_upload_slug = sanitize_title( basename( $agentic_agent_root ) );
-					if ( '__upload_tmp_' === substr( $agentic_upload_slug, 0, 13 ) ) {
-						$agentic_upload_slug = sanitize_title( $agentic_parsed_headers['name'] );
+					// Check one level deep (zip contains a folder).
+					$agentic_subdirs = glob( $agentic_tmp_dir . '/*', GLOB_ONLYDIR );
+					foreach ( $agentic_subdirs as $agentic_subdir ) {
+						if ( file_exists( $agentic_subdir . '/agent.php' ) ) {
+							$agentic_agent_file = $agentic_subdir . '/agent.php';
+							$agentic_agent_root = $agentic_subdir;
+							break;
+						}
 					}
+				}
 
-					$agentic_dest = $agentic_agents_dir . '/' . $agentic_upload_slug;
-
-					if ( is_dir( $agentic_dest ) ) {
-						// Remove existing version for update.
-						global $wp_filesystem;
-						$wp_filesystem->delete( $agentic_dest, true );
-					}
-
-					rename( $agentic_agent_root, $agentic_dest );
-					$agentic_upload_message = sprintf(
-						/* translators: %s: Agent name */
-						__( 'Agent "%s" has been installed successfully.', 'agent-builder' ),
-						$agentic_parsed_headers['name']
+				if ( ! $agentic_agent_file ) {
+					$agentic_upload_error = __( 'The uploaded zip does not contain a valid agent. An agent.php file is required.', 'agent-builder' );
+				} else {
+					// Read agent headers.
+					$agentic_headers = array(
+						'name'        => 'Agent Name',
+						'version'     => 'Version',
+						'description' => 'Description',
+						'author'      => 'Author',
 					);
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+					$agentic_agent_contents = file_get_contents( $agentic_agent_file );
+					$agentic_parsed_headers = array();
+					foreach ( $agentic_headers as $agentic_hkey => $agentic_hlabel ) {
+						if ( preg_match( '/^\s*\*?\s*' . preg_quote( $agentic_hlabel, '/' ) . ':\s*(.+)$/mi', $agentic_agent_contents, $agentic_hmatch ) ) {
+							$agentic_parsed_headers[ $agentic_hkey ] = trim( $agentic_hmatch[1] );
+						}
+					}
 
-					// Clear registry cache by forcing a refresh.
-					$agentic_registry_inst = Agentic_Agent_Registry::get_instance();
-					$agentic_registry_inst->get_installed_agents( true );
+					if ( empty( $agentic_parsed_headers['name'] ) ) {
+						$agentic_upload_error = __( 'The agent.php file is missing a required "Agent Name" header.', 'agent-builder' );
+					} else {
+						// Derive slug from folder name or sanitize the agent name.
+						$agentic_upload_slug = sanitize_title( basename( $agentic_agent_root ) );
+						if ( '__upload_tmp_' === substr( $agentic_upload_slug, 0, 13 ) ) {
+							$agentic_upload_slug = sanitize_title( $agentic_parsed_headers['name'] );
+						}
+
+						$agentic_dest = $agentic_agents_dir . '/' . $agentic_upload_slug;
+
+						if ( is_dir( $agentic_dest ) ) {
+							// Remove existing version for update.
+							global $wp_filesystem;
+							$wp_filesystem->delete( $agentic_dest, true );
+						}
+
+						rename( $agentic_agent_root, $agentic_dest );
+						$agentic_upload_message = sprintf(
+						/* translators: %s: Agent name */
+							__( 'Agent "%s" has been installed successfully.', 'agent-builder' ),
+							$agentic_parsed_headers['name']
+						);
+
+						// Clear registry cache by forcing a refresh.
+						$agentic_registry_inst = Agentic_Agent_Registry::get_instance();
+						$agentic_registry_inst->get_installed_agents( true );
+					}
 				}
 			}
 		}
+	}
 
-		// Cleanup temp directory if it still exists.
-		if ( is_dir( $agentic_tmp_dir ) ) {
-			global $wp_filesystem;
-			$wp_filesystem->delete( $agentic_tmp_dir, true );
-		}
+	// Cleanup temp directory if it still exists.
+	if ( is_dir( $agentic_tmp_dir ) ) {
+		global $wp_filesystem;
+		$wp_filesystem->delete( $agentic_tmp_dir, true );
 	}
 }
 
@@ -175,7 +181,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 		<p class="agentic-add-agents-description">
 		<?php
 		printf(
-			/* translators: %s: Marketplace link */
+			/* translators: %s: Marketplace link URL */
 			wp_kses(
 				__( 'AI Agents extend and expand the functionality of WordPress. You may install AI Agents from the <a href="%s">Marketplace</a> right on this page, or upload an Agent in .zip format by clicking the button above.', 'agent-builder' ),
 				array( 'a' => array( 'href' => array() ) )

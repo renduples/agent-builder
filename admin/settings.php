@@ -186,7 +186,7 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			<?php if ( ! empty( $agentic_ls['expires_at'] ) ) : ?>
 			<tr>
 				<th scope="row">Expires</th>
-				<td><?php echo esc_html( date( 'F j, Y', strtotime( $agentic_ls['expires_at'] ) ) ); ?></td>
+				<td><?php echo esc_html( gmdate( 'F j, Y', strtotime( $agentic_ls['expires_at'] ) ) ); ?></td>
 			</tr>
 			<?php endif; ?>
 			<?php if ( isset( $agentic_ls['activations_used'] ) ) : ?>

@@ -256,12 +256,13 @@ class Agent_Proposals {
 		}
 
 		// Only show changed regions with 3 lines of context.
-		$output       = array();
-		$context      = 3;
-		$in_change    = false;
-		$change_start = -1;
+		$output        = array();
+		$context       = 3;
+		$in_change     = false;
+		$change_start  = -1;
+		$changes_count = count( $changes );
 
-		for ( $i = 0; $i < count( $changes ); $i++ ) {
+		for ( $i = 0; $i < $changes_count; $i++ ) {
 			$is_change = ' ' !== $changes[ $i ][0];
 
 			if ( $is_change && ! $in_change ) {
@@ -279,7 +280,8 @@ class Agent_Proposals {
 				$output[] = $changes[ $i ];
 				// Check if we should close this hunk.
 				$next_change = false;
-				for ( $j = $i + 1; $j <= $i + $context && $j < count( $changes ); $j++ ) {
+				$max_j       = min( $i + $context, $changes_count - 1 );
+				for ( $j = $i + 1; $j <= $max_j; $j++ ) {
 					if ( ' ' !== $changes[ $j ][0] ) {
 						$next_change = true;
 						break;

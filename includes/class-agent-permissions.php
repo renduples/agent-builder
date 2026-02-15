@@ -156,7 +156,7 @@ class Agent_Permissions {
 
 		// Also check parent theme if child theme is active.
 		$parent = get_template();
-		if ( $parent !== get_stylesheet() ) {
+		if ( get_stylesheet() !== $parent ) {
 			$parent_dir = 'themes/' . $parent;
 			if ( str_starts_with( $clean, $parent_dir . '/' ) || $clean === $parent_dir ) {
 				return true;

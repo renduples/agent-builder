@@ -189,7 +189,7 @@ final class Plugin {
 		}
 
 		$tool_name = sanitize_text_field( wp_unslash( $_POST['tool'] ?? '' ) );
-		$enabled   = (bool) ( $_POST['enabled'] ?? true );
+		$enabled   = (bool) ( isset( $_POST['enabled'] ) ? wp_unslash( $_POST['enabled'] ) : true );
 
 		if ( empty( $tool_name ) ) {
 			wp_send_json_error( __( 'Missing tool name.', 'agent-builder' ) );
@@ -1055,10 +1055,11 @@ final class Plugin {
 	 * Register cron events when an agent is activated
 	 *
 	 * @param string     $slug  Agent slug.
-	 * @param array|null $agent Agent data.
+	 * @param array|null $agent Agent data (unused, required by hook signature).
 	 * @return void
 	 */
 	public function on_agent_activated_schedule( string $slug, $agent ): void {
+		unset( $agent ); // Unused parameter required by hook signature.
 		$registry = \Agentic_Agent_Registry::get_instance();
 		$instance = $registry->get_agent_instance( $slug );
 
@@ -1071,10 +1072,11 @@ final class Plugin {
 	 * Unregister cron events when an agent is deactivated
 	 *
 	 * @param string     $slug  Agent slug.
-	 * @param array|null $agent Agent data.
+	 * @param array|null $agent Agent data (unused, required by hook signature).
 	 * @return void
 	 */
 	public function on_agent_deactivated_schedule( string $slug, $agent ): void {
+		unset( $agent ); // Unused parameter required by hook signature.
 		$registry = \Agentic_Agent_Registry::get_instance();
 		$instance = $registry->get_agent_instance( $slug );
 

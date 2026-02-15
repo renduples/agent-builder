@@ -463,7 +463,7 @@ class License_Client {
 				printf(
 					/* translators: 1: days remaining, 2: renewal URL */
 					esc_html__( 'Your Agent Builder license has expired. You have %1$d day(s) remaining in the grace period. Premium agents will be disabled after the grace period ends. %2$s', 'agent-builder' ),
-					$days_left,
+					(int) $days_left,
 					'<a href="https://agentic-plugin.com/pricing/">' . esc_html__( 'Renew now', 'agent-builder' ) . '</a>'
 				);
 				echo '</p></div>';

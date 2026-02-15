@@ -1367,7 +1367,7 @@ class Agent_Tools {
 			'count'     => count( $lines ),
 			'file_size' => $file_size,
 			'file'      => $log_file,
-			'filter'    => $filter ?: null,
+			'filter'    => $filter ? $filter : null,
 		);
 	}
 
@@ -1428,7 +1428,7 @@ class Agent_Tools {
 			),
 			ARRAY_A
 		);
-		$db_info['tables'] = $tables ?: array();
+		$db_info['tables'] = $tables ? $tables : array();
 
 		// Active plugins.
 		$active_plugins = get_option( 'active_plugins', array() );
@@ -1522,7 +1522,7 @@ class Agent_Tools {
 									'hook'      => $hook,
 									'timestamp' => $timestamp,
 									'next_run'  => wp_date( 'Y-m-d H:i:s', $timestamp ),
-									'schedule'  => $data['schedule'] ?: 'single',
+									'schedule'  => $data['schedule'] ? $data['schedule'] : 'single',
 									'interval'  => $data['interval'] ?? null,
 									'args'      => $data['args'],
 								);
@@ -1829,10 +1829,11 @@ class Agent_Tools {
 	 *
 	 * @param string $tool_name Tool name.
 	 * @param array  $arguments Tool arguments.
-	 * @param string $agent_id  Agent ID.
+	 * @param string $agent_id  Agent ID (unused, required by method signature).
 	 * @return array Result.
 	 */
 	private function run_user_space_tool( string $tool_name, array $arguments, string $agent_id ): array {
+		unset( $agent_id ); // Unused parameter required by method signature.
 		switch ( $tool_name ) {
 			case 'write_file':
 				return $this->user_write_file( $arguments );

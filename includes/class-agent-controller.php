@@ -186,11 +186,12 @@ class Agent_Controller {
 	/**
 	 * Process a chat message
 	 *
-	 * @param string $message    User message.
-	 * @param array  $history    Conversation history.
-	 * @param int    $user_id    User ID.
-	 * @param string $session_id Session identifier.
-	 * @param string $agent_id   Agent ID (optional, uses current agent if not set).
+	 * @param string     $message    User message.
+	 * @param array      $history    Conversation history.
+	 * @param int        $user_id    User ID.
+	 * @param string     $session_id Session identifier.
+	 * @param string     $agent_id   Agent ID (optional, uses current agent if not set).
+	 * @param array|null $image_data Image data for vision models (optional).
 	 * @return array Response data.
 	 */
 	public function chat( string $message, array $history = array(), int $user_id = 0, string $session_id = '', string $agent_id = '', ?array $image_data = null ): array {

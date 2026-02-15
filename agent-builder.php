@@ -5,7 +5,7 @@
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
  * Description:       Build AI agents without writing code. Describe the AI agent you want and let WordPress build it for you.
- * Version:           1.7.4
+ * Version:           1.7.5
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agent Builder Team
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'AGENTIC_PLUGIN_VERSION', '1.7.4' );
+define( 'AGENTIC_PLUGIN_VERSION', '1.7.5' );
 define( 'AGENTIC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENTIC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AGENTIC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );

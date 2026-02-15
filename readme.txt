@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.7.4
+Stable tag: 1.7.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,15 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.7.5 - 2026-02-15 =
+* Fixed: All remaining WordPress Coding Standards (PHPCS) violations resolved — 0 errors, 0 warnings.
+* Fixed: Missing input sanitization on shortcode deployment delete action.
+* Fixed: Replaced deprecated current_time('timestamp') with time() in license revalidation.
+* Fixed: Reserved keyword parameter name in Agent_Proposals::generate_diff().
+* Improved: PHPCS false positives suppressed with targeted inline ignores (meta_key schema defs, rename for directory moves, nonce-free GET reads).
+* Improved: Test suite excluded from PHPCS (legitimate naming/DB conventions differ from plugin code).
+* Improved: System prompts refined for Onboarding, Theme Builder, and Plugin Builder agents.
 
 = 1.7.4 - 2026-02-15 =
 * Added: Bundled agents auto-activate on plugin activation.

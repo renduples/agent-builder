@@ -533,11 +533,11 @@ class Agent_Tools {
 								'type'        => 'integer',
 								'description' => 'Post ID',
 							),
-							'meta_key'   => array(
+							'meta_key'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Not a DB query, this is a tool parameter schema definition.
 								'type'        => 'string',
 								'description' => 'Meta key name',
 							),
-							'meta_value' => array(
+							'meta_value' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Not a DB query, this is a tool parameter schema definition.
 								'description' => 'Meta value (required for set operation)',
 							),
 							'reasoning'  => array(
@@ -1276,7 +1276,7 @@ class Agent_Tools {
 		}
 
 		// Execute the query.
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Read-only, validated SELECT query.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Read-only, validated SELECT query.
 		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		if ( null === $results ) {
@@ -2037,7 +2037,7 @@ class Agent_Tools {
 
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- Dynamic WHERE clause built safely above with prepare() and table name is $wpdb->options which is trusted.
 				$transients = $wpdb->get_results(
-					"SELECT option_name, LENGTH(option_value) AS size_bytes FROM {$wpdb->options} WHERE {$where} ORDER BY option_name LIMIT 100",
+					"SELECT option_name, LENGTH(option_value) AS size_bytes FROM {$wpdb->options} WHERE {$where} ORDER BY option_name LIMIT 100", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					ARRAY_A
 				);
 
@@ -2122,7 +2122,7 @@ class Agent_Tools {
 
 				return array(
 					'post_id'  => $post_id,
-					'meta_key' => $meta_key,
+					'meta_key' => $meta_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Return value, not a DB query.
 					'exists'   => $exists,
 					'value'    => $exists ? $value : null,
 					'type'     => $exists ? gettype( $value ) : null,
@@ -2147,7 +2147,7 @@ class Agent_Tools {
 				return array(
 					'success'   => true,
 					'post_id'   => $post_id,
-					'meta_key'  => $meta_key,
+					'meta_key'  => $meta_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Return value, not a DB query.
 					'operation' => 'set',
 					'was_new'   => '' === $old_value && ! metadata_exists( 'post', $post_id, $meta_key ),
 				);
@@ -2169,7 +2169,7 @@ class Agent_Tools {
 				return array(
 					'success'   => true,
 					'post_id'   => $post_id,
-					'meta_key'  => $meta_key,
+					'meta_key'  => $meta_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Return value, not a DB query.
 					'operation' => 'delete',
 					'existed'   => $existed,
 				);

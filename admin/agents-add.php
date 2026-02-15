@@ -70,7 +70,7 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 			$agentic_upload_error = __( 'Invalid file upload.', 'agent-builder' );
 		} else {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- File path already validated by is_uploaded_file, do not sanitize as it can corrupt the path.
-			$agentic_unzip = unzip_file( $_FILES["agentzip"]["tmp_name"], $agentic_tmp_dir );
+			$agentic_unzip = unzip_file( $_FILES['agentzip']['tmp_name'], $agentic_tmp_dir );
 
 			if ( is_wp_error( $agentic_unzip ) ) {
 				$agentic_upload_error = $agentic_unzip->get_error_message();
@@ -130,7 +130,7 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 							$wp_filesystem->delete( $agentic_dest, true );
 						}
 
-						rename( $agentic_agent_root, $agentic_dest );
+						rename( $agentic_agent_root, $agentic_dest ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Moving extracted directory; WP_Filesystem::move() does not support directory moves.
 						$agentic_upload_message = sprintf(
 						/* translators: %s: Agent name */
 							__( 'Agent "%s" has been installed successfully.', 'agent-builder' ),

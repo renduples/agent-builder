@@ -165,7 +165,7 @@ class Marketplace_Client {
 		}
 
 		$stale_threshold = 72 * HOUR_IN_SECONDS; // 72 hours.
-		$now             = current_time( 'timestamp' );
+		$now             = time();
 		$updated         = false;
 
 		foreach ( $licenses as $slug => $license_data ) {

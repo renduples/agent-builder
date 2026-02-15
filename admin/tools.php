@@ -124,7 +124,7 @@ foreach ( $agentic_instances as $agentic_agent ) {
 }
 
 // Filter by type if requested.
-$agentic_filter_type = sanitize_text_field( wp_unslash( $_GET['tool_type'] ?? '' ) );
+$agentic_filter_type = sanitize_text_field( wp_unslash( $_GET['tool_type'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only display filter, not a form submission.
 if ( $agentic_filter_type ) {
 	$agentic_all_tools = array_filter(
 		$agentic_all_tools,

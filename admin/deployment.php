@@ -24,7 +24,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 
 // Determine active tab.
-$agentic_active_tab = sanitize_text_field( wp_unslash( $_GET['tab'] ?? 'shortcodes' ) );
+$agentic_active_tab = sanitize_text_field( wp_unslash( $_GET['tab'] ?? 'shortcodes' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab switch, not a form submission.
 if ( ! in_array( $agentic_active_tab, array( 'scheduled-tasks', 'event-listeners', 'shortcodes' ), true ) ) {
 	$agentic_active_tab = 'shortcodes';
 }

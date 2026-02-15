@@ -220,14 +220,14 @@ class Agent_Proposals {
 	 * Generate a simple unified diff between two strings.
 	 *
 	 * @param string $old     Original content.
-	 * @param string $new     New content.
+	 * @param string $new_content     New content.
 	 * @param string $label_old Label for original (e.g., filename).
 	 * @param string $label_new Label for new.
 	 * @return string Diff output.
 	 */
-	public static function generate_diff( string $old, string $new, string $label_old = 'original', string $label_new = 'proposed' ): string {
+	public static function generate_diff( string $old, string $new_content, string $label_old = 'original', string $label_new = 'proposed' ): string {
 		$old_lines = explode( "\n", $old );
-		$new_lines = explode( "\n", $new );
+		$new_lines = explode( "\n", $new_content );
 
 		$diff = "--- {$label_old}\n+++ {$label_new}\n";
 

@@ -65,6 +65,7 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 
 		// Validate and sanitize the uploaded file.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- is_uploaded_file() validates the file path directly from $_FILES, sanitization not required for validation.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- is_uploaded_file() validates the file, sanitization not required.
 		if ( ! isset( $_FILES['agentzip']['tmp_name'] ) || ! is_uploaded_file( $_FILES['agentzip']['tmp_name'] ) ) {
 			$agentic_upload_error = __( 'Invalid file upload.', 'agent-builder' );
 		} else {
@@ -181,8 +182,8 @@ $agentic_library = $agentic_registry->get_library_agents(
 		<p class="agentic-add-agents-description">
 		<?php
 		printf(
-			/* translators: %s: Marketplace link URL */
 			wp_kses(
+				/* translators: %s: Marketplace link URL */
 				__( 'AI Agents extend and expand the functionality of WordPress. You may install AI Agents from the <a href="%s">Marketplace</a> right on this page, or upload an Agent in .zip format by clicking the button above.', 'agent-builder' ),
 				array( 'a' => array( 'href' => array() ) )
 			),

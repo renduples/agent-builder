@@ -26,11 +26,11 @@
 
     <!-- Exclude filename check for main plugin file -->
     <rule ref="WordPress.Files.FileName.InvalidClassFileName">
-        <exclude-pattern>agent-builder.php</exclude-pattern>
+        <exclude-pattern>agentbuilder.php</exclude-pattern>
     </rule>
 
     <!-- Text domain for i18n -->
-    <config name="text_domain" value="agent-builder"/>
+    <config name="text_domain" value="agentbuilder"/>
 
     <!-- Minimum PHP version -->
     <config name="testVersion" value="8.1-"/>

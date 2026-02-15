@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Handle form submission.
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
 if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_settings_nonce' ) ) {
@@ -370,52 +370,52 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 
 		<?php elseif ( 'developer' === $agentic_active_tab ) : ?>
 			<?php $agentic_developer_api_key = get_option( 'agentic_developer_api_key', '' ); ?>
-		<h2><?php esc_html_e( 'Developer Settings', 'agent-builder' ); ?></h2>
-		<p><?php esc_html_e( 'Connect to the Agent Marketplace to sell your agents and track revenue.', 'agent-builder' ); ?></p>
+		<h2><?php esc_html_e( 'Developer Settings', 'agentbuilder' ); ?></h2>
+		<p><?php esc_html_e( 'Connect to the Agent Marketplace to sell your agents and track revenue.', 'agentbuilder' ); ?></p>
 		
 			<?php if ( ! empty( $agentic_developer_api_key ) ) : ?>
 			<div class="notice notice-success inline" style="padding: 12px; margin: 15px 0;">
 				<p style="margin: 0; display: flex; align-items: center; gap: 8px;">
 					<span class="dashicons dashicons-yes-alt" style="color: #22c55e;"></span>
-					<strong><?php esc_html_e( 'Connected to Marketplace', 'agent-builder' ); ?></strong>
+					<strong><?php esc_html_e( 'Connected to Marketplace', 'agentbuilder' ); ?></strong>
 				</p>
 			</div>
 			
 			<table class="form-table">
 				<tr>
-					<th scope="row"><?php esc_html_e( 'API Key', 'agent-builder' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'API Key', 'agentbuilder' ); ?></th>
 					<td>
 						<code style="font-size: 14px; background: #f0f0f1; padding: 8px 12px; border-radius: 3px;"><?php echo esc_html( substr( $agentic_developer_api_key, 0, 8 ) . '...' . substr( $agentic_developer_api_key, -4 ) ); ?></code>
 						<button type="button" class="button" id="agentic-update-api-key-btn" style="margin-left: 10px;">
-							<?php esc_html_e( 'Update Key', 'agent-builder' ); ?>
+							<?php esc_html_e( 'Update Key', 'agentbuilder' ); ?>
 						</button>
 						<button type="button" class="button" id="agentic-disconnect-developer" style="margin-left: 5px;">
-							<?php esc_html_e( 'Disconnect', 'agent-builder' ); ?>
+							<?php esc_html_e( 'Disconnect', 'agentbuilder' ); ?>
 						</button>
 						
 						<div id="agentic-update-api-key-form" style="display: none; margin-top: 15px;">
-							<input type="text" id="agentic-update-api-key-input" class="regular-text" placeholder="<?php esc_attr_e( 'Enter your new Developer API Key', 'agent-builder' ); ?>" style="margin-right: 10px;">
+							<input type="text" id="agentic-update-api-key-input" class="regular-text" placeholder="<?php esc_attr_e( 'Enter your new Developer API Key', 'agentbuilder' ); ?>" style="margin-right: 10px;">
 							<button type="button" class="button button-primary" id="agentic-save-updated-api-key">
-								<?php esc_html_e( 'Save', 'agent-builder' ); ?>
+								<?php esc_html_e( 'Save', 'agentbuilder' ); ?>
 							</button>
 							<button type="button" class="button" id="agentic-cancel-update-api-key">
-								<?php esc_html_e( 'Cancel', 'agent-builder' ); ?>
+								<?php esc_html_e( 'Cancel', 'agentbuilder' ); ?>
 							</button>
 						</div>
 						
 						<p class="description">
-							<?php esc_html_e( 'Your marketplace developer API key. Keep this secure.', 'agent-builder' ); ?>
+							<?php esc_html_e( 'Your marketplace developer API key. Keep this secure.', 'agentbuilder' ); ?>
 						</p>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Revenue Dashboard', 'agent-builder' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Revenue Dashboard', 'agentbuilder' ); ?></th>
 					<td>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-revenue' ) ); ?>" class="button button-primary">
-							<?php esc_html_e( 'View Revenue &amp; Stats', 'agent-builder' ); ?>
+							<?php esc_html_e( 'View Revenue &amp; Stats', 'agentbuilder' ); ?>
 						</a>
 						<p class="description">
-							<?php esc_html_e( 'Track your agent installations, sales, and earnings.', 'agent-builder' ); ?>
+							<?php esc_html_e( 'Track your agent installations, sales, and earnings.', 'agentbuilder' ); ?>
 						</p>
 					</td>
 				</tr>
@@ -424,37 +424,37 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			<div class="notice notice-info inline" style="padding: 12px; margin: 15px 0;">
 				<p style="margin: 0;">
 					<span class="dashicons dashicons-info" style="color: #0073aa;"></span>
-					<?php esc_html_e( 'Not connected. Connect your marketplace developer account to track agent revenue.', 'agent-builder' ); ?>
+					<?php esc_html_e( 'Not connected. Connect your marketplace developer account to track agent revenue.', 'agentbuilder' ); ?>
 				</p>
 			</div>
 			
 			<table class="form-table">
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Connect Account', 'agent-builder' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Connect Account', 'agentbuilder' ); ?></th>
 					<td>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-revenue' ) ); ?>" class="button button-primary">
-							<?php esc_html_e( 'Connect to Marketplace', 'agent-builder' ); ?>
+							<?php esc_html_e( 'Connect to Marketplace', 'agentbuilder' ); ?>
 						</a>
 						<p class="description">
-							<?php esc_html_e( 'Register as a developer to sell your agents on the marketplace.', 'agent-builder' ); ?>
+							<?php esc_html_e( 'Register as a developer to sell your agents on the marketplace.', 'agentbuilder' ); ?>
 						</p>
 					</td>
 				</tr>
 			</table>
 		<?php endif; ?>
 		
-		<h3><?php esc_html_e( 'Selling Agents', 'agent-builder' ); ?></h3>
+		<h3><?php esc_html_e( 'Selling Agents', 'agentbuilder' ); ?></h3>
 		<div style="padding: 15px; background: #f0f6fc; border-left: 4px solid #2271b1; margin-top: 10px;">
-			<p style="margin-top: 0;"><strong><?php esc_html_e( 'How it works:', 'agent-builder' ); ?></strong></p>
+			<p style="margin-top: 0;"><strong><?php esc_html_e( 'How it works:', 'agentbuilder' ); ?></strong></p>
 			<ol style="margin-bottom: 0; padding-left: 20px;">
-				<li><?php esc_html_e( 'Build your agent by extending the Agent_Base class', 'agent-builder' ); ?></li>
-				<li><?php esc_html_e( 'Submit to the marketplace for review', 'agent-builder' ); ?></li>
-				<li><?php esc_html_e( 'Set your price (or make it free)', 'agent-builder' ); ?></li>
-				<li><?php esc_html_e( 'Earn 70% of each sale (80% for >$10k/month)', 'agent-builder' ); ?></li>
+				<li><?php esc_html_e( 'Build your agent by extending the Agent_Base class', 'agentbuilder' ); ?></li>
+				<li><?php esc_html_e( 'Submit to the marketplace for review', 'agentbuilder' ); ?></li>
+				<li><?php esc_html_e( 'Set your price (or make it free)', 'agentbuilder' ); ?></li>
+				<li><?php esc_html_e( 'Earn 70% of each sale (80% for >$10k/month)', 'agentbuilder' ); ?></li>
 			</ol>
 			<p style="margin-bottom: 0; margin-top: 15px;">
 				<a href="https://agentic-plugin.com/documentation/" target="_blank">
-					<?php esc_html_e( 'Read the developer guide →', 'agent-builder' ); ?>
+					<?php esc_html_e( 'Read the developer guide →', 'agentbuilder' ); ?>
 				</a>
 			</p>
 		</div>

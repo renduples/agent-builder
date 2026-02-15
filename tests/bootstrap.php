@@ -33,7 +33,7 @@ require_once $_tests_dir . '/includes/functions.php';
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {
-	require dirname( __DIR__ ) . '/agent-builder.php';
+	require dirname( __DIR__ ) . '/agentbuilder.php';
 }
 
 // Load the plugin.

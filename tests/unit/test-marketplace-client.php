@@ -360,14 +360,14 @@ class Test_Marketplace_Client extends TestCase {
 		wp_set_current_user( $admin_id );
 
 		// Ensure parent menu exists.
-		add_menu_page( 'Agent Builder', 'Agent Builder', 'manage_options', 'agent-builder', '__return_null' );
+		add_menu_page( 'Agent Builder', 'Agent Builder', 'manage_options', 'agentbuilder', '__return_null' );
 
 		$this->client->add_menu_page();
 
 		global $submenu;
 		$found = false;
-		if ( isset( $submenu['agent-builder'] ) ) {
-			foreach ( $submenu['agent-builder'] as $item ) {
+		if ( isset( $submenu['agentbuilder'] ) ) {
+			foreach ( $submenu['agentbuilder'] as $item ) {
 				if ( 'agentic-revenue' === $item[2] ) {
 					$found = true;
 					break;

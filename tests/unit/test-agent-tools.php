@@ -210,10 +210,10 @@ class Test_Agent_Tools extends TestCase {
 	 * Test read_file succeeds for a real plugin file.
 	 */
 	public function test_read_file_success() {
-		// agent-builder.php is inside plugins/.
+		// agentbuilder.php is inside plugins/.
 		$result = $this->tools->execute(
 			'read_file',
-			array( 'path' => 'plugins/agent-builder/agent-builder.php' )
+			array( 'path' => 'plugins/agent-builder/agentbuilder.php' )
 		);
 		$this->assertIsArray( $result );
 		// Should have 'content' key on success.

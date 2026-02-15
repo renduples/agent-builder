@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Agentic\Approval_Queue;
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
 $agentic_queue           = new Approval_Queue();

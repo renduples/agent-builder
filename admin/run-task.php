@@ -21,12 +21,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
 // Validate nonce.
 if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'agentic_run_task' ) ) {
-	wp_die( esc_html__( 'Invalid security token. Please go back and try again.', 'agent-builder' ) );
+	wp_die( esc_html__( 'Invalid security token. Please go back and try again.', 'agentbuilder' ) );
 }
 
 // Get parameters.
@@ -34,7 +34,7 @@ $agentic_run_agent_id = sanitize_text_field( wp_unslash( $_GET['agent'] ?? '' ) 
 $agentic_run_task_id  = sanitize_text_field( wp_unslash( $_GET['task'] ?? '' ) );
 
 if ( empty( $agentic_run_agent_id ) || empty( $agentic_run_task_id ) ) {
-	wp_die( esc_html__( 'Missing agent or task parameter.', 'agent-builder' ) );
+	wp_die( esc_html__( 'Missing agent or task parameter.', 'agentbuilder' ) );
 }
 
 // Resolve agent and task.
@@ -45,7 +45,7 @@ if ( ! $agentic_agent_obj ) {
 	wp_die(
 		sprintf(
 			/* translators: %s: agent ID */
-			esc_html__( 'Agent "%s" not found or not active.', 'agent-builder' ),
+			esc_html__( 'Agent "%s" not found or not active.', 'agentbuilder' ),
 			esc_html( $agentic_run_agent_id )
 		)
 	);
@@ -64,7 +64,7 @@ if ( ! $agentic_task_def ) {
 	wp_die(
 		sprintf(
 			/* translators: %s: task ID */
-			esc_html__( 'Task "%s" not found on this agent.', 'agent-builder' ),
+			esc_html__( 'Task "%s" not found on this agent.', 'agentbuilder' ),
 			esc_html( $agentic_run_task_id )
 		)
 	);
@@ -80,7 +80,7 @@ $agentic_schedule_label = $agentic_schedules[ $agentic_task_def['schedule'] ]['d
 		<?php
 		printf(
 			/* translators: %s: task name */
-			esc_html__( 'Run Task: %s', 'agent-builder' ),
+			esc_html__( 'Run Task: %s', 'agentbuilder' ),
 			esc_html( $agentic_task_def['name'] )
 		);
 		?>
@@ -90,33 +90,33 @@ $agentic_schedule_label = $agentic_schedules[ $agentic_task_def['schedule'] ]['d
 	<table class="widefat" style="margin-top: 20px; max-width: 600px;">
 		<tbody>
 			<tr>
-				<th style="width: 120px;"><?php esc_html_e( 'Agent', 'agent-builder' ); ?></th>
+				<th style="width: 120px;"><?php esc_html_e( 'Agent', 'agentbuilder' ); ?></th>
 				<td>
 					<span style="font-size: 16px; vertical-align: -2px;"><?php echo esc_html( $agentic_agent_obj->get_icon() ); ?></span>
 					<?php echo esc_html( $agentic_agent_obj->get_name() ); ?>
 				</td>
 			</tr>
 			<tr>
-				<th><?php esc_html_e( 'Task', 'agent-builder' ); ?></th>
+				<th><?php esc_html_e( 'Task', 'agentbuilder' ); ?></th>
 				<td><?php echo esc_html( $agentic_task_def['name'] ); ?></td>
 			</tr>
 			<?php if ( ! empty( $agentic_task_def['description'] ) ) : ?>
 			<tr>
-				<th><?php esc_html_e( 'Description', 'agent-builder' ); ?></th>
+				<th><?php esc_html_e( 'Description', 'agentbuilder' ); ?></th>
 				<td><?php echo esc_html( $agentic_task_def['description'] ); ?></td>
 			</tr>
 			<?php endif; ?>
 			<tr>
-				<th><?php esc_html_e( 'Schedule', 'agent-builder' ); ?></th>
+				<th><?php esc_html_e( 'Schedule', 'agentbuilder' ); ?></th>
 				<td><?php echo esc_html( $agentic_schedule_label ); ?></td>
 			</tr>
 			<tr>
-				<th><?php esc_html_e( 'Mode', 'agent-builder' ); ?></th>
+				<th><?php esc_html_e( 'Mode', 'agentbuilder' ); ?></th>
 				<td>
 					<?php if ( 'autonomous' === $agentic_mode ) : ?>
-						&#129302; <?php esc_html_e( 'AI (Autonomous) — sends a prompt to the LLM', 'agent-builder' ); ?>
+						&#129302; <?php esc_html_e( 'AI (Autonomous) — sends a prompt to the LLM', 'agentbuilder' ); ?>
 					<?php else : ?>
-						&#9881;&#65039; <?php esc_html_e( 'Direct (PHP) — calls the callback method', 'agent-builder' ); ?>
+						&#9881;&#65039; <?php esc_html_e( 'Direct (PHP) — calls the callback method', 'agentbuilder' ); ?>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -127,16 +127,16 @@ $agentic_schedule_label = $agentic_schedules[ $agentic_task_def['schedule'] ]['d
 	<div id="agentic-pre-run">
 		<?php if ( 'autonomous' === $agentic_mode ) : ?>
 			<div class="notice notice-info" style="margin-top: 16px; max-width: 600px;">
-				<p><?php esc_html_e( 'This is an AI task. It will send a prompt to the configured LLM and typically takes 10–30 seconds.', 'agent-builder' ); ?></p>
+				<p><?php esc_html_e( 'This is an AI task. It will send a prompt to the configured LLM and typically takes 10–30 seconds.', 'agentbuilder' ); ?></p>
 			</div>
 		<?php endif; ?>
 
 		<p style="margin-top: 20px;">
 			<button type="button" id="agentic-execute-btn" class="button button-primary button-hero">
-				&#9654; <?php esc_html_e( 'Execute Task', 'agent-builder' ); ?>
+				&#9654; <?php esc_html_e( 'Execute Task', 'agentbuilder' ); ?>
 			</button>
 			<a href="<?php echo esc_url( $agentic_back_url ); ?>" class="button button-hero" style="margin-left: 8px;">
-				<?php esc_html_e( 'Cancel', 'agent-builder' ); ?>
+				<?php esc_html_e( 'Cancel', 'agentbuilder' ); ?>
 			</a>
 		</p>
 	</div>
@@ -149,21 +149,21 @@ $agentic_schedule_label = $agentic_schedules[ $agentic_task_def['schedule'] ]['d
 				<div style="font-size: 15px; font-weight: 600; color: #1d2327;">
 					<?php
 					if ( 'autonomous' === $agentic_mode ) {
-						esc_html_e( 'Sending to LLM…', 'agent-builder' );
+						esc_html_e( 'Sending to LLM…', 'agentbuilder' );
 					} else {
-						esc_html_e( 'Executing…', 'agent-builder' );
+						esc_html_e( 'Executing…', 'agentbuilder' );
 					}
 					?>
 				</div>
 				<div style="margin-top: 4px; color: #646970; font-size: 13px;">
-					<?php esc_html_e( 'Elapsed:', 'agent-builder' ); ?>
+					<?php esc_html_e( 'Elapsed:', 'agentbuilder' ); ?>
 					<span id="agentic-timer" style="font-variant-numeric: tabular-nums; font-weight: 600; color: #2271b1;">0s</span>
 					<span style="margin-left: 8px;">
 						<?php
 						if ( 'autonomous' === $agentic_mode ) {
-							esc_html_e( '(AI tasks typically take 10–30 seconds)', 'agent-builder' );
+							esc_html_e( '(AI tasks typically take 10–30 seconds)', 'agentbuilder' );
 						} else {
-							esc_html_e( '(usually a few seconds)', 'agent-builder' );
+							esc_html_e( '(usually a few seconds)', 'agentbuilder' );
 						}
 						?>
 					</span>
@@ -179,23 +179,23 @@ $agentic_schedule_label = $agentic_schedules[ $agentic_task_def['schedule'] ]['d
 		<table class="widefat" style="margin-top: 16px; max-width: 600px;">
 			<tbody>
 				<tr>
-					<th style="width: 120px;"><?php esc_html_e( 'Duration', 'agent-builder' ); ?></th>
+					<th style="width: 120px;"><?php esc_html_e( 'Duration', 'agentbuilder' ); ?></th>
 					<td id="agentic-result-duration"></td>
 				</tr>
 			</tbody>
 		</table>
 
 		<div id="agentic-result-output-wrap" style="display: none; margin-top: 24px;">
-			<h2 style="margin-top: 0;"><?php esc_html_e( 'Task Output', 'agent-builder' ); ?></h2>
+			<h2 style="margin-top: 0;"><?php esc_html_e( 'Task Output', 'agentbuilder' ); ?></h2>
 			<div id="agentic-result-output" class="agentic-task-output"></div>
 		</div>
 
 		<p style="margin-top: 24px;">
 			<a href="<?php echo esc_url( $agentic_back_url ); ?>" class="button button-primary">
-				&#8592; <?php esc_html_e( 'Back to Scheduled Tasks', 'agent-builder' ); ?>
+				&#8592; <?php esc_html_e( 'Back to Scheduled Tasks', 'agentbuilder' ); ?>
 			</a>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-audit' ) ); ?>" class="button" style="margin-left: 8px;">
-				<?php esc_html_e( 'View Audit Log', 'agent-builder' ); ?>
+				<?php esc_html_e( 'View Audit Log', 'agentbuilder' ); ?>
 			</a>
 		</p>
 	</div>
@@ -399,21 +399,21 @@ $agentic_schedule_label = $agentic_schedules[ $agentic_task_def['schedule'] ]['d
 
 				if (json.success) {
 					notice.innerHTML = '<div class="notice notice-success" style="border-left-color:#00a32a;padding:12px 16px;">' +
-						'<p style="margin:0;font-size:14px;"><strong>&#9989; <?php echo esc_js( __( 'Task Completed Successfully', 'agent-builder' ) ); ?></strong></p></div>';
-					dur.textContent = json.data.duration + ' <?php echo esc_js( __( 'seconds', 'agent-builder' ) ); ?>';
+						'<p style="margin:0;font-size:14px;"><strong>&#9989; <?php echo esc_js( __( 'Task Completed Successfully', 'agentbuilder' ) ); ?></strong></p></div>';
+					dur.textContent = json.data.duration + ' <?php echo esc_js( __( 'seconds', 'agentbuilder' ) ); ?>';
 					if (json.data.response) {
 						outT.innerHTML = renderMarkdown(json.data.response);
 						outW.style.display = 'block';
 					}
 				} else {
-					var msg = (json.data && json.data.message) ? json.data.message : '<?php echo esc_js( __( 'Unknown error', 'agent-builder' ) ); ?>';
+					var msg = (json.data && json.data.message) ? json.data.message : '<?php echo esc_js( __( 'Unknown error', 'agentbuilder' ) ); ?>';
 					notice.innerHTML = '<div class="notice notice-error" style="padding:12px 16px;">' +
-						'<p style="margin:0;font-size:14px;"><strong>&#10060; <?php echo esc_js( __( 'Task Failed', 'agent-builder' ) ); ?></strong></p>' +
+						'<p style="margin:0;font-size:14px;"><strong>&#10060; <?php echo esc_js( __( 'Task Failed', 'agentbuilder' ) ); ?></strong></p>' +
 						'<p style="margin:8px 0 0;color:#646970;">' + msg.replace(/</g, '&lt;') + '</p></div>';
 					if (json.data && json.data.duration) {
-						dur.textContent = json.data.duration + ' <?php echo esc_js( __( 'seconds', 'agent-builder' ) ); ?>';
+						dur.textContent = json.data.duration + ' <?php echo esc_js( __( 'seconds', 'agentbuilder' ) ); ?>';
 					} else {
-						dur.textContent = Math.floor((Date.now() - start) / 1000) + ' <?php echo esc_js( __( 'seconds', 'agent-builder' ) ); ?>';
+						dur.textContent = Math.floor((Date.now() - start) / 1000) + ' <?php echo esc_js( __( 'seconds', 'agentbuilder' ) ); ?>';
 					}
 				}
 			})
@@ -423,10 +423,10 @@ $agentic_schedule_label = $agentic_schedules[ $agentic_task_def['schedule'] ]['d
 				results.style.display = 'block';
 				document.getElementById('agentic-result-notice').innerHTML =
 					'<div class="notice notice-error" style="padding:12px 16px;">' +
-					'<p style="margin:0;font-size:14px;"><strong>&#10060; <?php echo esc_js( __( 'Request Failed', 'agent-builder' ) ); ?></strong></p>' +
+					'<p style="margin:0;font-size:14px;"><strong>&#10060; <?php echo esc_js( __( 'Request Failed', 'agentbuilder' ) ); ?></strong></p>' +
 					'<p style="margin:8px 0 0;color:#646970;">' + (err.message || '').replace(/</g, '&lt;') + '</p></div>';
 				document.getElementById('agentic-result-duration').textContent =
-					Math.floor((Date.now() - start) / 1000) + ' <?php echo esc_js( __( 'seconds', 'agent-builder' ) ); ?>';
+					Math.floor((Date.now() - start) / 1000) + ' <?php echo esc_js( __( 'seconds', 'agentbuilder' ) ); ?>';
 			});
 	});
 })();

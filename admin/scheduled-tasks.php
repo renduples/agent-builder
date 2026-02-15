@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
 // Handle manual run action.
@@ -40,7 +40,7 @@ if ( isset( $_POST['agentic_run_task'], $_POST['_wpnonce'] ) && wp_verify_nonce(
 					\Agentic\Plugin::get_instance()->execute_scheduled_task( $agentic_instance, $agentic_t );
 					$agentic_run_notice = sprintf(
 						/* translators: %s: task name */
-						__( 'Task "%s" executed successfully. Check the Audit Log for details.', 'agent-builder' ),
+						__( 'Task "%s" executed successfully. Check the Audit Log for details.', 'agentbuilder' ),
 						$agentic_t['name']
 					);
 				}
@@ -79,8 +79,8 @@ foreach ( $agentic_instances as $agentic_agent ) {
 }
 ?>
 <div class="wrap">
-	<h1><?php esc_html_e( 'Scheduled Tasks', 'agent-builder' ); ?></h1>
-	<p><?php esc_html_e( 'Agent tasks that run automatically on a schedule. Tasks are registered when an agent is activated and removed when deactivated.', 'agent-builder' ); ?></p>
+	<h1><?php esc_html_e( 'Scheduled Tasks', 'agentbuilder' ); ?></h1>
+	<p><?php esc_html_e( 'Agent tasks that run automatically on a schedule. Tasks are registered when an agent is activated and removed when deactivated.', 'agentbuilder' ); ?></p>
 
 	<?php if ( ! empty( $agentic_run_notice ) ) : ?>
 		<div class="notice notice-success is-dismissible">
@@ -90,19 +90,19 @@ foreach ( $agentic_instances as $agentic_agent ) {
 
 	<?php if ( empty( $agentic_all_tasks ) ) : ?>
 		<div class="notice notice-info">
-			<p><?php esc_html_e( 'No scheduled tasks found. Activate agents that define scheduled tasks to see them here.', 'agent-builder' ); ?></p>
+			<p><?php esc_html_e( 'No scheduled tasks found. Activate agents that define scheduled tasks to see them here.', 'agentbuilder' ); ?></p>
 		</div>
 	<?php else : ?>
 		<table class="widefat striped" style="margin-top: 20px;">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Agent', 'agent-builder' ); ?></th>
-					<th><?php esc_html_e( 'Task', 'agent-builder' ); ?></th>
-					<th><?php esc_html_e( 'Schedule', 'agent-builder' ); ?></th>
-					<th><?php esc_html_e( 'Mode', 'agent-builder' ); ?></th>
-					<th><?php esc_html_e( 'Status', 'agent-builder' ); ?></th>
-					<th><?php esc_html_e( 'Next Run', 'agent-builder' ); ?></th>
-					<th><?php esc_html_e( 'Actions', 'agent-builder' ); ?></th>
+					<th><?php esc_html_e( 'Agent', 'agentbuilder' ); ?></th>
+					<th><?php esc_html_e( 'Task', 'agentbuilder' ); ?></th>
+					<th><?php esc_html_e( 'Schedule', 'agentbuilder' ); ?></th>
+					<th><?php esc_html_e( 'Mode', 'agentbuilder' ); ?></th>
+					<th><?php esc_html_e( 'Status', 'agentbuilder' ); ?></th>
+					<th><?php esc_html_e( 'Next Run', 'agentbuilder' ); ?></th>
+					<th><?php esc_html_e( 'Actions', 'agentbuilder' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -121,16 +121,16 @@ foreach ( $agentic_instances as $agentic_agent ) {
 					<td><?php echo esc_html( $agentic_task_row['schedule_display'] ); ?></td>
 					<td>
 						<?php if ( 'autonomous' === $agentic_task_row['mode'] ) : ?>
-							<span title="<?php esc_attr_e( 'Runs through the LLM with AI reasoning and tool calls', 'agent-builder' ); ?>" style="color: #2271b1;">🤖 <?php esc_html_e( 'AI', 'agent-builder' ); ?></span>
+							<span title="<?php esc_attr_e( 'Runs through the LLM with AI reasoning and tool calls', 'agentbuilder' ); ?>" style="color: #2271b1;">🤖 <?php esc_html_e( 'AI', 'agentbuilder' ); ?></span>
 						<?php else : ?>
-							<span title="<?php esc_attr_e( 'Runs the callback method directly without LLM', 'agent-builder' ); ?>" style="color: #646970;">⚙️ <?php esc_html_e( 'Direct', 'agent-builder' ); ?></span>
+							<span title="<?php esc_attr_e( 'Runs the callback method directly without LLM', 'agentbuilder' ); ?>" style="color: #646970;">⚙️ <?php esc_html_e( 'Direct', 'agentbuilder' ); ?></span>
 						<?php endif; ?>
 					</td>
 					<td>
 						<?php if ( $agentic_task_row['registered'] ) : ?>
-							<span style="color: #00a32a;">&#9679; <?php esc_html_e( 'Active', 'agent-builder' ); ?></span>
+							<span style="color: #00a32a;">&#9679; <?php esc_html_e( 'Active', 'agentbuilder' ); ?></span>
 						<?php else : ?>
-							<span style="color: #b91c1c;">&#9679; <?php esc_html_e( 'Not Scheduled', 'agent-builder' ); ?></span>
+							<span style="color: #b91c1c;">&#9679; <?php esc_html_e( 'Not Scheduled', 'agentbuilder' ); ?></span>
 						<?php endif; ?>
 					</td>
 					<td>
@@ -141,9 +141,9 @@ foreach ( $agentic_instances as $agentic_agent ) {
 								$agentic_diff = $agentic_task_row['next_run'] - time();
 								if ( $agentic_diff > 0 ) {
 									/* translators: %s: human-readable time difference */
-									printf( esc_html__( 'in %s', 'agent-builder' ), esc_html( human_time_diff( time(), $agentic_task_row['next_run'] ) ) );
+									printf( esc_html__( 'in %s', 'agentbuilder' ), esc_html( human_time_diff( time(), $agentic_task_row['next_run'] ) ) );
 								} else {
-									esc_html_e( 'overdue', 'agent-builder' );
+									esc_html_e( 'overdue', 'agentbuilder' );
 								}
 								?>
 							</small>
@@ -157,7 +157,7 @@ foreach ( $agentic_instances as $agentic_agent ) {
 							<input type="hidden" name="agentic_task_agent" value="<?php echo esc_attr( $agentic_task_row['agent_id'] ); ?>">
 							<input type="hidden" name="agentic_task_id" value="<?php echo esc_attr( $agentic_task_row['task_id'] ); ?>">
 							<button type="submit" name="agentic_run_task" value="1" class="button button-small">
-								<?php esc_html_e( 'Run Now', 'agent-builder' ); ?>
+								<?php esc_html_e( 'Run Now', 'agentbuilder' ); ?>
 							</button>
 						</form>
 					</td>
@@ -167,13 +167,13 @@ foreach ( $agentic_instances as $agentic_agent ) {
 		</table>
 
 		<div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 4px;">
-			<h3 style="margin-top: 0;"><?php esc_html_e( 'How Scheduled Tasks Work', 'agent-builder' ); ?></h3>
+			<h3 style="margin-top: 0;"><?php esc_html_e( 'How Scheduled Tasks Work', 'agentbuilder' ); ?></h3>
 			<ul style="margin: 0; list-style: disc; padding-left: 20px;">
-				<li><?php esc_html_e( 'Tasks use WordPress cron (WP-Cron) which runs when someone visits your site.', 'agent-builder' ); ?></li>
-				<li><?php esc_html_e( 'For reliable scheduling on low-traffic sites, set up a real cron job to hit wp-cron.php.', 'agent-builder' ); ?></li>
-				<li><?php esc_html_e( 'Tasks are automatically registered when an agent is activated and removed when deactivated.', 'agent-builder' ); ?></li>
-				<li><?php esc_html_e( 'AI mode tasks run through the LLM with full tool access. Direct mode tasks call a PHP method. If the LLM is not configured, AI tasks gracefully fall back to direct mode.', 'agent-builder' ); ?></li>
-				<li><?php esc_html_e( 'Every execution is logged in the Audit Log with timing, mode, and outcome details.', 'agent-builder' ); ?></li>
+				<li><?php esc_html_e( 'Tasks use WordPress cron (WP-Cron) which runs when someone visits your site.', 'agentbuilder' ); ?></li>
+				<li><?php esc_html_e( 'For reliable scheduling on low-traffic sites, set up a real cron job to hit wp-cron.php.', 'agentbuilder' ); ?></li>
+				<li><?php esc_html_e( 'Tasks are automatically registered when an agent is activated and removed when deactivated.', 'agentbuilder' ); ?></li>
+				<li><?php esc_html_e( 'AI mode tasks run through the LLM with full tool access. Direct mode tasks call a PHP method. If the LLM is not configured, AI tasks gracefully fall back to direct mode.', 'agentbuilder' ); ?></li>
+				<li><?php esc_html_e( 'Every execution is logged in the Audit Log with timing, mode, and outcome details.', 'agentbuilder' ); ?></li>
 			</ul>
 		</div>
 	<?php endif; ?>

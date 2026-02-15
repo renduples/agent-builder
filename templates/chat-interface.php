@@ -150,10 +150,10 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 				<div class="agentic-quick-actions">
 					<?php
 					$agentic_quick_agents = array(
-						'agent-builder'  => __( 'Agent Builder', 'agent-builder' ),
-						'content-builder' => __( 'Content Builder', 'agent-builder' ),
-						'plugin-builder' => __( 'Plugin Builder', 'agent-builder' ),
-						'theme-builder'  => __( 'Theme Builder', 'agent-builder' ),
+						'agentbuilder'    => __( 'Agent Builder', 'agentbuilder' ),
+						'content-builder' => __( 'Content Builder', 'agentbuilder' ),
+						'plugin-builder'  => __( 'Plugin Builder', 'agentbuilder' ),
+						'theme-builder'   => __( 'Theme Builder', 'agentbuilder' ),
 					);
 					foreach ( $agentic_quick_agents as $agentic_slug => $agentic_label ) :
 						$agentic_agent_url = admin_url( 'admin.php?page=agentic-chat&agent=' . $agentic_slug );
@@ -164,18 +164,18 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 					<?php endforeach; ?>
 				</div>
 				<?php else : ?>
-				<?php
-				$agentic_prompts = $agentic_current_agent->get_suggested_prompts();
-				if ( ! empty( $agentic_prompts ) ) :
-					?>
+					<?php
+					$agentic_prompts = $agentic_current_agent->get_suggested_prompts();
+					if ( ! empty( $agentic_prompts ) ) :
+						?>
 				<div class="agentic-suggested-prompts">
-					<?php foreach ( $agentic_prompts as $agentic_prompt ) : ?>
+						<?php foreach ( $agentic_prompts as $agentic_prompt ) : ?>
 						<button class="agentic-prompt-btn" data-prompt="<?php echo esc_attr( $agentic_prompt ); ?>">
 							<?php echo esc_html( $agentic_prompt ); ?>
 						</button>
 					<?php endforeach; ?>
 				</div>
-				<?php endif; ?>
+					<?php endif; ?>
 				<?php endif; ?>
 			</div>
 		</div>
@@ -222,11 +222,11 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 		</div>
 		<div id="agentic-image-preview" class="agentic-image-preview" style="display:none;">
 			<img id="agentic-preview-img" src="" alt="Preview" />
-			<button type="button" id="agentic-remove-image" class="agentic-remove-image" title="<?php esc_attr_e( 'Remove image', 'agent-builder' ); ?>">&times;</button>
+			<button type="button" id="agentic-remove-image" class="agentic-remove-image" title="<?php esc_attr_e( 'Remove image', 'agentbuilder' ); ?>">&times;</button>
 		</div>
 		<form id="agentic-chat-form" class="agentic-chat-form">
 			<input type="file" id="agentic-file-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" />
-			<button type="button" id="agentic-attach-btn" class="agentic-attach-btn" title="<?php esc_attr_e( 'Attach image', 'agent-builder' ); ?>">
+			<button type="button" id="agentic-attach-btn" class="agentic-attach-btn" title="<?php esc_attr_e( 'Attach image', 'agentbuilder' ); ?>">
 				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
 			</button>
 			<textarea 
@@ -235,7 +235,7 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 				placeholder="Ask <?php echo esc_attr( $agentic_current_agent->get_name() ); ?> a question..."
 				rows="1"
 			></textarea>
-			<button type="button" id="agentic-voice-btn" class="agentic-voice-btn" title="<?php esc_attr_e( 'Voice input', 'agent-builder' ); ?>" style="display:none;">
+			<button type="button" id="agentic-voice-btn" class="agentic-voice-btn" title="<?php esc_attr_e( 'Voice input', 'agentbuilder' ); ?>" style="display:none;">
 				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
 			</button>
 			<button type="submit" class="agentic-send-btn" id="agentic-send">

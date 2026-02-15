@@ -352,7 +352,7 @@ class License_Client {
 		}
 
 		// Only intercept requests for our plugin.
-		if ( ! isset( $args->slug ) || 'agent-builder' !== $args->slug ) {
+		if ( ! isset( $args->slug ) || 'agentbuilder' !== $args->slug ) {
 			return $result;
 		}
 
@@ -445,10 +445,10 @@ class License_Client {
 			return;
 		}
 
-		$our_pages   = array( 'toplevel_page_agent-builder', 'dashboard' );
+		$our_pages   = array( 'toplevel_page_agentbuilder', 'dashboard' );
 		$is_our_page = in_array( $screen->id, $our_pages, true )
 			|| str_starts_with( $screen->id, 'agentic_page_' )
-			|| str_starts_with( $screen->id, 'agent-builder_page_' );
+			|| str_starts_with( $screen->id, 'agentbuilder_page_' );
 
 		if ( ! $is_our_page ) {
 			return;
@@ -462,9 +462,9 @@ class License_Client {
 				echo '<div class="notice notice-warning"><p>';
 				printf(
 					/* translators: 1: days remaining, 2: renewal URL */
-					esc_html__( 'Your Agent Builder license has expired. You have %1$d day(s) remaining in the grace period. Premium agents will be disabled after the grace period ends. %2$s', 'agent-builder' ),
+					esc_html__( 'Your Agent Builder license has expired. You have %1$d day(s) remaining in the grace period. Premium agents will be disabled after the grace period ends. %2$s', 'agentbuilder' ),
 					(int) $days_left,
-					'<a href="https://agentic-plugin.com/pricing/">' . esc_html__( 'Renew now', 'agent-builder' ) . '</a>'
+					'<a href="https://agentic-plugin.com/pricing/">' . esc_html__( 'Renew now', 'agentbuilder' ) . '</a>'
 				);
 				echo '</p></div>';
 				break;
@@ -474,8 +474,8 @@ class License_Client {
 				echo '<div class="notice notice-error"><p>';
 				printf(
 					/* translators: 1: renewal URL */
-					esc_html__( 'Your Agent Builder license has expired. Premium marketplace agents are disabled and updates are blocked. %1$s', 'agent-builder' ),
-					'<a href="https://agentic-plugin.com/pricing/">' . esc_html__( 'Renew your license', 'agent-builder' ) . '</a>'
+					esc_html__( 'Your Agent Builder license has expired. Premium marketplace agents are disabled and updates are blocked. %1$s', 'agentbuilder' ),
+					'<a href="https://agentic-plugin.com/pricing/">' . esc_html__( 'Renew your license', 'agentbuilder' ) . '</a>'
 				);
 				echo '</p></div>';
 				break;
@@ -483,14 +483,14 @@ class License_Client {
 			case 'revoked':
 			case 'license_revoked':
 				echo '<div class="notice notice-error"><p>';
-				echo esc_html__( 'Your Agent Builder license has been revoked. Premium marketplace agents are disabled. Please contact support.', 'agent-builder' );
+				echo esc_html__( 'Your Agent Builder license has been revoked. Premium marketplace agents are disabled. Please contact support.', 'agentbuilder' );
 				echo '</p></div>';
 				break;
 
 			case 'invalid':
 			case 'invalid_key':
 				echo '<div class="notice notice-error"><p>';
-				echo esc_html__( 'Your Agent Builder license key is invalid. Please check your license key in Settings.', 'agent-builder' );
+				echo esc_html__( 'Your Agent Builder license key is invalid. Please check your license key in Settings.', 'agentbuilder' );
 				echo '</p></div>';
 				break;
 		}
@@ -498,7 +498,7 @@ class License_Client {
 		// Stale cache warning.
 		if ( ! empty( $status['cache_stale'] ) && $this->is_premium() ) {
 			echo '<div class="notice notice-info is-dismissible"><p>';
-			echo esc_html__( 'Agent Builder has not been able to verify your license recently. Your premium features will continue working. If this persists, please check your server\'s outbound connectivity.', 'agent-builder' );
+			echo esc_html__( 'Agent Builder has not been able to verify your license recently. Your premium features will continue working. If this persists, please check your server\'s outbound connectivity.', 'agentbuilder' );
 			echo '</p></div>';
 		}
 	}
@@ -514,13 +514,13 @@ class License_Client {
 		check_ajax_referer( 'agentic_license_nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied.', 'agent-builder' ) );
+			wp_send_json_error( __( 'Permission denied.', 'agentbuilder' ) );
 		}
 
 		$license_key = sanitize_text_field( wp_unslash( $_POST['license_key'] ?? '' ) );
 
 		if ( empty( $license_key ) ) {
-			wp_send_json_error( __( 'Please enter a license key.', 'agent-builder' ) );
+			wp_send_json_error( __( 'Please enter a license key.', 'agentbuilder' ) );
 		}
 
 		// Validate with server and activate for this site.
@@ -544,7 +544,7 @@ class License_Client {
 			wp_send_json_error(
 				sprintf(
 				/* translators: %s: error message */
-					__( 'Could not connect to license server: %s', 'agent-builder' ),
+					__( 'Could not connect to license server: %s', 'agentbuilder' ),
 					$response->get_error_message()
 				)
 			);
@@ -556,7 +556,7 @@ class License_Client {
 		if ( empty( $body['activated'] ) ) {
 			$message = $body['message'] ?? sprintf(
 				/* translators: %d: HTTP status code */
-				__( 'License activation failed (HTTP %d).', 'agent-builder' ),
+				__( 'License activation failed (HTTP %d).', 'agentbuilder' ),
 				$http_code
 			);
 			wp_send_json_error( $message );
@@ -581,7 +581,7 @@ class License_Client {
 
 		wp_send_json_success(
 			array(
-				'message' => $body['message'] ?? __( 'License activated successfully!', 'agent-builder' ),
+				'message' => $body['message'] ?? __( 'License activated successfully!', 'agentbuilder' ),
 				'status'  => $this->get_status(),
 			)
 		);
@@ -594,7 +594,7 @@ class License_Client {
 		check_ajax_referer( 'agentic_license_nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied.', 'agent-builder' ) );
+			wp_send_json_error( __( 'Permission denied.', 'agentbuilder' ) );
 		}
 
 		$license_key = get_option( self::OPTION_LICENSE_KEY, '' );
@@ -621,7 +621,7 @@ class License_Client {
 
 		wp_send_json_success(
 			array(
-				'message' => __( 'License deactivated.', 'agent-builder' ),
+				'message' => __( 'License deactivated.', 'agentbuilder' ),
 			)
 		);
 	}

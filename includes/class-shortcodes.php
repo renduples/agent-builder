@@ -167,10 +167,10 @@ class Shortcodes {
 					</div>
 				</div>
 				<div class="agentic-header-actions">
-					<button type="button" class="agentic-header-btn agentic-new-chat-btn" title="<?php esc_attr_e( 'New Chat', 'agent-builder' ); ?>">
+					<button type="button" class="agentic-header-btn agentic-new-chat-btn" title="<?php esc_attr_e( 'New Chat', 'agentbuilder' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
 					</button>
-					<button type="button" class="agentic-header-btn agentic-minimize-btn" title="<?php esc_attr_e( 'Minimize', 'agent-builder' ); ?>">
+					<button type="button" class="agentic-header-btn agentic-minimize-btn" title="<?php esc_attr_e( 'Minimize', 'agentbuilder' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
 					</button>
 				</div>
@@ -191,12 +191,12 @@ class Shortcodes {
 
 			<div id="agentic-image-preview" class="agentic-image-preview" style="display:none;">
 				<img id="agentic-preview-img" src="" alt="Preview" />
-				<button type="button" id="agentic-remove-image" class="agentic-remove-image" title="<?php esc_attr_e( 'Remove image', 'agent-builder' ); ?>">&times;</button>
+				<button type="button" id="agentic-remove-image" class="agentic-remove-image" title="<?php esc_attr_e( 'Remove image', 'agentbuilder' ); ?>">&times;</button>
 			</div>
 			<form id="agentic-chat-form" class="agentic-chat-form">
 				<div class="agentic-input-wrapper">
 					<input type="file" id="agentic-file-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" />
-					<button type="button" id="agentic-attach-btn" class="agentic-attach-btn" title="<?php esc_attr_e( 'Attach image', 'agent-builder' ); ?>">
+					<button type="button" id="agentic-attach-btn" class="agentic-attach-btn" title="<?php esc_attr_e( 'Attach image', 'agentbuilder' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
 					</button>
 					<textarea 
@@ -204,7 +204,7 @@ class Shortcodes {
 						placeholder="<?php echo esc_attr( $atts['placeholder'] ); ?>"
 						rows="1"
 					></textarea>
-					<button type="button" id="agentic-voice-btn" class="agentic-voice-btn" title="<?php esc_attr_e( 'Voice input', 'agent-builder' ); ?>" style="display:none;">
+					<button type="button" id="agentic-voice-btn" class="agentic-voice-btn" title="<?php esc_attr_e( 'Voice input', 'agentbuilder' ); ?>" style="display:none;">
 						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
 					</button>
 					<button type="submit" id="agentic-send" class="agentic-send-btn">
@@ -401,9 +401,9 @@ class Shortcodes {
 
 		return sprintf(
 			'<div class="agentic-login-prompt"><p>%s</p><a href="%s" class="button">%s</a></div>',
-			esc_html__( 'Please log in to chat with our AI assistant.', 'agent-builder' ),
+			esc_html__( 'Please log in to chat with our AI assistant.', 'agentbuilder' ),
 			esc_url( $login_url ),
-			esc_html__( 'Log In', 'agent-builder' )
+			esc_html__( 'Log In', 'agentbuilder' )
 		);
 	}
 }

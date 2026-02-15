@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Agent Builder 1.7.3\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agent-builder\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/agentbuilder\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Domain: agentic-plugin\n"
 
 #. Plugin Name of the plugin
-#: agent-builder.php
+#: agentbuilder.php
 msgid "Agent Builder"
 msgstr ""
 
@@ -36,7 +36,7 @@ msgstr ""
 
 #. Author URI of the plugin
 #: agentic-plugin.php
-msgid "https://github.com/renduples/agent-builder"
+msgid "https://github.com/renduples/agentbuilder"
 msgstr ""
 
 #: admin/agents-add.php:19
@@ -163,12 +163,12 @@ msgid "Agent deleted."
 msgstr ""
 
 #: admin/agents.php:97
-#: agent-builder.php:229
+#: agentbuilder.php:229
 msgid "Agents"
 msgstr ""
 
 #: admin/agents.php:99
-#: agent-builder.php:179
+#: agentbuilder.php:179
 #: includes/class-marketplace-client.php:64
 #: includes/class-marketplace-client.php:240
 msgid "Add New Agent"
@@ -241,68 +241,68 @@ msgstr ""
 msgid "Capabilities: %s"
 msgstr ""
 
-#: agent-builder.php:139
-#: agent-builder.php:140
+#: agentbuilder.php:139
+#: agentbuilder.php:140
 msgid "Agentic"
 msgstr ""
 
-#: agent-builder.php:150
-#: agent-builder.php:151
+#: agentbuilder.php:150
+#: agentbuilder.php:151
 msgid "Dashboard"
 msgstr ""
 
-#: agent-builder.php:160
-#: agent-builder.php:161
-#: agent-builder.php:543
+#: agentbuilder.php:160
+#: agentbuilder.php:161
+#: agentbuilder.php:543
 msgid "Agent Chat"
 msgstr ""
 
-#: agent-builder.php:170
-#: agent-builder.php:171
-#: agent-builder.php:242
+#: agentbuilder.php:170
+#: agentbuilder.php:171
+#: agentbuilder.php:242
 msgid "Installed Agents"
 msgstr ""
 
-#: agent-builder.php:180
-#: agent-builder.php:251
+#: agentbuilder.php:180
+#: agentbuilder.php:251
 msgid "Add Agent"
 msgstr ""
 
-#: agent-builder.php:188
-#: agent-builder.php:189
-#: agent-builder.php:260
-#: agent-builder.php:326
+#: agentbuilder.php:188
+#: agentbuilder.php:189
+#: agentbuilder.php:260
+#: agentbuilder.php:326
 msgid "Audit Log"
 msgstr ""
 
-#: agent-builder.php:197
-#: agent-builder.php:198
+#: agentbuilder.php:197
+#: agentbuilder.php:198
 msgid "Code Proposals"
 msgstr ""
 
-#: agent-builder.php:206
-#: agent-builder.php:207
-#: agent-builder.php:269
+#: agentbuilder.php:206
+#: agentbuilder.php:207
+#: agentbuilder.php:269
 msgid "Settings"
 msgstr ""
 
-#: agent-builder.php:232
+#: agentbuilder.php:232
 msgid "Agent Builder"
 msgstr ""
 
-#: agent-builder.php:325
+#: agentbuilder.php:325
 msgid "Agent Audit Logs"
 msgstr ""
 
-#: agent-builder.php:342
+#: agentbuilder.php:342
 msgid "Agent Approvals"
 msgstr ""
 
-#: agent-builder.php:343
+#: agentbuilder.php:343
 msgid "Approval"
 msgstr ""
 
-#: agent-builder.php:408
+#: agentbuilder.php:408
 msgid "Agent functionality coming soon. This is a placeholder response."
 msgstr ""
 

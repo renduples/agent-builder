@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
 // Collect core tool definitions (unfiltered — we need all tools for the admin UI).
@@ -152,8 +152,8 @@ $agentic_core_count  = count( array_filter( $agentic_all_tools, fn( $t ) => 'Cor
 $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 ?>
 <div class="wrap">
-	<h1><?php esc_html_e( 'Agent Tools', 'agent-builder' ); ?></h1>
-	<p><?php esc_html_e( 'All tools available to agents. Core tools are shared across all agents; agent tools are specific to individual agents.', 'agent-builder' ); ?></p>
+	<h1><?php esc_html_e( 'Agent Tools', 'agentbuilder' ); ?></h1>
+	<p><?php esc_html_e( 'All tools available to agents. Core tools are shared across all agents; agent tools are specific to individual agents.', 'agentbuilder' ); ?></p>
 
 	<!-- Filter links -->
 	<ul class="subsubsub" style="margin-bottom: 10px;">
@@ -162,7 +162,7 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 				<?php echo empty( $agentic_filter_type ) ? 'class="current"' : ''; ?>>
 				<?php
 				/* translators: %d: number of tools */
-				printf( esc_html__( 'All (%d)', 'agent-builder' ), (int) $agentic_total_tools );
+				printf( esc_html__( 'All (%d)', 'agentbuilder' ), (int) $agentic_total_tools );
 				?>
 			</a> |
 		</li>
@@ -171,7 +171,7 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 				<?php echo 'core' === $agentic_filter_type ? 'class="current"' : ''; ?>>
 				<?php
 				/* translators: %d: number of core tools */
-				printf( esc_html__( 'Core (%d)', 'agent-builder' ), (int) $agentic_core_count );
+				printf( esc_html__( 'Core (%d)', 'agentbuilder' ), (int) $agentic_core_count );
 				?>
 			</a> |
 		</li>
@@ -180,7 +180,7 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 				<?php echo 'agent' === $agentic_filter_type ? 'class="current"' : ''; ?>>
 				<?php
 				/* translators: %d: number of agent tools */
-				printf( esc_html__( 'Agent (%d)', 'agent-builder' ), (int) $agentic_agent_count );
+				printf( esc_html__( 'Agent (%d)', 'agentbuilder' ), (int) $agentic_agent_count );
 				?>
 			</a>
 		</li>
@@ -188,25 +188,25 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 
 	<?php if ( empty( $agentic_all_tools ) ) : ?>
 		<div class="notice notice-info">
-			<p><?php esc_html_e( 'No tools found. Activate agents to see their available tools.', 'agent-builder' ); ?></p>
+			<p><?php esc_html_e( 'No tools found. Activate agents to see their available tools.', 'agentbuilder' ); ?></p>
 		</div>
 	<?php else : ?>
 		<table class="widefat striped" style="margin-top: 10px;">
 			<thead>
 				<tr>
-					<th style="width: 80px;"><?php esc_html_e( 'Enabled', 'agent-builder' ); ?></th>
-					<th style="width: 200px;"><?php esc_html_e( 'Tool Name', 'agent-builder' ); ?></th>
-					<th><?php esc_html_e( 'Description', 'agent-builder' ); ?></th>
-					<th style="width: 100px;"><?php esc_html_e( 'Type', 'agent-builder' ); ?></th>
-					<th style="width: 100px;"><?php esc_html_e( 'Usage', 'agent-builder' ); ?></th>
-					<th style="width: 200px;"><?php esc_html_e( 'Parameters', 'agent-builder' ); ?></th>
+					<th style="width: 80px;"><?php esc_html_e( 'Enabled', 'agentbuilder' ); ?></th>
+					<th style="width: 200px;"><?php esc_html_e( 'Tool Name', 'agentbuilder' ); ?></th>
+					<th><?php esc_html_e( 'Description', 'agentbuilder' ); ?></th>
+					<th style="width: 100px;"><?php esc_html_e( 'Type', 'agentbuilder' ); ?></th>
+					<th style="width: 100px;"><?php esc_html_e( 'Usage', 'agentbuilder' ); ?></th>
+					<th style="width: 200px;"><?php esc_html_e( 'Parameters', 'agentbuilder' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php foreach ( $agentic_all_tools as $agentic_tool ) : ?>
 				<tr<?php echo $agentic_tool['enabled'] ? '' : ' style="opacity: 0.6;"'; ?> data-tool="<?php echo esc_attr( $agentic_tool['name'] ); ?>">
 					<td style="text-align: center;">
-						<label class="agentic-toggle" title="<?php echo $agentic_tool['enabled'] ? esc_attr__( 'Click to disable this tool', 'agent-builder' ) : esc_attr__( 'Click to enable this tool', 'agent-builder' ); ?>">
+						<label class="agentic-toggle" title="<?php echo $agentic_tool['enabled'] ? esc_attr__( 'Click to disable this tool', 'agentbuilder' ) : esc_attr__( 'Click to enable this tool', 'agentbuilder' ); ?>">
 							<input type="checkbox" class="agentic-tool-toggle"
 								data-tool="<?php echo esc_attr( $agentic_tool['name'] ); ?>"
 								<?php checked( $agentic_tool['enabled'] ); ?> />
@@ -222,11 +222,11 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 					<td>
 						<?php if ( 'Core' === $agentic_tool['type'] ) : ?>
 							<span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
-								<?php esc_html_e( 'Core', 'agent-builder' ); ?>
+								<?php esc_html_e( 'Core', 'agentbuilder' ); ?>
 							</span>
 						<?php else : ?>
 							<span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
-								<?php esc_html_e( 'Agent', 'agent-builder' ); ?>
+								<?php esc_html_e( 'Agent', 'agentbuilder' ); ?>
 							</span>
 						<?php endif; ?>
 					</td>
@@ -237,10 +237,10 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 							printf(
 								'<span style="background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: 600;">%s</span>',
 								/* translators: %s: number of times a tool was called */
-								esc_html( sprintf( _n( '%s call', '%s calls', $agentic_tool_uses, 'agent-builder' ), number_format_i18n( $agentic_tool_uses ) ) )
+								esc_html( sprintf( _n( '%s call', '%s calls', $agentic_tool_uses, 'agentbuilder' ), number_format_i18n( $agentic_tool_uses ) ) )
 							);
 						} else {
-							echo '<span style="color: #9ca3af; font-size: 12px;">' . esc_html__( 'No calls yet', 'agent-builder' ) . '</span>';
+							echo '<span style="color: #9ca3af; font-size: 12px;">' . esc_html__( 'No calls yet', 'agentbuilder' ) . '</span>';
 						}
 						?>
 					</td>
@@ -249,7 +249,7 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 						if ( ! empty( $agentic_tool['params'] ) ) {
 							echo '<code style="font-size: 11px;">' . esc_html( implode( ', ', $agentic_tool['params'] ) ) . '</code>';
 						} else {
-							echo '<span style="color: #646970;">' . esc_html__( 'None', 'agent-builder' ) . '</span>';
+							echo '<span style="color: #646970;">' . esc_html__( 'None', 'agentbuilder' ) . '</span>';
 						}
 						?>
 					</td>
@@ -260,27 +260,27 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 	<?php endif; ?>
 
 	<div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-		<h3 style="margin-top: 0;"><?php esc_html_e( 'Tool Permission System', 'agent-builder' ); ?></h3>
-		<p style="margin-bottom: 8px;"><?php esc_html_e( 'Use the toggle switches above to control which tools agents can access. When a tool is disabled:', 'agent-builder' ); ?></p>
+		<h3 style="margin-top: 0;"><?php esc_html_e( 'Tool Permission System', 'agentbuilder' ); ?></h3>
+		<p style="margin-bottom: 8px;"><?php esc_html_e( 'Use the toggle switches above to control which tools agents can access. When a tool is disabled:', 'agentbuilder' ); ?></p>
 		<ul style="margin: 0 0 10px; list-style: disc; padding-left: 20px;">
-			<li><?php esc_html_e( 'The tool is hidden from the AI model — agents will not know it exists and cannot request it.', 'agent-builder' ); ?></li>
-			<li><?php esc_html_e( 'Even if an agent attempts to call a disabled tool directly, execution is blocked and an error is returned.', 'agent-builder' ); ?></li>
-			<li><?php esc_html_e( 'Disabled tool calls are logged in the Audit Log for security visibility.', 'agent-builder' ); ?></li>
-			<li><?php esc_html_e( 'Changes take effect immediately — no restart or reload required.', 'agent-builder' ); ?></li>
+			<li><?php esc_html_e( 'The tool is hidden from the AI model — agents will not know it exists and cannot request it.', 'agentbuilder' ); ?></li>
+			<li><?php esc_html_e( 'Even if an agent attempts to call a disabled tool directly, execution is blocked and an error is returned.', 'agentbuilder' ); ?></li>
+			<li><?php esc_html_e( 'Disabled tool calls are logged in the Audit Log for security visibility.', 'agentbuilder' ); ?></li>
+			<li><?php esc_html_e( 'Changes take effect immediately — no restart or reload required.', 'agentbuilder' ); ?></li>
 		</ul>
 		<p style="margin: 0; font-size: 12px; color: #856404;">
-			<strong><?php esc_html_e( 'Tip:', 'agent-builder' ); ?></strong>
-			<?php esc_html_e( 'Disable write tools (request_code_change, update_documentation, write_file) for a read-only agent experience. Core read tools like read_file and list_directory are needed by most agents.', 'agent-builder' ); ?>
+			<strong><?php esc_html_e( 'Tip:', 'agentbuilder' ); ?></strong>
+			<?php esc_html_e( 'Disable write tools (request_code_change, update_documentation, write_file) for a read-only agent experience. Core read tools like read_file and list_directory are needed by most agents.', 'agentbuilder' ); ?>
 		</p>
 	</div>
 
 	<div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 4px;">
-		<h3 style="margin-top: 0;"><?php esc_html_e( 'About Tools', 'agent-builder' ); ?></h3>
+		<h3 style="margin-top: 0;"><?php esc_html_e( 'About Tools', 'agentbuilder' ); ?></h3>
 		<ul style="margin: 0; list-style: disc; padding-left: 20px;">
-			<li><?php esc_html_e( 'Core tools are available to all agents and provide file operations, WordPress data access, and schedule management.', 'agent-builder' ); ?></li>
-			<li><?php esc_html_e( 'Agent tools are defined by individual agents for their specific functionality (e.g., security scans, content analysis).', 'agent-builder' ); ?></li>
-			<li><?php esc_html_e( 'When chatting with an agent, the LLM decides which tools to call based on the conversation context.', 'agent-builder' ); ?></li>
-			<li><?php esc_html_e( 'All tool executions are logged in the Audit Log for transparency and debugging.', 'agent-builder' ); ?></li>
+			<li><?php esc_html_e( 'Core tools are available to all agents and provide file operations, WordPress data access, and schedule management.', 'agentbuilder' ); ?></li>
+			<li><?php esc_html_e( 'Agent tools are defined by individual agents for their specific functionality (e.g., security scans, content analysis).', 'agentbuilder' ); ?></li>
+			<li><?php esc_html_e( 'When chatting with an agent, the LLM decides which tools to call based on the conversation context.', 'agentbuilder' ); ?></li>
+			<li><?php esc_html_e( 'All tool executions are logged in the Audit Log for transparency and debugging.', 'agentbuilder' ); ?></li>
 		</ul>
 	</div>
 </div>
@@ -361,8 +361,8 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 				if (result.success) {
 					row.style.opacity = enabled ? '1' : '0.6';
 					label.title = enabled
-						? '<?php echo esc_js( __( 'Click to disable this tool', 'agent-builder' ) ); ?>'
-						: '<?php echo esc_js( __( 'Click to enable this tool', 'agent-builder' ) ); ?>';
+						? '<?php echo esc_js( __( 'Click to disable this tool', 'agentbuilder' ) ); ?>'
+						: '<?php echo esc_js( __( 'Click to enable this tool', 'agentbuilder' ) ); ?>';
 				} else {
 					// Revert on failure.
 					toggle.checked = !enabled;

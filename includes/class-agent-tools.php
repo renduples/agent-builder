@@ -597,7 +597,7 @@ class Agent_Tools {
 				'tool_disabled',
 				sprintf(
 					/* translators: %s: tool name */
-					__( 'The tool "%s" has been disabled by an administrator and cannot be used.', 'agent-builder' ),
+					__( 'The tool "%s" has been disabled by an administrator and cannot be used.', 'agentbuilder' ),
 					$name
 				)
 			);

@@ -12,7 +12,7 @@
  * Author URI:        https://profiles.wordpress.org/agenticplugin/
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       agent-builder
+ * Text Domain:       agentbuilder
  * Domain Path:       /languages
  *
  * @package Agent_Builder
@@ -135,7 +135,7 @@ final class Plugin {
 		if ( ! isset( $schedules['weekly'] ) ) {
 			$schedules['weekly'] = array(
 				'interval' => WEEK_IN_SECONDS,
-				'display'  => __( 'Once Weekly', 'agent-builder' ),
+				'display'  => __( 'Once Weekly', 'agentbuilder' ),
 			);
 		}
 		return $schedules;
@@ -185,14 +185,14 @@ final class Plugin {
 		check_ajax_referer( 'agentic_toggle_tool' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied.', 'agent-builder' ) );
+			wp_send_json_error( __( 'Permission denied.', 'agentbuilder' ) );
 		}
 
 		$tool_name = sanitize_text_field( wp_unslash( $_POST['tool'] ?? '' ) );
 		$enabled   = (bool) ( isset( $_POST['enabled'] ) ? rest_sanitize_boolean( wp_unslash( $_POST['enabled'] ) ) : true );
 
 		if ( empty( $tool_name ) ) {
-			wp_send_json_error( __( 'Missing tool name.', 'agent-builder' ) );
+			wp_send_json_error( __( 'Missing tool name.', 'agentbuilder' ) );
 		}
 
 		$disabled_tools = get_option( 'agentic_disabled_tools', array() );
@@ -234,21 +234,21 @@ final class Plugin {
 		check_ajax_referer( 'agentic_run_task' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'agent-builder' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'agentbuilder' ) ) );
 		}
 
 		$agent_id = sanitize_text_field( wp_unslash( $_POST['agent'] ?? '' ) );
 		$task_id  = sanitize_text_field( wp_unslash( $_POST['task'] ?? '' ) );
 
 		if ( empty( $agent_id ) || empty( $task_id ) ) {
-			wp_send_json_error( array( 'message' => __( 'Missing agent or task parameter.', 'agent-builder' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Missing agent or task parameter.', 'agentbuilder' ) ) );
 		}
 
 		$registry = \Agentic_Agent_Registry::get_instance();
 		$instance = $registry->get_agent_instance( $agent_id );
 
 		if ( ! $instance ) {
-			wp_send_json_error( array( 'message' => __( 'Agent not found or not active.', 'agent-builder' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Agent not found or not active.', 'agentbuilder' ) ) );
 		}
 
 		$task_def = null;
@@ -260,7 +260,7 @@ final class Plugin {
 		}
 
 		if ( ! $task_def ) {
-			wp_send_json_error( array( 'message' => __( 'Task not found on this agent.', 'agent-builder' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Task not found on this agent.', 'agentbuilder' ) ) );
 		}
 
 		$start_time = microtime( true );
@@ -334,29 +334,29 @@ final class Plugin {
 	 */
 	public function admin_menu(): void {
 		add_menu_page(
-			__( 'Agent Builder', 'agent-builder' ),
-			__( 'Agent Builder', 'agent-builder' ),
+			__( 'Agent Builder', 'agentbuilder' ),
+			__( 'Agent Builder', 'agentbuilder' ),
 			'manage_options',
-			'agent-builder',
+			'agentbuilder',
 			array( $this, 'render_admin_page' ),
 			'dashicons-superhero',
 			30
 		);
 
 		add_submenu_page(
-			'agent-builder',
-			__( 'Dashboard', 'agent-builder' ),
-			__( 'Dashboard', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Dashboard', 'agentbuilder' ),
+			__( 'Dashboard', 'agentbuilder' ),
 			'manage_options',
-			'agent-builder',
+			'agentbuilder',
 			array( $this, 'render_admin_page' )
 		);
 
 		// Agent Chat.
 		add_submenu_page(
-			'agent-builder',
-			__( 'Agent Chat', 'agent-builder' ),
-			__( 'Agent Chat', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Agent Chat', 'agentbuilder' ),
+			__( 'Agent Chat', 'agentbuilder' ),
 			'read',
 			'agentic-chat',
 			array( $this, 'render_chat_page' )
@@ -364,36 +364,36 @@ final class Plugin {
 
 		// Agents menu (like Plugins menu).
 		add_submenu_page(
-			'agent-builder',
-			__( 'Installed Agents', 'agent-builder' ),
-			__( 'Installed Agents', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Installed Agents', 'agentbuilder' ),
+			__( 'Installed Agents', 'agentbuilder' ),
 			'manage_options',
 			'agentic-agents',
 			array( $this, 'render_agents_page' )
 		);
 
 		add_submenu_page(
-			'agent-builder',
-			__( 'Add Agent', 'agent-builder' ),
-			__( 'Add Agent', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Add Agent', 'agentbuilder' ),
+			__( 'Add Agent', 'agentbuilder' ),
 			'read',
 			'agentic-agents-add',
 			array( $this, 'render_agents_add_page' )
 		);
 
 		add_submenu_page(
-			'agent-builder',
-			__( 'Audit Log', 'agent-builder' ),
-			__( 'Audit Log', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Audit Log', 'agentbuilder' ),
+			__( 'Audit Log', 'agentbuilder' ),
 			'manage_options',
 			'agentic-audit',
 			array( $this, 'render_audit_log_page' )
 		);
 
 		add_submenu_page(
-			'agent-builder',
-			__( 'Agent Deployment', 'agent-builder' ),
-			__( 'Agent Deployment', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Agent Deployment', 'agentbuilder' ),
+			__( 'Agent Deployment', 'agentbuilder' ),
 			'manage_options',
 			'agentic-deployment',
 			array( $this, 'render_deployment_page' )
@@ -402,8 +402,8 @@ final class Plugin {
 		// Hidden pages — keep old slugs so bookmarks/links still work.
 		add_submenu_page(
 			null,
-			__( 'Scheduled Tasks', 'agent-builder' ),
-			__( 'Scheduled Tasks', 'agent-builder' ),
+			__( 'Scheduled Tasks', 'agentbuilder' ),
+			__( 'Scheduled Tasks', 'agentbuilder' ),
 			'manage_options',
 			'agentic-scheduled-tasks',
 			array( $this, 'redirect_to_deployment_tab' )
@@ -411,8 +411,8 @@ final class Plugin {
 
 		add_submenu_page(
 			null,
-			__( 'Event Listeners', 'agent-builder' ),
-			__( 'Event Listeners', 'agent-builder' ),
+			__( 'Event Listeners', 'agentbuilder' ),
+			__( 'Event Listeners', 'agentbuilder' ),
 			'manage_options',
 			'agentic-event-listeners',
 			array( $this, 'redirect_to_deployment_tab' )
@@ -421,44 +421,44 @@ final class Plugin {
 		// Hidden page — Run Task (dedicated execution page).
 		add_submenu_page(
 			null,
-			__( 'Run Task', 'agent-builder' ),
-			__( 'Run Task', 'agent-builder' ),
+			__( 'Run Task', 'agentbuilder' ),
+			__( 'Run Task', 'agentbuilder' ),
 			'manage_options',
 			'agentic-run-task',
 			array( $this, 'render_run_task_page' )
 		);
 
 		add_submenu_page(
-			'agent-builder',
-			__( 'Agent Tools', 'agent-builder' ),
-			__( 'Agent Tools', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Agent Tools', 'agentbuilder' ),
+			__( 'Agent Tools', 'agentbuilder' ),
 			'manage_options',
 			'agentic-tools',
 			array( $this, 'render_tools_page' )
 		);
 
 		add_submenu_page(
-			'agent-builder',
-			__( 'Code Proposals', 'agent-builder' ),
-			__( 'Code Proposals', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Code Proposals', 'agentbuilder' ),
+			__( 'Code Proposals', 'agentbuilder' ),
 			'manage_options',
 			'agentic-approvals',
 			array( $this, 'render_approvals_page' )
 		);
 
 		add_submenu_page(
-			'agent-builder',
-			__( 'Security Log', 'agent-builder' ),
-			__( 'Security Log', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Security Log', 'agentbuilder' ),
+			__( 'Security Log', 'agentbuilder' ),
 			'manage_options',
 			'agentic-security-log',
 			array( $this, 'render_security_log_page' )
 		);
 
 		add_submenu_page(
-			'agent-builder',
-			__( 'Settings', 'agent-builder' ),
-			__( 'Settings', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Settings', 'agentbuilder' ),
+			__( 'Settings', 'agentbuilder' ),
 			'manage_options',
 			'agentic-settings',
 			array( $this, 'render_settings_page' )
@@ -488,10 +488,10 @@ final class Plugin {
 		$wp_admin_bar->add_node(
 			array(
 				'id'    => 'agentic-chat-bar',
-				'title' => '<span class="ab-icon dashicons dashicons-format-chat" style="font-size: 18px; line-height: 1.3;"></span>' . __( 'AI Agents', 'agent-builder' ),
+				'title' => '<span class="ab-icon dashicons dashicons-format-chat" style="font-size: 18px; line-height: 1.3;"></span>' . __( 'AI Agents', 'agentbuilder' ),
 				'href'  => '#',
 				'meta'  => array(
-					'title' => __( 'Chat with an AI Agent', 'agent-builder' ),
+					'title' => __( 'Chat with an AI Agent', 'agentbuilder' ),
 				),
 			)
 		);
@@ -520,7 +520,7 @@ final class Plugin {
 
 			// Show onboarding-agent as "Helper" for a friendlier label.
 			if ( 'onboarding-agent' === $slug ) {
-				$name = __( 'Helper', 'agent-builder' );
+				$name = __( 'Helper', 'agentbuilder' );
 			} else {
 				$name = $agent_info['name'] ?? ucwords( str_replace( '-', ' ', $slug ) );
 			}
@@ -559,8 +559,8 @@ final class Plugin {
 			'agent_audit_log',
 			array(
 				'labels'       => array(
-					'name'          => __( 'Agent Audit Logs', 'agent-builder' ),
-					'singular_name' => __( 'Audit Log', 'agent-builder' ),
+					'name'          => __( 'Agent Audit Logs', 'agentbuilder' ),
+					'singular_name' => __( 'Audit Log', 'agentbuilder' ),
 				),
 				'public'       => false,
 				'show_ui'      => false,
@@ -576,8 +576,8 @@ final class Plugin {
 			'agent_approval',
 			array(
 				'labels'   => array(
-					'name'          => __( 'Agent Approvals', 'agent-builder' ),
-					'singular_name' => __( 'Approval', 'agent-builder' ),
+					'name'          => __( 'Agent Approvals', 'agentbuilder' ),
+					'singular_name' => __( 'Approval', 'agentbuilder' ),
 				),
 				'public'   => false,
 				'show_ui'  => false,
@@ -1155,7 +1155,7 @@ final class Plugin {
 		);
 
 		echo '<div class="wrap">';
-		echo '<h1>' . esc_html__( 'Agent Chat', 'agent-builder' ) . ' <span class="agentic-status" style="font-size: 14px; font-weight: normal; vertical-align: middle;"><span class="agentic-status-dot"></span>Online</span></h1>';
+		echo '<h1>' . esc_html__( 'Agent Chat', 'agentbuilder' ) . ' <span class="agentic-status" style="font-size: 14px; font-weight: normal; vertical-align: middle;"><span class="agentic-status-dot"></span>Online</span></h1>';
 		include AGENTIC_PLUGIN_DIR . 'templates/chat-interface.php';
 		echo '</div>';
 	}

@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
 // Determine active tab.
@@ -30,21 +30,21 @@ if ( ! in_array( $agentic_active_tab, array( 'scheduled-tasks', 'event-listeners
 }
 ?>
 <div class="wrap">
-	<h1><?php esc_html_e( 'Agent Deployment', 'agent-builder' ); ?></h1>
-	<p><?php esc_html_e( 'Manage how agents are invoked: embed them on your site with shortcodes, schedule recurring tasks, or react to WordPress events.', 'agent-builder' ); ?></p>
+	<h1><?php esc_html_e( 'Agent Deployment', 'agentbuilder' ); ?></h1>
+	<p><?php esc_html_e( 'Manage how agents are invoked: embed them on your site with shortcodes, schedule recurring tasks, or react to WordPress events.', 'agentbuilder' ); ?></p>
 
 	<nav class="nav-tab-wrapper" style="margin-bottom: 20px;">
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-deployment&tab=shortcodes' ) ); ?>"
 			class="nav-tab <?php echo 'shortcodes' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Shortcodes', 'agent-builder' ); ?>
+			<?php esc_html_e( 'Shortcodes', 'agentbuilder' ); ?>
 		</a>
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-deployment&tab=scheduled-tasks' ) ); ?>"
 			class="nav-tab <?php echo 'scheduled-tasks' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Scheduled Tasks', 'agent-builder' ); ?>
+			<?php esc_html_e( 'Scheduled Tasks', 'agentbuilder' ); ?>
 		</a>
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-deployment&tab=event-listeners' ) ); ?>"
 			class="nav-tab <?php echo 'event-listeners' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Event Listeners', 'agent-builder' ); ?>
+			<?php esc_html_e( 'Event Listeners', 'agentbuilder' ); ?>
 		</a>
 	</nav>
 

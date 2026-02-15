@@ -29,7 +29,7 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 
 ?>
 <div class="wrap agentic-revenue-page">
-	<h1 class="wp-heading-inline"><?php esc_html_e( 'Developer Revenue', 'agent-builder' ); ?></h1>
+	<h1 class="wp-heading-inline"><?php esc_html_e( 'Developer Revenue', 'agentbuilder' ); ?></h1>
 	<hr class="wp-header-end">
 
 	<?php if ( ! $agentic_has_api_key ) : ?>
@@ -53,23 +53,23 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 		<div class="agentic-revenue-connect">
 			<div class="connect-card">
 				<span class="dashicons dashicons-chart-bar"></span>
-				<h2><?php esc_html_e( 'Connect to Marketplace', 'agent-builder' ); ?></h2>
+				<h2><?php esc_html_e( 'Connect to Marketplace', 'agentbuilder' ); ?></h2>
 				<p>
-					<?php esc_html_e( 'To earn revenue from your AI Agents, register a free developer account.', 'agent-builder' ); ?>
-					<a href="https://agentic-plugin.com/agent-licensing-for-developers/" target="_blank"><?php esc_html_e( 'Learn more', 'agent-builder' ); ?></a>.
+					<?php esc_html_e( 'To earn revenue from your AI Agents, register a free developer account.', 'agentbuilder' ); ?>
+					<a href="https://agentic-plugin.com/agent-licensing-for-developers/" target="_blank"><?php esc_html_e( 'Learn more', 'agentbuilder' ); ?></a>.
 				</p>
 				<div class="connect-actions">
 				<a href="<?php echo esc_url( $agentic_register_url ); ?>" class="button button-primary button-hero" target="_blank">
-						<?php esc_html_e( 'Register as Developer', 'agent-builder' ); ?>
+						<?php esc_html_e( 'Register as Developer', 'agentbuilder' ); ?>
 					</a>
 					<button type="button" class="button button-secondary button-hero" id="agentic-enter-api-key">
-						<?php esc_html_e( 'I Have an API Key', 'agent-builder' ); ?>
+						<?php esc_html_e( 'I Have an API Key', 'agentbuilder' ); ?>
 					</button>
 				</div>
 				<div id="agentic-api-key-form" style="display: none; margin-top: 20px;">
-					<input type="text" id="agentic-api-key-input" class="regular-text" placeholder="<?php esc_attr_e( 'Enter your Developer API Key', 'agent-builder' ); ?>">
+					<input type="text" id="agentic-api-key-input" class="regular-text" placeholder="<?php esc_attr_e( 'Enter your Developer API Key', 'agentbuilder' ); ?>">
 					<button type="button" class="button button-primary" id="agentic-save-api-key">
-						<?php esc_html_e( 'Connect', 'agent-builder' ); ?>
+						<?php esc_html_e( 'Connect', 'agentbuilder' ); ?>
 					</button>
 				</div>
 				<p style="margin-top: 20px; font-size: 12px; color: #646970;">
@@ -86,7 +86,7 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 				</div>
 				<div class="stat-content">
 					<div class="stat-value" id="stat-agents-value">—</div>
-					<div class="stat-label"><?php esc_html_e( 'Agents Submitted', 'agent-builder' ); ?></div>
+					<div class="stat-label"><?php esc_html_e( 'Agents Submitted', 'agentbuilder' ); ?></div>
 					<div class="stat-detail" id="stat-agents-detail"></div>
 				</div>
 			</div>
@@ -96,7 +96,7 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 				</div>
 				<div class="stat-content">
 					<div class="stat-value" id="stat-installs-value">—</div>
-					<div class="stat-label"><?php esc_html_e( 'Total Installs', 'agent-builder' ); ?></div>
+					<div class="stat-label"><?php esc_html_e( 'Total Installs', 'agentbuilder' ); ?></div>
 					<div class="stat-detail" id="stat-installs-detail"></div>
 				</div>
 			</div>
@@ -106,7 +106,7 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 				</div>
 				<div class="stat-content">
 					<div class="stat-value" id="stat-revenue-value">—</div>
-					<div class="stat-label"><?php esc_html_e( 'Revenue This Month', 'agent-builder' ); ?></div>
+					<div class="stat-label"><?php esc_html_e( 'Revenue This Month', 'agentbuilder' ); ?></div>
 					<div class="stat-detail" id="stat-revenue-detail"></div>
 				</div>
 			</div>
@@ -116,7 +116,7 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 				</div>
 				<div class="stat-content">
 					<div class="stat-value" id="stat-payout-value">—</div>
-					<div class="stat-label"><?php esc_html_e( 'Pending Payout', 'agent-builder' ); ?></div>
+					<div class="stat-label"><?php esc_html_e( 'Pending Payout', 'agentbuilder' ); ?></div>
 					<div class="stat-detail" id="stat-payout-detail"></div>
 				</div>
 			</div>
@@ -126,11 +126,11 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 		<div class="agentic-charts-section">
 			<div class="chart-container">
 				<div class="chart-header">
-					<h2><?php esc_html_e( 'Revenue', 'agent-builder' ); ?></h2>
+					<h2><?php esc_html_e( 'Revenue', 'agentbuilder' ); ?></h2>
 					<div class="chart-period-selector">
-						<button class="period-btn active" data-period="30d"><?php esc_html_e( '30 Days', 'agent-builder' ); ?></button>
-						<button class="period-btn" data-period="90d"><?php esc_html_e( '90 Days', 'agent-builder' ); ?></button>
-						<button class="period-btn" data-period="12m"><?php esc_html_e( '12 Months', 'agent-builder' ); ?></button>
+						<button class="period-btn active" data-period="30d"><?php esc_html_e( '30 Days', 'agentbuilder' ); ?></button>
+						<button class="period-btn" data-period="90d"><?php esc_html_e( '90 Days', 'agentbuilder' ); ?></button>
+						<button class="period-btn" data-period="12m"><?php esc_html_e( '12 Months', 'agentbuilder' ); ?></button>
 					</div>
 				</div>
 				<div class="chart-wrapper">
@@ -139,11 +139,11 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 			</div>
 			<div class="chart-container">
 				<div class="chart-header">
-					<h2><?php esc_html_e( 'Installs', 'agent-builder' ); ?></h2>
+					<h2><?php esc_html_e( 'Installs', 'agentbuilder' ); ?></h2>
 					<div class="chart-period-selector">
-						<button class="period-btn active" data-period="30d"><?php esc_html_e( '30 Days', 'agent-builder' ); ?></button>
-						<button class="period-btn" data-period="90d"><?php esc_html_e( '90 Days', 'agent-builder' ); ?></button>
-						<button class="period-btn" data-period="12m"><?php esc_html_e( '12 Months', 'agent-builder' ); ?></button>
+						<button class="period-btn active" data-period="30d"><?php esc_html_e( '30 Days', 'agentbuilder' ); ?></button>
+						<button class="period-btn" data-period="90d"><?php esc_html_e( '90 Days', 'agentbuilder' ); ?></button>
+						<button class="period-btn" data-period="12m"><?php esc_html_e( '12 Months', 'agentbuilder' ); ?></button>
 					</div>
 				</div>
 				<div class="chart-wrapper">
@@ -155,35 +155,35 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 		<!-- Agents Table -->
 		<div class="agentic-agents-section">
 			<div class="section-header">
-				<h2><?php esc_html_e( 'Your Agents', 'agent-builder' ); ?></h2>
+				<h2><?php esc_html_e( 'Your Agents', 'agentbuilder' ); ?></h2>
 				<div class="section-actions">
 					<select id="agents-status-filter">
-						<option value="all"><?php esc_html_e( 'All Statuses', 'agent-builder' ); ?></option>
-						<option value="approved"><?php esc_html_e( 'Approved', 'agent-builder' ); ?></option>
-						<option value="pending"><?php esc_html_e( 'Pending Review', 'agent-builder' ); ?></option>
-						<option value="rejected"><?php esc_html_e( 'Rejected', 'agent-builder' ); ?></option>
+						<option value="all"><?php esc_html_e( 'All Statuses', 'agentbuilder' ); ?></option>
+						<option value="approved"><?php esc_html_e( 'Approved', 'agentbuilder' ); ?></option>
+						<option value="pending"><?php esc_html_e( 'Pending Review', 'agentbuilder' ); ?></option>
+						<option value="rejected"><?php esc_html_e( 'Rejected', 'agentbuilder' ); ?></option>
 					</select>
 					<a href="https://agentic-plugin.com/developer/submit/" class="button button-primary" target="_blank">
-						<?php esc_html_e( 'Submit New Agent', 'agent-builder' ); ?>
+						<?php esc_html_e( 'Submit New Agent', 'agentbuilder' ); ?>
 					</a>
 				</div>
 			</div>
 			<table class="wp-list-table widefat fixed striped" id="agents-table">
 				<thead>
 					<tr>
-						<th class="column-agent"><?php esc_html_e( 'Agent', 'agent-builder' ); ?></th>
-						<th class="column-status"><?php esc_html_e( 'Status', 'agent-builder' ); ?></th>
-						<th class="column-price"><?php esc_html_e( 'Price', 'agent-builder' ); ?></th>
-						<th class="column-installs"><?php esc_html_e( 'Installs', 'agent-builder' ); ?></th>
-						<th class="column-revenue"><?php esc_html_e( 'Revenue', 'agent-builder' ); ?></th>
-						<th class="column-rating"><?php esc_html_e( 'Rating', 'agent-builder' ); ?></th>
+						<th class="column-agent"><?php esc_html_e( 'Agent', 'agentbuilder' ); ?></th>
+						<th class="column-status"><?php esc_html_e( 'Status', 'agentbuilder' ); ?></th>
+						<th class="column-price"><?php esc_html_e( 'Price', 'agentbuilder' ); ?></th>
+						<th class="column-installs"><?php esc_html_e( 'Installs', 'agentbuilder' ); ?></th>
+						<th class="column-revenue"><?php esc_html_e( 'Revenue', 'agentbuilder' ); ?></th>
+						<th class="column-rating"><?php esc_html_e( 'Rating', 'agentbuilder' ); ?></th>
 					</tr>
 				</thead>
 				<tbody id="agents-table-body">
 					<tr class="loading-row">
 						<td colspan="6">
 							<span class="spinner is-active"></span>
-							<?php esc_html_e( 'Loading agents...', 'agent-builder' ); ?>
+							<?php esc_html_e( 'Loading agents...', 'agentbuilder' ); ?>
 						</td>
 					</tr>
 				</tbody>
@@ -193,25 +193,25 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 		<!-- Payouts Section -->
 		<div class="agentic-payouts-section">
 			<div class="section-header">
-				<h2><?php esc_html_e( 'Recent Payouts', 'agent-builder' ); ?></h2>
+				<h2><?php esc_html_e( 'Recent Payouts', 'agentbuilder' ); ?></h2>
 				<a href="https://agentic-plugin.com/developer/payouts/" class="button button-secondary" target="_blank">
-					<?php esc_html_e( 'View All Payouts', 'agent-builder' ); ?>
+					<?php esc_html_e( 'View All Payouts', 'agentbuilder' ); ?>
 				</a>
 			</div>
 			<table class="wp-list-table widefat fixed striped" id="payouts-table">
 				<thead>
 					<tr>
-						<th class="column-date"><?php esc_html_e( 'Date', 'agent-builder' ); ?></th>
-						<th class="column-amount"><?php esc_html_e( 'Amount', 'agent-builder' ); ?></th>
-						<th class="column-method"><?php esc_html_e( 'Method', 'agent-builder' ); ?></th>
-						<th class="column-status"><?php esc_html_e( 'Status', 'agent-builder' ); ?></th>
+						<th class="column-date"><?php esc_html_e( 'Date', 'agentbuilder' ); ?></th>
+						<th class="column-amount"><?php esc_html_e( 'Amount', 'agentbuilder' ); ?></th>
+						<th class="column-method"><?php esc_html_e( 'Method', 'agentbuilder' ); ?></th>
+						<th class="column-status"><?php esc_html_e( 'Status', 'agentbuilder' ); ?></th>
 					</tr>
 				</thead>
 				<tbody id="payouts-table-body">
 					<tr class="loading-row">
 						<td colspan="4">
 							<span class="spinner is-active"></span>
-							<?php esc_html_e( 'Loading payouts...', 'agent-builder' ); ?>
+							<?php esc_html_e( 'Loading payouts...', 'agentbuilder' ); ?>
 						</td>
 					</tr>
 				</tbody>
@@ -221,7 +221,7 @@ $agentic_marketplace_url = 'https://agentic-plugin.com/wp-json/agentic-marketpla
 		<!-- Disconnect Section -->
 		<div class="agentic-disconnect-section">
 			<button type="button" class="button button-link-delete" id="agentic-disconnect">
-				<?php esc_html_e( 'Disconnect Marketplace Account', 'agent-builder' ); ?>
+				<?php esc_html_e( 'Disconnect Marketplace Account', 'agentbuilder' ); ?>
 			</button>
 		</div>
 	<?php endif; ?>
@@ -561,11 +561,11 @@ jQuery(document).ready(function($) {
 	$('#agentic-save-api-key').on('click', function() {
 		const key = $('#agentic-api-key-input').val().trim();
 		if (!key) {
-			alert('<?php echo esc_js( __( 'Please enter an API key.', 'agent-builder' ) ); ?>');
+			alert('<?php echo esc_js( __( 'Please enter an API key.', 'agentbuilder' ) ); ?>');
 			return;
 		}
 		
-		$(this).prop('disabled', true).text('<?php echo esc_js( __( 'Connecting...', 'agent-builder' ) ); ?>');
+		$(this).prop('disabled', true).text('<?php echo esc_js( __( 'Connecting...', 'agentbuilder' ) ); ?>');
 		
 		$.post(ajaxurl, {
 			action: 'agentic_save_developer_api_key',
@@ -575,18 +575,18 @@ jQuery(document).ready(function($) {
 			if (response.success) {
 				location.reload();
 			} else {
-				alert(response.data || '<?php echo esc_js( __( 'Failed to save API key.', 'agent-builder' ) ); ?>');
-				$('#agentic-save-api-key').prop('disabled', false).text('<?php echo esc_js( __( 'Connect', 'agent-builder' ) ); ?>');
+				alert(response.data || '<?php echo esc_js( __( 'Failed to save API key.', 'agentbuilder' ) ); ?>');
+				$('#agentic-save-api-key').prop('disabled', false).text('<?php echo esc_js( __( 'Connect', 'agentbuilder' ) ); ?>');
 			}
 		}).fail(function() {
-			alert('<?php echo esc_js( __( 'Connection failed. Please try again.', 'agent-builder' ) ); ?>');
-			$('#agentic-save-api-key').prop('disabled', false).text('<?php echo esc_js( __( 'Connect', 'agent-builder' ) ); ?>');
+			alert('<?php echo esc_js( __( 'Connection failed. Please try again.', 'agentbuilder' ) ); ?>');
+			$('#agentic-save-api-key').prop('disabled', false).text('<?php echo esc_js( __( 'Connect', 'agentbuilder' ) ); ?>');
 		});
 	});
 	
 	// Disconnect
 	$('#agentic-disconnect').on('click', function() {
-		if (!confirm('<?php echo esc_js( __( 'Are you sure you want to disconnect your marketplace account?', 'agent-builder' ) ); ?>')) {
+		if (!confirm('<?php echo esc_js( __( 'Are you sure you want to disconnect your marketplace account?', 'agentbuilder' ) ); ?>')) {
 			return;
 		}
 		
@@ -647,7 +647,7 @@ jQuery(document).ready(function($) {
 	
 	// Fetch agents
 	function fetchAgents(status = 'all') {
-		$('#agents-table-body').html('<tr class="loading-row"><td colspan="6"><span class="spinner is-active"></span> <?php echo esc_js( __( 'Loading agents...', 'agent-builder' ) ); ?></td></tr>');
+		$('#agents-table-body').html('<tr class="loading-row"><td colspan="6"><span class="spinner is-active"></span> <?php echo esc_js( __( 'Loading agents...', 'agentbuilder' ) ); ?></td></tr>');
 		
 		$.ajax({
 			url: marketplaceUrl + '/developer/agents',
@@ -667,7 +667,7 @@ jQuery(document).ready(function($) {
 	
 	function renderAgentsTable(agents) {
 		if (!agents.length) {
-			$('#agents-table-body').html('<tr class="no-data-row"><td colspan="6"><?php echo esc_js( __( 'No agents found. Submit your first agent to the marketplace!', 'agent-builder' ) ); ?></td></tr>');
+			$('#agents-table-body').html('<tr class="no-data-row"><td colspan="6"><?php echo esc_js( __( 'No agents found. Submit your first agent to the marketplace!', 'agentbuilder' ) ); ?></td></tr>');
 			return;
 		}
 		
@@ -726,7 +726,7 @@ jQuery(document).ready(function($) {
 	
 	function renderPayoutsTable(payouts) {
 		if (!payouts.length) {
-			$('#payouts-table-body').html('<tr class="no-data-row"><td colspan="4"><?php echo esc_js( __( 'No payouts yet. Earnings are paid out monthly once you reach $50.', 'agent-builder' ) ); ?></td></tr>');
+			$('#payouts-table-body').html('<tr class="no-data-row"><td colspan="4"><?php echo esc_js( __( 'No payouts yet. Earnings are paid out monthly once you reach $50.', 'agentbuilder' ) ); ?></td></tr>');
 			return;
 		}
 		
@@ -757,7 +757,7 @@ jQuery(document).ready(function($) {
 	function initCharts() {
 		// Check if Chart.js is available
 		if (typeof Chart === 'undefined') {
-			$('.chart-wrapper').html('<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#646970;"><?php echo esc_js( __( 'Charts loading...', 'agent-builder' ) ); ?></div>');
+			$('.chart-wrapper').html('<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#646970;"><?php echo esc_js( __( 'Charts loading...', 'agentbuilder' ) ); ?></div>');
 			return;
 		}
 		

@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Handle install action.
 
 if ( ! current_user_can( 'read' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
 $agentic_agent_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
@@ -37,7 +37,7 @@ if ( 'install' === $agentic_agent_action && $agentic_slug && isset( $_GET['_wpno
 	if ( is_wp_error( $agentic_result ) ) {
 		$agentic_agent_error = $agentic_result->get_error_message();
 	} else {
-		$agentic_message = __( 'Agent installed successfully.', 'agent-builder' );
+		$agentic_message = __( 'Agent installed successfully.', 'agentbuilder' );
 	}
 }
 
@@ -47,9 +47,9 @@ $agentic_upload_error   = '';
 
 if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'agentic-agent-upload' ) ) {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		$agentic_upload_error = __( 'You do not have permission to upload agents.', 'agent-builder' );
+		$agentic_upload_error = __( 'You do not have permission to upload agents.', 'agentbuilder' );
 	} elseif ( ! str_ends_with( strtolower( sanitize_file_name( $_FILES['agentzip']['name'] ) ), '.zip' ) ) {
-		$agentic_upload_error = __( 'The uploaded file is not a valid .zip archive.', 'agent-builder' );
+		$agentic_upload_error = __( 'The uploaded file is not a valid .zip archive.', 'agentbuilder' );
 	} else {
 		// Ensure filesystem functions are available.
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -67,7 +67,7 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- is_uploaded_file() validates the file path directly from $_FILES, sanitization not required for validation.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- is_uploaded_file() validates the file, sanitization not required.
 		if ( ! isset( $_FILES['agentzip']['tmp_name'] ) || ! is_uploaded_file( $_FILES['agentzip']['tmp_name'] ) ) {
-			$agentic_upload_error = __( 'Invalid file upload.', 'agent-builder' );
+			$agentic_upload_error = __( 'Invalid file upload.', 'agentbuilder' );
 		} else {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- File path already validated by is_uploaded_file, do not sanitize as it can corrupt the path.
 			$agentic_unzip = unzip_file( $_FILES['agentzip']['tmp_name'], $agentic_tmp_dir );
@@ -95,7 +95,7 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 				}
 
 				if ( ! $agentic_agent_file ) {
-					$agentic_upload_error = __( 'The uploaded zip does not contain a valid agent. An agent.php file is required.', 'agent-builder' );
+					$agentic_upload_error = __( 'The uploaded zip does not contain a valid agent. An agent.php file is required.', 'agentbuilder' );
 				} else {
 					// Read agent headers.
 					$agentic_headers = array(
@@ -114,7 +114,7 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 					}
 
 					if ( empty( $agentic_parsed_headers['name'] ) ) {
-						$agentic_upload_error = __( 'The agent.php file is missing a required "Agent Name" header.', 'agent-builder' );
+						$agentic_upload_error = __( 'The agent.php file is missing a required "Agent Name" header.', 'agentbuilder' );
 					} else {
 						// Derive slug from folder name or sanitize the agent name.
 						$agentic_upload_slug = sanitize_title( basename( $agentic_agent_root ) );
@@ -133,7 +133,7 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 						rename( $agentic_agent_root, $agentic_dest ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Moving extracted directory; WP_Filesystem::move() does not support directory moves.
 						$agentic_upload_message = sprintf(
 						/* translators: %s: Agent name */
-							__( 'Agent "%s" has been installed successfully.', 'agent-builder' ),
+							__( 'Agent "%s" has been installed successfully.', 'agentbuilder' ),
 							$agentic_parsed_headers['name']
 						);
 
@@ -171,11 +171,11 @@ $agentic_library = $agentic_registry->get_library_agents(
 ?>
 
 <div class="wrap agentic-add-agents-page">
-	<h1 class="wp-heading-inline"><?php esc_html_e( 'Add Agents', 'agent-builder' ); ?></h1>
+	<h1 class="wp-heading-inline"><?php esc_html_e( 'Add Agents', 'agentbuilder' ); ?></h1>
 
 	<a href="#" class="upload-view-toggle page-title-action" id="agentic-upload-toggle">
-		<span class="upload"><?php esc_html_e( 'Upload Agent', 'agent-builder' ); ?></span>
-		<span class="browse"><?php esc_html_e( 'Browse Agents', 'agent-builder' ); ?></span>
+		<span class="upload"><?php esc_html_e( 'Upload Agent', 'agentbuilder' ); ?></span>
+		<span class="browse"><?php esc_html_e( 'Browse Agents', 'agentbuilder' ); ?></span>
 	</a>
 
 	<hr class="wp-header-end">
@@ -185,7 +185,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 		printf(
 			wp_kses(
 				/* translators: %s: Marketplace link URL */
-				__( 'AI Agents extend and expand the functionality of WordPress. You may install AI Agents from the <a href="%s">Marketplace</a> right on this page, or upload an Agent in .zip format by clicking the button above.', 'agent-builder' ),
+				__( 'AI Agents extend and expand the functionality of WordPress. You may install AI Agents from the <a href="%s">Marketplace</a> right on this page, or upload an Agent in .zip format by clicking the button above.', 'agentbuilder' ),
 				array( 'a' => array( 'href' => array() ) )
 			),
 			'https://agentic-plugin.com/marketplace/'
@@ -196,14 +196,14 @@ $agentic_library = $agentic_registry->get_library_agents(
 	<!-- Upload Agent Form (hidden by default) -->
 	<div class="upload-agent-wrap" style="display: none;">
 		<div class="upload-agent">
-			<p class="install-help"><?php esc_html_e( 'If you have an agent in a .zip format, you may install it by uploading it here.', 'agent-builder' ); ?></p>
+			<p class="install-help"><?php esc_html_e( 'If you have an agent in a .zip format, you may install it by uploading it here.', 'agentbuilder' ); ?></p>
 			<form method="post" enctype="multipart/form-data" class="wp-upload-form" action="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add' ) ); ?>">
 				<?php wp_nonce_field( 'agentic-agent-upload' ); ?>
 				<label class="screen-reader-text" for="agentzip">
-					<?php esc_html_e( 'Agent zip file', 'agent-builder' ); ?>
+					<?php esc_html_e( 'Agent zip file', 'agentbuilder' ); ?>
 				</label>
 				<input type="file" id="agentzip" name="agentzip" accept=".zip" />
-				<?php submit_button( __( 'Install Now', 'agent-builder' ), 'primary', 'install-agent-submit', false ); ?>
+				<?php submit_button( __( 'Install Now', 'agentbuilder' ), 'primary', 'install-agent-submit', false ); ?>
 			</form>
 		</div>
 	</div>
@@ -213,7 +213,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 			<p>
 				<?php echo esc_html( $agentic_message ); ?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents' ) ); ?>">
-					<?php esc_html_e( 'Go to Installed Agents', 'agent-builder' ); ?>
+					<?php esc_html_e( 'Go to Installed Agents', 'agentbuilder' ); ?>
 				</a>
 			</p>
 		</div>
@@ -230,7 +230,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 			<p>
 				<?php echo esc_html( $agentic_upload_message ); ?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents' ) ); ?>">
-					<?php esc_html_e( 'Go to Installed Agents', 'agent-builder' ); ?>
+					<?php esc_html_e( 'Go to Installed Agents', 'agentbuilder' ); ?>
 				</a>
 			</p>
 		</div>
@@ -248,13 +248,13 @@ $agentic_library = $agentic_registry->get_library_agents(
 		<li>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&tab=featured' ) ); ?>"
 				class="<?php echo ( '' === $agentic_current_tab && empty( $agentic_category ) ) ? 'current' : ''; ?>">
-				<?php esc_html_e( 'Featured', 'agent-builder' ); ?>
+				<?php esc_html_e( 'Featured', 'agentbuilder' ); ?>
 			</a>
 		</li>
 		<li>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add&tab=popular' ) ); ?>"
 				class="<?php echo 'popular' === $agentic_current_tab ? 'current' : ''; ?>">
-				<?php esc_html_e( 'Popular', 'agent-builder' ); ?>
+				<?php esc_html_e( 'Popular', 'agentbuilder' ); ?>
 			</a>
 		</li>
 		<?php foreach ( $agentic_categories as $agentic_cat_name => $agentic_count ) : ?>
@@ -273,14 +273,14 @@ $agentic_library = $agentic_registry->get_library_agents(
 		<input type="hidden" name="page" value="agentic-agents-add">
 		<p class="search-box">
 			<label class="screen-reader-text" for="agent-search-input">
-				<?php esc_html_e( 'Search Agents', 'agent-builder' ); ?>
+				<?php esc_html_e( 'Search Agents', 'agentbuilder' ); ?>
 			</label>
 			<input type="search" id="agent-search-input" name="s"
 					value="<?php echo esc_attr( $agentic_search_term ); ?>"
-					placeholder="<?php esc_attr_e( 'Search agents...', 'agent-builder' ); ?>"
+					placeholder="<?php esc_attr_e( 'Search agents...', 'agentbuilder' ); ?>"
 					class="wp-filter-search">
 			<input type="submit" id="search-submit" class="button hide-if-js"
-					value="<?php esc_attr_e( 'Search Agents', 'agent-builder' ); ?>">
+					value="<?php esc_attr_e( 'Search Agents', 'agentbuilder' ); ?>">
 		</p>
 	</form>
 
@@ -289,11 +289,11 @@ $agentic_library = $agentic_registry->get_library_agents(
 	<?php if ( empty( $agentic_library['agents'] ) ) : ?>
 		<div class="no-plugin-results">
 			<?php if ( $agentic_search_term ) : ?>
-				<p><?php esc_html_e( 'No agents found matching your search.', 'agent-builder' ); ?></p>
+				<p><?php esc_html_e( 'No agents found matching your search.', 'agentbuilder' ); ?></p>
 			<?php else : ?>
 				<div class="agentic-empty-library">
-					<h2><?php esc_html_e( 'Agent Library is Empty', 'agent-builder' ); ?></h2>
-					<p><?php esc_html_e( 'No agents are available in the library yet. Check back soon or contribute your own agents!', 'agent-builder' ); ?></p>
+					<h2><?php esc_html_e( 'Agent Library is Empty', 'agentbuilder' ); ?></h2>
+					<p><?php esc_html_e( 'No agents are available in the library yet. Check back soon or contribute your own agents!', 'agentbuilder' ); ?></p>
 				</div>
 			<?php endif; ?>
 		</div>
@@ -321,17 +321,17 @@ $agentic_library = $agentic_registry->get_library_agents(
 								<li>
 									<?php if ( $agentic_agent['installed'] ) : ?>
 										<button type="button" class="button button-disabled" disabled="disabled">
-											<?php esc_html_e( 'Installed', 'agent-builder' ); ?>
+											<?php esc_html_e( 'Installed', 'agentbuilder' ); ?>
 										</button>
 									<?php else : ?>
 										<a class="install-now button" href="<?php echo esc_url( $agentic_install_url ); ?>">
-											<?php esc_html_e( 'Install Now', 'agent-builder' ); ?>
+											<?php esc_html_e( 'Install Now', 'agentbuilder' ); ?>
 										</a>
 									<?php endif; ?>
 								</li>
 								<li>
 									<a href="#" class="agent-more-details" data-slug="<?php echo esc_attr( $agentic_slug ); ?>">
-										<?php esc_html_e( 'More Details', 'agent-builder' ); ?>
+										<?php esc_html_e( 'More Details', 'agentbuilder' ); ?>
 									</a>
 								</li>
 							</ul>
@@ -340,7 +340,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 							<p><?php echo esc_html( $agentic_agent['description'] ); ?></p>
 							<p class="authors">
 								<cite>
-									<?php esc_html_e( 'By', 'agent-builder' ); ?>
+									<?php esc_html_e( 'By', 'agentbuilder' ); ?>
 									<?php if ( ! empty( $agentic_agent['author_uri'] ) ) : ?>
 										<a href="<?php echo esc_url( $agentic_agent['author_uri'] ); ?>" target="_blank">
 											<?php echo esc_html( $agentic_agent['author'] ); ?>
@@ -361,7 +361,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 							<?php endif; ?>
 						</div>
 						<div class="column-updated">
-							<strong><?php esc_html_e( 'Version:', 'agent-builder' ); ?></strong>
+							<strong><?php esc_html_e( 'Version:', 'agentbuilder' ); ?></strong>
 							<?php echo esc_html( $agentic_agent['version'] ); ?>
 						</div>
 						<div class="column-downloaded">
@@ -369,7 +369,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 								<?php
 								printf(
 									/* translators: %d: Number of capabilities */
-									esc_html( _n( '%d Capability', '%d Capabilities', count( $agentic_agent['capabilities'] ), 'agent-builder' ) ),
+									esc_html( _n( '%d Capability', '%d Capabilities', count( $agentic_agent['capabilities'] ), 'agentbuilder' ) ),
 									esc_html( count( $agentic_agent['capabilities'] ) )
 								);
 								?>
@@ -394,7 +394,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 						<?php
 						printf(
 							/* translators: %s: Number of agents */
-							esc_html( _n( '%s agent', '%s agents', $agentic_library['total'], 'agent-builder' ) ),
+							esc_html( _n( '%s agent', '%s agents', $agentic_library['total'], 'agentbuilder' ) ),
 							esc_html( number_format_i18n( $agentic_library['total'] ) )
 						);
 						?>
@@ -407,14 +407,14 @@ $agentic_library = $agentic_registry->get_library_agents(
 
 	<!-- Info Box: Creating Your Own Agent -->
 	<div class="agentic-create-agent-info">
-		<h3><?php esc_html_e( 'Create Your Own Agent', 'agent-builder' ); ?></h3>
-		<p><?php esc_html_e( 'Agents are modular components that can be built by any developer. Like WordPress plugins, agents follow a standard structure:', 'agent-builder' ); ?></p>
+		<h3><?php esc_html_e( 'Create Your Own Agent', 'agentbuilder' ); ?></h3>
+		<p><?php esc_html_e( 'Agents are modular components that can be built by any developer. Like WordPress plugins, agents follow a standard structure:', 'agentbuilder' ); ?></p>
 		<pre><code>wp-content/agents/my-agent/
 ├── agent.php                       # Main file with agent headers &amp; class
 └── templates/
 	└── system-prompt.txt           # System prompt for the AI provider</code></pre>
 		<p>
-			<strong><?php esc_html_e( 'Agent Headers:', 'agent-builder' ); ?></strong>
+			<strong><?php esc_html_e( 'Agent Headers:', 'agentbuilder' ); ?></strong>
 		</p>
 		<pre><code>&lt;?php
 /**
@@ -427,7 +427,7 @@ $agentic_library = $agentic_registry->get_library_agents(
  */</code></pre>
 		<p>
 			<a href="https://agentic-plugin.com/documentation/" target="_blank" class="button">
-				<?php esc_html_e( 'View Documentation', 'agent-builder' ); ?>
+				<?php esc_html_e( 'View Documentation', 'agentbuilder' ); ?>
 			</a>
 		</p>
 	</div>

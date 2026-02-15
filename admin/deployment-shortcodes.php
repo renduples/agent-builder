@@ -25,7 +25,7 @@ if ( isset( $_POST['agentic_delete_shortcode'], $_POST['_wpnonce'] ) && wp_verif
 	$agentic_deployments = get_option( 'agentic_shortcode_deployments', array() );
 	$agentic_deployments = array_filter( $agentic_deployments, fn( $d ) => $d['id'] !== $agentic_delete_id );
 	update_option( 'agentic_shortcode_deployments', array_values( $agentic_deployments ) );
-	$agentic_notice = __( 'Shortcode deployment removed.', 'agent-builder' );
+	$agentic_notice = __( 'Shortcode deployment removed.', 'agentbuilder' );
 }
 
 // Handle create action.
@@ -42,14 +42,14 @@ if ( isset( $_POST['agentic_create_shortcode'], $_POST['_wpnonce'] ) && wp_verif
 	);
 
 	if ( empty( $agentic_new['label'] ) || empty( $agentic_new['agent'] ) ) {
-		$agentic_error = __( 'Label and Agent are required.', 'agent-builder' );
+		$agentic_error = __( 'Label and Agent are required.', 'agentbuilder' );
 	} else {
 		$agentic_deployments   = get_option( 'agentic_shortcode_deployments', array() );
 		$agentic_deployments[] = $agentic_new;
 		update_option( 'agentic_shortcode_deployments', $agentic_deployments );
 		$agentic_notice = sprintf(
 			/* translators: %s: shortcode string */
-			__( 'Shortcode created. Copy and paste it into any page, post, or widget: %s', 'agent-builder' ),
+			__( 'Shortcode created. Copy and paste it into any page, post, or widget: %s', 'agentbuilder' ),
 			'[agentic_chat agent="' . $agentic_new['agent'] . '"]'
 		);
 	}
@@ -76,22 +76,22 @@ if ( ! empty( $agentic_notice ) ) : ?>
 <?php endif; ?>
 
 <!-- Existing Deployments -->
-<h2><?php esc_html_e( 'Active Shortcode Deployments', 'agent-builder' ); ?></h2>
+<h2><?php esc_html_e( 'Active Shortcode Deployments', 'agentbuilder' ); ?></h2>
 
 <?php if ( empty( $agentic_deployments ) ) : ?>
 	<div class="notice notice-info" style="margin-top: 0;">
-		<p><?php esc_html_e( 'No shortcode deployments yet. Use the form below to create one.', 'agent-builder' ); ?></p>
+		<p><?php esc_html_e( 'No shortcode deployments yet. Use the form below to create one.', 'agentbuilder' ); ?></p>
 	</div>
 <?php else : ?>
 	<table class="widefat striped">
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Label', 'agent-builder' ); ?></th>
-				<th><?php esc_html_e( 'Agent', 'agent-builder' ); ?></th>
-				<th><?php esc_html_e( 'Style', 'agent-builder' ); ?></th>
-				<th style="width: 350px;"><?php esc_html_e( 'Shortcode', 'agent-builder' ); ?></th>
-				<th><?php esc_html_e( 'Created', 'agent-builder' ); ?></th>
-				<th style="width: 80px;"><?php esc_html_e( 'Actions', 'agent-builder' ); ?></th>
+				<th><?php esc_html_e( 'Label', 'agentbuilder' ); ?></th>
+				<th><?php esc_html_e( 'Agent', 'agentbuilder' ); ?></th>
+				<th><?php esc_html_e( 'Style', 'agentbuilder' ); ?></th>
+				<th style="width: 350px;"><?php esc_html_e( 'Shortcode', 'agentbuilder' ); ?></th>
+				<th><?php esc_html_e( 'Created', 'agentbuilder' ); ?></th>
+				<th style="width: 80px;"><?php esc_html_e( 'Actions', 'agentbuilder' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -126,16 +126,16 @@ if ( ! empty( $agentic_notice ) ) : ?>
 					<td>
 						<?php
 						$agentic_style_labels = array(
-							'inline'  => __( 'Inline', 'agent-builder' ),
-							'popup'   => __( 'Popup', 'agent-builder' ),
-							'sidebar' => __( 'Sidebar', 'agent-builder' ),
+							'inline'  => __( 'Inline', 'agentbuilder' ),
+							'popup'   => __( 'Popup', 'agentbuilder' ),
+							'sidebar' => __( 'Sidebar', 'agentbuilder' ),
 						);
 						echo esc_html( $agentic_style_labels[ $agentic_dep['style'] ] ?? ucfirst( $agentic_dep['style'] ) );
 						?>
 					</td>
 					<td>
 						<code class="agentic-sc-copyable" style="cursor: pointer; font-size: 12px; padding: 4px 8px; background: #f0f0f1; display: inline-block; max-width: 100%; overflow-x: auto;"
-							title="<?php esc_attr_e( 'Click to copy', 'agent-builder' ); ?>"
+							title="<?php esc_attr_e( 'Click to copy', 'agentbuilder' ); ?>"
 							data-shortcode="<?php echo esc_attr( $agentic_sc_string ); ?>">
 							<?php echo esc_html( $agentic_sc_string ); ?>
 						</code>
@@ -148,8 +148,8 @@ if ( ! empty( $agentic_notice ) ) : ?>
 							<?php wp_nonce_field( 'agentic_manage_shortcodes' ); ?>
 							<input type="hidden" name="agentic_shortcode_id" value="<?php echo esc_attr( $agentic_dep['id'] ); ?>">
 							<button type="submit" name="agentic_delete_shortcode" value="1" class="button button-small button-link-delete"
-								onclick="return confirm('<?php esc_attr_e( 'Remove this shortcode deployment?', 'agent-builder' ); ?>');">
-								<?php esc_html_e( 'Delete', 'agent-builder' ); ?>
+								onclick="return confirm('<?php esc_attr_e( 'Remove this shortcode deployment?', 'agentbuilder' ); ?>');">
+								<?php esc_html_e( 'Delete', 'agentbuilder' ); ?>
 							</button>
 						</form>
 					</td>
@@ -160,11 +160,11 @@ if ( ! empty( $agentic_notice ) ) : ?>
 <?php endif; ?>
 
 <!-- Create New Deployment -->
-<h2 style="margin-top: 30px;"><?php esc_html_e( 'Create New Deployment', 'agent-builder' ); ?></h2>
+<h2 style="margin-top: 30px;"><?php esc_html_e( 'Create New Deployment', 'agentbuilder' ); ?></h2>
 
 <?php if ( empty( $agentic_all_agents ) ) : ?>
 	<div class="notice notice-warning">
-		<p><?php esc_html_e( 'No active agents. Activate at least one agent before creating a shortcode deployment.', 'agent-builder' ); ?></p>
+		<p><?php esc_html_e( 'No active agents. Activate at least one agent before creating a shortcode deployment.', 'agentbuilder' ); ?></p>
 	</div>
 <?php else : ?>
 	<form method="post">
@@ -172,67 +172,67 @@ if ( ! empty( $agentic_notice ) ) : ?>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row">
-					<label for="agentic_sc_label"><?php esc_html_e( 'Label', 'agent-builder' ); ?></label>
+					<label for="agentic_sc_label"><?php esc_html_e( 'Label', 'agentbuilder' ); ?></label>
 				</th>
 				<td>
 					<input type="text" id="agentic_sc_label" name="agentic_sc_label" class="regular-text" required
-						placeholder="<?php esc_attr_e( 'e.g., Homepage Support Chat', 'agent-builder' ); ?>">
-					<p class="description"><?php esc_html_e( 'A name to identify this deployment (not shown to visitors).', 'agent-builder' ); ?></p>
+						placeholder="<?php esc_attr_e( 'e.g., Homepage Support Chat', 'agentbuilder' ); ?>">
+					<p class="description"><?php esc_html_e( 'A name to identify this deployment (not shown to visitors).', 'agentbuilder' ); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="agentic_sc_agent"><?php esc_html_e( 'Agent', 'agent-builder' ); ?></label>
+					<label for="agentic_sc_agent"><?php esc_html_e( 'Agent', 'agentbuilder' ); ?></label>
 				</th>
 				<td>
 					<select id="agentic_sc_agent" name="agentic_sc_agent" required>
-						<option value=""><?php esc_html_e( '— Select Agent —', 'agent-builder' ); ?></option>
+						<option value=""><?php esc_html_e( '— Select Agent —', 'agentbuilder' ); ?></option>
 						<?php foreach ( $agentic_all_agents as $agentic_a ) : ?>
 							<option value="<?php echo esc_attr( $agentic_a->get_id() ); ?>">
 								<?php echo esc_html( $agentic_a->get_icon() . ' ' . $agentic_a->get_name() ); ?>
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'The agent visitors will chat with.', 'agent-builder' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The agent visitors will chat with.', 'agentbuilder' ); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="agentic_sc_style"><?php esc_html_e( 'Display Style', 'agent-builder' ); ?></label>
+					<label for="agentic_sc_style"><?php esc_html_e( 'Display Style', 'agentbuilder' ); ?></label>
 				</th>
 				<td>
 					<select id="agentic_sc_style" name="agentic_sc_style">
-						<option value="inline"><?php esc_html_e( 'Inline — embedded in page content', 'agent-builder' ); ?></option>
-						<option value="popup"><?php esc_html_e( 'Popup — floating button that opens a chat window', 'agent-builder' ); ?></option>
-						<option value="sidebar"><?php esc_html_e( 'Sidebar — compact widget for sidebars', 'agent-builder' ); ?></option>
+						<option value="inline"><?php esc_html_e( 'Inline — embedded in page content', 'agentbuilder' ); ?></option>
+						<option value="popup"><?php esc_html_e( 'Popup — floating button that opens a chat window', 'agentbuilder' ); ?></option>
+						<option value="sidebar"><?php esc_html_e( 'Sidebar — compact widget for sidebars', 'agentbuilder' ); ?></option>
 					</select>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="agentic_sc_height"><?php esc_html_e( 'Chat Height', 'agent-builder' ); ?></label>
+					<label for="agentic_sc_height"><?php esc_html_e( 'Chat Height', 'agentbuilder' ); ?></label>
 				</th>
 				<td>
 					<input type="text" id="agentic_sc_height" name="agentic_sc_height" value="500px" class="small-text" style="width: 100px;">
-					<p class="description"><?php esc_html_e( 'CSS height (e.g., 500px, 60vh). Only affects inline and sidebar styles.', 'agent-builder' ); ?></p>
+					<p class="description"><?php esc_html_e( 'CSS height (e.g., 500px, 60vh). Only affects inline and sidebar styles.', 'agentbuilder' ); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="agentic_sc_placeholder"><?php esc_html_e( 'Placeholder Text', 'agent-builder' ); ?></label>
+					<label for="agentic_sc_placeholder"><?php esc_html_e( 'Placeholder Text', 'agentbuilder' ); ?></label>
 				</th>
 				<td>
 					<input type="text" id="agentic_sc_placeholder" name="agentic_sc_placeholder" class="regular-text"
-						placeholder="<?php esc_attr_e( 'Type your message...', 'agent-builder' ); ?>">
-					<p class="description"><?php esc_html_e( 'Custom placeholder text in the input field. Leave empty for default.', 'agent-builder' ); ?></p>
+						placeholder="<?php esc_attr_e( 'Type your message...', 'agentbuilder' ); ?>">
+					<p class="description"><?php esc_html_e( 'Custom placeholder text in the input field. Leave empty for default.', 'agentbuilder' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Options', 'agent-builder' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Options', 'agentbuilder' ); ?></th>
 				<td>
 					<label>
 						<input type="checkbox" name="agentic_sc_show_header" value="1" checked>
-						<?php esc_html_e( 'Show agent name and icon header', 'agent-builder' ); ?>
+						<?php esc_html_e( 'Show agent name and icon header', 'agentbuilder' ); ?>
 					</label>
 				</td>
 			</tr>
@@ -240,28 +240,28 @@ if ( ! empty( $agentic_notice ) ) : ?>
 
 		<!-- Live Preview -->
 		<div id="agentic-sc-preview" style="margin: 10px 0 20px; padding: 12px 16px; background: #f6f7f7; border: 1px solid #c3c4c7; border-radius: 4px;">
-			<strong><?php esc_html_e( 'Preview:', 'agent-builder' ); ?></strong>
+			<strong><?php esc_html_e( 'Preview:', 'agentbuilder' ); ?></strong>
 			<code id="agentic-sc-preview-code" style="display: inline-block; margin-left: 8px; font-size: 13px;">[agentic_chat]</code>
 		</div>
 
-		<?php submit_button( __( 'Create Shortcode', 'agent-builder' ), 'primary', 'agentic_create_shortcode' ); ?>
+		<?php submit_button( __( 'Create Shortcode', 'agentbuilder' ), 'primary', 'agentic_create_shortcode' ); ?>
 	</form>
 <?php endif; ?>
 
 <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 4px;">
-	<h3 style="margin-top: 0;"><?php esc_html_e( 'How Shortcodes Work', 'agent-builder' ); ?></h3>
+	<h3 style="margin-top: 0;"><?php esc_html_e( 'How Shortcodes Work', 'agentbuilder' ); ?></h3>
 	<ul style="margin: 0; list-style: disc; padding-left: 20px;">
-		<li><?php esc_html_e( 'Paste the shortcode into any page, post, or text widget to embed an agent chat interface.', 'agent-builder' ); ?></li>
+		<li><?php esc_html_e( 'Paste the shortcode into any page, post, or text widget to embed an agent chat interface.', 'agentbuilder' ); ?></li>
 		<li>
-			<?php esc_html_e( 'Two shortcodes are available:', 'agent-builder' ); ?>
+			<?php esc_html_e( 'Two shortcodes are available:', 'agentbuilder' ); ?>
 			<ul style="list-style: circle; padding-left: 20px; margin: 4px 0;">
-				<li><code>[agentic_chat]</code> — <?php esc_html_e( 'Full interactive chat with conversation history', 'agent-builder' ); ?></li>
-				<li><code>[agentic_ask]</code> — <?php esc_html_e( 'One-shot query that displays a single response inline', 'agent-builder' ); ?></li>
+				<li><code>[agentic_chat]</code> — <?php esc_html_e( 'Full interactive chat with conversation history', 'agentbuilder' ); ?></li>
+				<li><code>[agentic_ask]</code> — <?php esc_html_e( 'One-shot query that displays a single response inline', 'agentbuilder' ); ?></li>
 			</ul>
 		</li>
-		<li><?php esc_html_e( 'Users must be logged in to chat unless anonymous access is enabled in Settings.', 'agent-builder' ); ?></li>
-		<li><?php esc_html_e( 'Multiple shortcodes (even different agents) can be placed on the same page.', 'agent-builder' ); ?></li>
-		<li><?php esc_html_e( 'All agent interactions via shortcodes are logged in the Audit Log.', 'agent-builder' ); ?></li>
+		<li><?php esc_html_e( 'Users must be logged in to chat unless anonymous access is enabled in Settings.', 'agentbuilder' ); ?></li>
+		<li><?php esc_html_e( 'Multiple shortcodes (even different agents) can be placed on the same page.', 'agentbuilder' ); ?></li>
+		<li><?php esc_html_e( 'All agent interactions via shortcodes are logged in the Audit Log.', 'agentbuilder' ); ?></li>
 	</ul>
 </div>
 

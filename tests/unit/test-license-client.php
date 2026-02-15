@@ -272,7 +272,7 @@ class Test_License_Client extends WP_UnitTestCase {
 
 		// Simulate WordPress finding an update for our plugin.
 		$update              = new \stdClass();
-		$update->slug        = 'agent-builder';
+		$update->slug        = 'agentbuilder';
 		$update->new_version = '2.0.0';
 		$transient->response[ AGENTIC_PLUGIN_BASENAME ] = $update;
 
@@ -302,7 +302,7 @@ class Test_License_Client extends WP_UnitTestCase {
 		$transient->no_update = array();
 
 		$update              = new \stdClass();
-		$update->slug        = 'agent-builder';
+		$update->slug        = 'agentbuilder';
 		$update->new_version = '2.0.0';
 		$transient->response[ AGENTIC_PLUGIN_BASENAME ] = $update;
 

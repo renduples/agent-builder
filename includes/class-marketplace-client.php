@@ -279,9 +279,9 @@ class Marketplace_Client {
 	 */
 	public function add_menu_page(): void {
 		add_submenu_page(
-			'agent-builder',
-			__( 'Developer Revenue', 'agent-builder' ),
-			__( 'Revenue', 'agent-builder' ),
+			'agentbuilder',
+			__( 'Developer Revenue', 'agentbuilder' ),
+			__( 'Revenue', 'agentbuilder' ),
 			'manage_options',
 			'agentic-revenue',
 			array( $this, 'render_revenue_page' )
@@ -325,28 +325,28 @@ class Marketplace_Client {
 				'installed'  => $this->get_installed_agents(),
 				'pricingUrl' => 'https://agentic-plugin.com/pricing/',
 				'strings'    => array(
-					'install'           => __( 'Install', 'agent-builder' ),
-					'installing'        => __( 'Installing...', 'agent-builder' ),
-					'installed'         => __( 'Installed', 'agent-builder' ),
-					'activate'          => __( 'Activate', 'agent-builder' ),
-					'activating'        => __( 'Activating...', 'agent-builder' ),
-					'active'            => __( 'Active', 'agent-builder' ),
-					'deactivate'        => __( 'Deactivate', 'agent-builder' ),
-					'update'            => __( 'Update', 'agent-builder' ),
-					'updating'          => __( 'Updating...', 'agent-builder' ),
-					'purchase'          => __( 'Purchase', 'agent-builder' ),
-					'enterLicense'      => __( 'Enter License Key', 'agent-builder' ),
-					'error'             => __( 'An error occurred', 'agent-builder' ),
-					'searchPlaceholder' => __( 'Search agents...', 'agent-builder' ),
-					'noResults'         => __( 'No agents found', 'agent-builder' ),
-					'viewDetails'       => __( 'View Details', 'agent-builder' ),
-					'downloads'         => __( 'downloads', 'agent-builder' ),
-					'lastUpdated'       => __( 'Last updated', 'agent-builder' ),
-					'version'           => __( 'Version', 'agent-builder' ),
-					'author'            => __( 'By', 'agent-builder' ),
-					'requires'          => __( 'Requires', 'agent-builder' ),
-					'testedUpTo'        => __( 'Tested up to', 'agent-builder' ),
-					'free'              => __( 'Free', 'agent-builder' ),
+					'install'           => __( 'Install', 'agentbuilder' ),
+					'installing'        => __( 'Installing...', 'agentbuilder' ),
+					'installed'         => __( 'Installed', 'agentbuilder' ),
+					'activate'          => __( 'Activate', 'agentbuilder' ),
+					'activating'        => __( 'Activating...', 'agentbuilder' ),
+					'active'            => __( 'Active', 'agentbuilder' ),
+					'deactivate'        => __( 'Deactivate', 'agentbuilder' ),
+					'update'            => __( 'Update', 'agentbuilder' ),
+					'updating'          => __( 'Updating...', 'agentbuilder' ),
+					'purchase'          => __( 'Purchase', 'agentbuilder' ),
+					'enterLicense'      => __( 'Enter License Key', 'agentbuilder' ),
+					'error'             => __( 'An error occurred', 'agentbuilder' ),
+					'searchPlaceholder' => __( 'Search agents...', 'agentbuilder' ),
+					'noResults'         => __( 'No agents found', 'agentbuilder' ),
+					'viewDetails'       => __( 'View Details', 'agentbuilder' ),
+					'downloads'         => __( 'downloads', 'agentbuilder' ),
+					'lastUpdated'       => __( 'Last updated', 'agentbuilder' ),
+					'version'           => __( 'Version', 'agentbuilder' ),
+					'author'            => __( 'By', 'agentbuilder' ),
+					'requires'          => __( 'Requires', 'agentbuilder' ),
+					'testedUpTo'        => __( 'Tested up to', 'agentbuilder' ),
+					'free'              => __( 'Free', 'agentbuilder' ),
 				),
 			)
 		);
@@ -428,24 +428,24 @@ class Marketplace_Client {
 	public function render_marketplace_page(): void {
 		?>
 		<div class="wrap agentic-marketplace-wrap">
-			<h1 class="wp-heading-inline"><?php esc_html_e( 'Add New Agent', 'agent-builder' ); ?></h1>
+			<h1 class="wp-heading-inline"><?php esc_html_e( 'Add New Agent', 'agentbuilder' ); ?></h1>
 
 			<div class="agentic-marketplace-header">
 				<div class="agentic-marketplace-tabs">
-					<a href="#" class="agentic-tab active" data-tab="featured"><?php esc_html_e( 'Featured', 'agent-builder' ); ?></a>
-					<a href="#" class="agentic-tab" data-tab="popular"><?php esc_html_e( 'Popular', 'agent-builder' ); ?></a>
-					<a href="#" class="agentic-tab" data-tab="recent"><?php esc_html_e( 'Recently Updated', 'agent-builder' ); ?></a>
-					<a href="#" class="agentic-tab" data-tab="free"><?php esc_html_e( 'Free', 'agent-builder' ); ?></a>
+					<a href="#" class="agentic-tab active" data-tab="featured"><?php esc_html_e( 'Featured', 'agentbuilder' ); ?></a>
+					<a href="#" class="agentic-tab" data-tab="popular"><?php esc_html_e( 'Popular', 'agentbuilder' ); ?></a>
+					<a href="#" class="agentic-tab" data-tab="recent"><?php esc_html_e( 'Recently Updated', 'agentbuilder' ); ?></a>
+					<a href="#" class="agentic-tab" data-tab="free"><?php esc_html_e( 'Free', 'agentbuilder' ); ?></a>
 				</div>
 
 				<div class="agentic-marketplace-search">
-					<input type="search" id="agentic-agent-search" placeholder="<?php esc_attr_e( 'Search agents...', 'agent-builder' ); ?>">
+					<input type="search" id="agentic-agent-search" placeholder="<?php esc_attr_e( 'Search agents...', 'agentbuilder' ); ?>">
 				</div>
 			</div>
 
 			<div class="agentic-marketplace-filters">
 				<select id="agentic-category-filter">
-					<option value=""><?php esc_html_e( 'All Categories', 'agent-builder' ); ?></option>
+					<option value=""><?php esc_html_e( 'All Categories', 'agentbuilder' ); ?></option>
 				</select>
 			</div>
 
@@ -453,7 +453,7 @@ class Marketplace_Client {
 				<div class="agentic-agents-grid" id="agentic-agents-grid">
 					<div class="agentic-loading">
 						<span class="spinner is-active"></span>
-						<?php esc_html_e( 'Loading agents...', 'agent-builder' ); ?>
+						<?php esc_html_e( 'Loading agents...', 'agentbuilder' ); ?>
 					</div>
 				</div>
 
@@ -575,7 +575,7 @@ class Marketplace_Client {
 		$agent_id = isset( $_POST['agent_id'] ) ? absint( $_POST['agent_id'] ) : 0;
 
 		if ( ! $agent_id ) {
-			wp_send_json_error( __( 'Invalid agent ID', 'agent-builder' ) );
+			wp_send_json_error( __( 'Invalid agent ID', 'agentbuilder' ) );
 		}
 
 		$response = $this->api_request( "agents/{$agent_id}" );
@@ -594,14 +594,14 @@ class Marketplace_Client {
 		check_ajax_referer( 'agentic_marketplace', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied', 'agent-builder' ) );
+			wp_send_json_error( __( 'Permission denied', 'agentbuilder' ) );
 		}
 
 		$agent_id    = isset( $_POST['agent_id'] ) ? absint( $_POST['agent_id'] ) : 0;
 		$license_key = isset( $_POST['license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['license_key'] ) ) : '';
 
 		if ( ! $agent_id ) {
-			wp_send_json_error( __( 'Invalid agent ID', 'agent-builder' ) );
+			wp_send_json_error( __( 'Invalid agent ID', 'agentbuilder' ) );
 		}
 
 		// Get agent details.
@@ -613,7 +613,7 @@ class Marketplace_Client {
 		// Check if premium and verify license.
 		if ( $agent['is_premium'] ) {
 			if ( empty( $license_key ) ) {
-				wp_send_json_error( __( 'License key required for premium agents', 'agent-builder' ) );
+				wp_send_json_error( __( 'License key required for premium agents', 'agentbuilder' ) );
 			}
 
 			$verification = $this->api_request(
@@ -637,7 +637,7 @@ class Marketplace_Client {
 				$error      = $verification['error'];
 				$error_code = $error['code'] ?? 'unknown_error';
 				$error_data = array(
-					'message' => $error['message'] ?? __( 'License validation failed', 'agent-builder' ),
+					'message' => $error['message'] ?? __( 'License validation failed', 'agentbuilder' ),
 					'code'    => $error_code,
 				);
 
@@ -648,7 +648,7 @@ class Marketplace_Client {
 							// Allow install but show warning.
 							$grace_warning = sprintf(
 								/* translators: 1: expiration date, 2: grace period days, 3: renewal URL */
-								__( 'License expired on %1$s. You have %2$d days to renew. <a href="%3$s" target="_blank">Renew now</a>', 'agent-builder' ),
+								__( 'License expired on %1$s. You have %2$d days to renew. <a href="%3$s" target="_blank">Renew now</a>', 'agentbuilder' ),
 								esc_html( $error['expired_at'] ?? 'unknown' ),
 								absint( $error['grace_period_days'] ?? 7 ),
 								esc_url( $error['renewal_url'] ?? '' )
@@ -692,7 +692,7 @@ class Marketplace_Client {
 			if ( isset( $verification['data']['download_url'] ) ) {
 				$download_url = $verification['data']['download_url'];
 			} else {
-				wp_send_json_error( __( 'Invalid license validation response', 'agent-builder' ) );
+				wp_send_json_error( __( 'Invalid license validation response', 'agentbuilder' ) );
 			}
 
 			// Store license with complete metadata.
@@ -726,7 +726,7 @@ class Marketplace_Client {
 
 		wp_send_json_success(
 			array(
-				'message' => __( 'Agent installed successfully', 'agent-builder' ),
+				'message' => __( 'Agent installed successfully', 'agentbuilder' ),
 				'slug'    => $agent['slug'],
 			)
 		);
@@ -779,7 +779,7 @@ class Marketplace_Client {
 				$this->move_directory_contents( $subdirs[0], $agent_dir );
 				$wp_filesystem->rmdir( $subdirs[0] );
 			} else {
-				return new \WP_Error( 'invalid_agent', __( 'Invalid agent package: agent.php not found', 'agent-builder' ) );
+				return new \WP_Error( 'invalid_agent', __( 'Invalid agent package: agent.php not found', 'agentbuilder' ) );
 			}
 		}
 
@@ -815,13 +815,13 @@ class Marketplace_Client {
 		check_ajax_referer( 'agentic_marketplace', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied', 'agent-builder' ) );
+			wp_send_json_error( __( 'Permission denied', 'agentbuilder' ) );
 		}
 
 		$slug = isset( $_POST['slug'] ) ? sanitize_text_field( wp_unslash( $_POST['slug'] ) ) : '';
 
 		if ( ! $slug ) {
-			wp_send_json_error( __( 'Invalid agent slug', 'agent-builder' ) );
+			wp_send_json_error( __( 'Invalid agent slug', 'agentbuilder' ) );
 		}
 
 		$active_agents = get_option( 'agentic_active_agents', array() );
@@ -832,7 +832,7 @@ class Marketplace_Client {
 
 		wp_send_json_success(
 			array(
-				'message' => __( 'Agent activated', 'agent-builder' ),
+				'message' => __( 'Agent activated', 'agentbuilder' ),
 				'slug'    => $slug,
 			)
 		);
@@ -845,13 +845,13 @@ class Marketplace_Client {
 		check_ajax_referer( 'agentic_marketplace', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Permission denied', 'agent-builder' ) );
+			wp_send_json_error( __( 'Permission denied', 'agentbuilder' ) );
 		}
 
 		$slug = isset( $_POST['slug'] ) ? sanitize_text_field( wp_unslash( $_POST['slug'] ) ) : '';
 
 		if ( ! $slug ) {
-			wp_send_json_error( __( 'Invalid agent slug', 'agent-builder' ) );
+			wp_send_json_error( __( 'Invalid agent slug', 'agentbuilder' ) );
 		}
 
 		$active_agents = get_option( 'agentic_active_agents', array() );
@@ -860,7 +860,7 @@ class Marketplace_Client {
 
 		wp_send_json_success(
 			array(
-				'message' => __( 'Agent deactivated', 'agent-builder' ),
+				'message' => __( 'Agent deactivated', 'agentbuilder' ),
 				'slug'    => $slug,
 			)
 		);
@@ -884,7 +884,7 @@ class Marketplace_Client {
 		$rating   = isset( $_POST['rating'] ) ? absint( $_POST['rating'] ) : 0;
 
 		if ( ! $agent_id || $rating < 1 || $rating > 5 ) {
-			wp_send_json_error( __( 'Invalid rating', 'agent-builder' ) );
+			wp_send_json_error( __( 'Invalid rating', 'agentbuilder' ) );
 		}
 
 		$response = $this->api_request(
@@ -1041,13 +1041,13 @@ class Marketplace_Client {
 		$data = json_decode( $body, true );
 
 		if ( null === $data || ! is_array( $data ) ) {
-			return new \WP_Error( 'api_error', __( 'Invalid API response format', 'agent-builder' ) );
+			return new \WP_Error( 'api_error', __( 'Invalid API response format', 'agentbuilder' ) );
 		}
 
 		if ( $code >= 400 ) {
 			return new \WP_Error(
 				'api_error',
-				$data['message'] ?? __( 'API request failed', 'agent-builder' )
+				$data['message'] ?? __( 'API request failed', 'agentbuilder' )
 			);
 		}
 

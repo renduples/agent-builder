@@ -20,7 +20,7 @@ use Agentic\Audit_Log;
 use Agentic\LLM_Client;
 
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
+	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
 $agentic_audit         = new Audit_Log();

@@ -136,8 +136,34 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 		<div class="agentic-message agentic-message-agent">
 			<div class="agentic-message-avatar"><?php echo esc_html( $agentic_current_agent->get_icon() ); ?></div>
 			<div class="agentic-message-content">
-				<?php echo wp_kses_post( nl2br( $agentic_current_agent->get_welcome_message() ) ); ?>
+				<?php
+				$agentic_welcome = $agentic_current_agent->get_welcome_message();
+				// Convert markdown bold and list items for display.
+				$agentic_welcome = esc_html( $agentic_welcome );
+				$agentic_welcome = preg_replace( '/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $agentic_welcome );
+				$agentic_welcome = preg_replace( '/^- /m', '&bull; ', $agentic_welcome );
+				$agentic_welcome = nl2br( $agentic_welcome );
+				echo wp_kses_post( $agentic_welcome );
+				?>
 				
+				<?php if ( 'onboarding-agent' === $agentic_current_agent->get_id() ) : ?>
+				<div class="agentic-quick-actions">
+					<?php
+					$agentic_quick_agents = array(
+						'agent-builder'  => __( 'Agent Builder', 'agent-builder' ),
+						'content-builder' => __( 'Content Builder', 'agent-builder' ),
+						'plugin-builder' => __( 'Plugin Builder', 'agent-builder' ),
+						'theme-builder'  => __( 'Theme Builder', 'agent-builder' ),
+					);
+					foreach ( $agentic_quick_agents as $agentic_slug => $agentic_label ) :
+						$agentic_agent_url = admin_url( 'admin.php?page=agentic-chat&agent=' . $agentic_slug );
+						?>
+						<a href="<?php echo esc_url( $agentic_agent_url ); ?>" class="agentic-quick-action-btn">
+							<?php echo esc_html( $agentic_label ); ?>
+						</a>
+					<?php endforeach; ?>
+				</div>
+				<?php else : ?>
 				<?php
 				$agentic_prompts = $agentic_current_agent->get_suggested_prompts();
 				if ( ! empty( $agentic_prompts ) ) :
@@ -149,6 +175,7 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 						</button>
 					<?php endforeach; ?>
 				</div>
+				<?php endif; ?>
 				<?php endif; ?>
 			</div>
 		</div>

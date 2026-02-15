@@ -291,7 +291,7 @@ if ( class_exists( '\Agentic\License_Client' ) ) {
 			<?php endif; ?>
 			<p>
 				<?php if ( $agentic_is_configured ) : ?>
-					<a href="<?php echo esc_url( home_url( '/agent-chat/' ) ); ?>" class="button button-primary" target="_blank">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-chat' ) ); ?>" class="button button-primary">
 						Open Chat Interface
 					</a>
 				<?php endif; ?>

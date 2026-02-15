@@ -4,7 +4,7 @@ Tags: AI, LLM, automation, chatbot, AI agent
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://agentic-plugin.com/donate
@@ -74,6 +74,24 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 4. Detailed agent controls — permissions, security, and audit log viewer.
 
 == Changelog ==
+
+= 1.7.2 - 2026-02-15 =
+* Added: Admin bar "AI Agents" quick-chat overlay — chat with any active agent from any page.
+* Added: Image/file upload support in all chat interfaces (admin, frontend shortcode, overlay).
+* Added: Voice input via Web Speech API with graceful degradation on unsupported browsers.
+* Added: Auto-switch to vision model when image is attached (e.g., grok-3 → grok-2-vision).
+* Added: Vision capability indicator (👁) in Settings model dropdown.
+* Added: Grok 2 Vision and Pixtral Large as selectable models for xAI and Mistral.
+* Added: Multimodal LLM support across all 5 providers (OpenAI, Anthropic, xAI, Google, Mistral).
+* Added: New Chat and Minimize buttons in chatbox header.
+* Added: Agent Deployment page with Scheduled Tasks, Event Listeners, and Shortcodes tabs.
+* Added: Run Now AJAX for scheduled tasks with real-time feedback.
+* Added: Tool toggle switches with 3-layer enforcement (UI, controller, audit).
+* Added: Tool usage counter on Agent Tools page.
+* Improved: Chat responses render full Markdown (headers, lists, code blocks, links).
+* Improved: Cache-busted assets using filemtime() instead of static version strings.
+* Fixed: Removed duplicate "Agents" admin bar menu; only "AI Agents" chat menu remains.
+* Security: Temp image uploads auto-cleaned after 1 hour; base64 validation on REST endpoint.
 
 = 1.7.1 - 2026-02-15 =
 * Improved: All API calls now send site identification headers (X-Agentic-Site-URL, Site-Name, Plugin-Version, WP-Version, PHP-Version, User-Agent).

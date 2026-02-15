@@ -7,8 +7,8 @@
 (function() {
     'use strict';
 
-    // Get current agent from data attribute
-    const chatContainer = document.getElementById('agentic-chat');
+    // Get current agent from data attribute (supports both admin template ID and shortcode dynamic ID)
+    const chatContainer = document.getElementById('agentic-chat') || document.querySelector('.agentic-chat-container[data-agent-id]');
     const currentAgentId = chatContainer ? chatContainer.dataset.agentId || 'default' : 'default';
 
     // State - keyed by agent
@@ -17,6 +17,7 @@
     let isProcessing = false;
     let totalTokens = 0;
     let totalCost = 0;
+    let pendingImage = null; // { dataUrl, mimeType, name }
 
     // Store session ID for this agent
     localStorage.setItem(`agentic_session_${currentAgentId}`, sessionId);
@@ -38,7 +39,36 @@
         form.addEventListener('submit', handleSubmit);
         input.addEventListener('keydown', handleKeydown);
         input.addEventListener('input', autoResize);
-        clearBtn.addEventListener('click', clearConversation);
+        if (clearBtn) {
+            clearBtn.addEventListener('click', clearConversation);
+        }
+
+        // New Chat button (header)
+        const newChatBtn = chatContainer ? chatContainer.querySelector('.agentic-new-chat-btn') : null;
+        if (newChatBtn) {
+            newChatBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                clearConversation();
+            });
+        }
+
+        // Minimize button (header)
+        const minimizeBtn = chatContainer ? chatContainer.querySelector('.agentic-minimize-btn') : null;
+        if (minimizeBtn) {
+            minimizeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                chatContainer.classList.toggle('agentic-chat-minimized');
+            });
+            // Also allow clicking the header itself to expand when minimized
+            const header = chatContainer.querySelector('.agentic-chat-header');
+            if (header) {
+                header.addEventListener('click', function(e) {
+                    if (chatContainer.classList.contains('agentic-chat-minimized')) {
+                        chatContainer.classList.remove('agentic-chat-minimized');
+                    }
+                });
+            }
+        }
 
         // Handle agent switching
         if (agentSelect) {
@@ -57,8 +87,163 @@
             }
         });
 
+        // Voice input (Web Speech API — graceful degradation)
+        initVoiceInput();
+
+        // File/image upload
+        initFileUpload();
+
         // Load saved conversation for current agent
         loadConversation();
+    }
+
+    // Voice input via Web Speech API
+    function initVoiceInput() {
+        const voiceBtn = document.getElementById('agentic-voice-btn');
+        if (!voiceBtn) return;
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        // Always show the button — handle unsupported/insecure at click time
+        voiceBtn.style.display = '';
+
+        if (!SpeechRecognition) {
+            voiceBtn.title = 'Voice input requires Chrome, Edge, or Safari with HTTPS';
+            voiceBtn.style.opacity = '0.4';
+            voiceBtn.addEventListener('click', function() {
+                alert('Voice input is not available.\n\nRequirements:\n• Chrome, Edge, or Safari\n• HTTPS connection (not plain HTTP)');
+            });
+            return;
+        }
+
+        let recognition = null;
+        let isListening = false;
+
+        voiceBtn.addEventListener('click', function() {
+            if (isListening) {
+                recognition.stop();
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = document.documentElement.lang || 'en-US';
+            recognition.interimResults = true;
+            recognition.continuous = false;
+            recognition.maxAlternatives = 1;
+
+            const existingText = input.value;
+
+            recognition.onstart = function() {
+                isListening = true;
+                voiceBtn.classList.add('agentic-voice-active');
+                input.placeholder = 'Listening...';
+            };
+
+            recognition.onresult = function(event) {
+                let interim = '';
+                let final = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        final += event.results[i][0].transcript;
+                    } else {
+                        interim += event.results[i][0].transcript;
+                    }
+                }
+                // Show interim results live, append final when done
+                input.value = existingText + (existingText ? ' ' : '') + (final || interim);
+                autoResize();
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                voiceBtn.classList.remove('agentic-voice-active');
+                input.placeholder = input.getAttribute('data-original-placeholder') || 'Type your message...';
+                input.focus();
+            };
+
+            recognition.onerror = function(event) {
+                isListening = false;
+                voiceBtn.classList.remove('agentic-voice-active');
+                input.placeholder = input.getAttribute('data-original-placeholder') || 'Type your message...';
+                if (event.error === 'not-allowed') {
+                    alert('Microphone access denied.\n\nThis may require HTTPS. Try accessing this page over https://.');
+                } else if (event.error !== 'aborted' && event.error !== 'no-speech') {
+                    console.warn('Speech recognition error:', event.error);
+                }
+            };
+
+            // Save original placeholder
+            if (!input.getAttribute('data-original-placeholder')) {
+                input.setAttribute('data-original-placeholder', input.placeholder);
+            }
+
+            recognition.start();
+        });
+    }
+
+    // File/image upload
+    function initFileUpload() {
+        const attachBtn = document.getElementById('agentic-attach-btn');
+        const fileInput = document.getElementById('agentic-file-input');
+        const previewWrap = document.getElementById('agentic-image-preview');
+        const previewImg = document.getElementById('agentic-preview-img');
+        const removeBtn = document.getElementById('agentic-remove-image');
+        const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+        if (!attachBtn || !fileInput) return;
+
+        attachBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Only image files are supported (JPEG, PNG, GIF, WebP).');
+                fileInput.value = '';
+                return;
+            }
+
+            if (file.size > MAX_SIZE) {
+                alert('Image must be under 5 MB.');
+                fileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pendingImage = {
+                    dataUrl: e.target.result,
+                    mimeType: file.type,
+                    name: file.name
+                };
+                if (previewWrap && previewImg) {
+                    previewImg.src = e.target.result;
+                    previewWrap.style.display = 'flex';
+                }
+                // Adjust attach button style
+                attachBtn.classList.add('agentic-attach-active');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                clearPendingImage();
+            });
+        }
+    }
+
+    function clearPendingImage() {
+        pendingImage = null;
+        const fileInput = document.getElementById('agentic-file-input');
+        const previewWrap = document.getElementById('agentic-image-preview');
+        const attachBtn = document.getElementById('agentic-attach-btn');
+        if (fileInput) fileInput.value = '';
+        if (previewWrap) previewWrap.style.display = 'none';
+        if (attachBtn) attachBtn.classList.remove('agentic-attach-active');
     }
 
     // Handle agent switch from dropdown
@@ -85,21 +270,25 @@
         e.preventDefault();
         
         const message = input.value.trim();
-        if (!message || isProcessing) return;
+        if ((!message && !pendingImage) || isProcessing) return;
 
-        // Add user message to UI
-        addMessage(message, 'user');
+        // Capture image before clearing
+        const imageData = pendingImage ? { ...pendingImage } : null;
+
+        // Add user message to UI (with optional image)
+        addMessage(message, 'user', {}, imageData);
         
-        // Clear input
+        // Clear input and image
         input.value = '';
         input.style.height = 'auto';
+        clearPendingImage();
 
         // Add to history
-        conversationHistory.push({ role: 'user', content: message });
+        conversationHistory.push({ role: 'user', content: message || 'Describe this image.' });
         saveConversation();
 
         // Send to agent
-        await sendMessage(message);
+        await sendMessage(message || 'Describe this image.', imageData);
     }
 
     // Handle keyboard shortcuts
@@ -117,13 +306,24 @@
     }
 
     // Add message to UI
-    function addMessage(content, role, meta = {}) {
+    function addMessage(content, role, meta = {}, imageData = null) {
         const div = document.createElement('div');
         div.className = `agentic-message agentic-message-${role}`;
 
+        // Show attached image
+        if (imageData && imageData.dataUrl) {
+            const imgEl = document.createElement('img');
+            imgEl.src = imageData.dataUrl;
+            imgEl.className = 'agentic-chat-image';
+            imgEl.alt = imageData.name || 'Attached image';
+            div.appendChild(imgEl);
+        }
+
         const contentDiv = document.createElement('div');
         contentDiv.className = 'agentic-message-content';
-        contentDiv.innerHTML = role === 'agent' ? renderMarkdown(content) : escapeHtml(content);
+        if (content) {
+            contentDiv.innerHTML = role === 'agent' ? renderMarkdown(content) : escapeHtml(content);
+        }
 
         div.appendChild(contentDiv);
 
@@ -169,24 +369,31 @@
     }
 
     // Send message to API
-    async function sendMessage(message) {
+    async function sendMessage(message, imageData = null) {
         isProcessing = true;
         sendBtn.disabled = true;
         typingIndicator.style.display = 'flex';
 
         try {
+            const payload = {
+                message: message,
+                session_id: sessionId,
+                agent_id: currentAgentId,
+                history: conversationHistory.slice(-20) // Last 20 messages for context
+            };
+
+            // Attach image as base64
+            if (imageData && imageData.dataUrl) {
+                payload.image = imageData.dataUrl;
+            }
+
             const response = await fetch(agenticChat.restUrl + 'chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-WP-Nonce': agenticChat.nonce
                 },
-                body: JSON.stringify({
-                    message: message,
-                    session_id: sessionId,
-                    agent_id: currentAgentId,
-                    history: conversationHistory.slice(-20) // Last 20 messages for context
-                })
+                body: JSON.stringify(payload)
             });
 
             const data = await response.json();

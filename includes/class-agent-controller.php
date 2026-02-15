@@ -104,14 +104,24 @@ class Agent_Controller {
 	 * @return array Tool definitions.
 	 */
 	private function get_tools_for_agent(): array {
-		$tools = array();
-
-		// Add agent-specific tools first.
-		if ( $this->current_agent ) {
-			$tools = $this->current_agent->get_tools();
+		$tools          = array();
+		$disabled_tools = get_option( 'agentic_disabled_tools', array() );
+		if ( ! is_array( $disabled_tools ) ) {
+			$disabled_tools = array();
 		}
 
-		// Merge core tools so the LLM knows about them.
+		// Add agent-specific tools first (filtered by disabled list).
+		if ( $this->current_agent ) {
+			$agent_tools = $this->current_agent->get_tools();
+			foreach ( $agent_tools as $agent_tool ) {
+				$tool_name = $agent_tool['function']['name'] ?? $agent_tool['name'] ?? '';
+				if ( ! in_array( $tool_name, $disabled_tools, true ) ) {
+					$tools[] = $agent_tool;
+				}
+			}
+		}
+
+		// Merge core tools (already filtered by get_tool_definitions).
 		$core_tool_defs = $this->core_tools->get_tool_definitions();
 		foreach ( $core_tool_defs as $core_tool ) {
 			$tools[] = $core_tool;
@@ -131,6 +141,14 @@ class Agent_Controller {
 	 */
 	private function execute_tool( string $tool_name, array $arguments ): array {
 		$agent_id = $this->current_agent ? $this->current_agent->get_id() : 'unknown';
+
+		// Block disabled tools (defense in depth — tools should already be filtered
+		// from definitions, but this prevents execution if an LLM hallucinates a call).
+		$disabled_tools = get_option( 'agentic_disabled_tools', array() );
+		if ( is_array( $disabled_tools ) && in_array( $tool_name, $disabled_tools, true ) ) {
+			$this->audit->log( $agent_id, 'tool_blocked', $tool_name, array( 'reason' => 'Tool is disabled by administrator' ) );
+			return array( 'error' => sprintf( 'The tool "%s" has been disabled by an administrator.', $tool_name ) );
+		}
 
 		$this->audit->log( $agent_id, 'tool_call', $tool_name, $arguments );
 
@@ -163,7 +181,7 @@ class Agent_Controller {
 	 * @param string $agent_id   Agent ID (optional, uses current agent if not set).
 	 * @return array Response data.
 	 */
-	public function chat( string $message, array $history = array(), int $user_id = 0, string $session_id = '', string $agent_id = '' ): array {
+	public function chat( string $message, array $history = array(), int $user_id = 0, string $session_id = '', string $agent_id = '', ?array $image_data = null ): array {
 		// Set agent if specified.
 		if ( $agent_id && ( ! $this->current_agent || $this->current_agent->get_id() !== $agent_id ) ) {
 			if ( ! $this->set_agent( $agent_id ) ) {
@@ -209,11 +227,105 @@ class Agent_Controller {
 			);
 		}
 
-		// Add current message.
-		$messages[] = array(
-			'role'    => 'user',
-			'content' => $message,
-		);
+		// Add current message (multimodal if image attached).
+		if ( $image_data ) {
+			// Check if the current model supports vision.
+			$model          = $this->llm->get_model();
+			$vision_models  = array(
+				// xAI.
+				'grok-2-vision',
+				'grok-2-vision-latest',
+				// OpenAI.
+				'gpt-4o',
+				'gpt-4o-mini',
+				'gpt-4-turbo',
+				'gpt-4-vision-preview',
+				'o1',
+				'o1-mini',
+				// Anthropic.
+				'claude-3-opus',
+				'claude-3-sonnet',
+				'claude-3-haiku',
+				'claude-3-5-sonnet',
+				'claude-3-5-haiku',
+				'claude-4-sonnet',
+				'claude-4-opus',
+				// Google.
+				'gemini-pro-vision',
+				'gemini-1.5-pro',
+				'gemini-1.5-flash',
+				'gemini-2.0-flash',
+				// Mistral.
+				'pixtral-large',
+				'pixtral-12b',
+			);
+			$supports_vision = false;
+			foreach ( $vision_models as $vm ) {
+				if ( str_starts_with( $model, $vm ) ) {
+					$supports_vision = true;
+					break;
+				}
+			}
+
+			if ( ! $supports_vision ) {
+				// Auto-switch to the provider's vision model for this request only.
+				$vision_fallbacks = array(
+					'xai'       => 'grok-2-vision-latest',
+					'openai'    => 'gpt-4o',
+					'anthropic' => 'claude-3-5-sonnet-20241022',
+					'google'    => 'gemini-1.5-pro',
+					'mistral'   => 'pixtral-large-latest',
+				);
+				$provider       = $this->llm->get_provider();
+				$vision_model   = $vision_fallbacks[ $provider ] ?? null;
+
+				if ( $vision_model ) {
+					$this->llm->set_model( $vision_model );
+				} else {
+					// No vision fallback — send text only with a note.
+					$messages[] = array(
+						'role'    => 'user',
+						'content' => $message . "\n\n(An image was attached but the current model does not support vision.)",
+					);
+				}
+			}
+
+			if ( $this->llm->get_model() !== $model || $supports_vision ) {
+				// Provider-specific URL selection:
+				// - xAI: requires HTTPS URL (temp upload), doesn't support base64 data URLs.
+				// - OpenAI/Mistral: support base64 data URLs natively.
+				// - Anthropic/Google: converted from data URL in LLM_Client.
+				$image_url = $image_data['data_url'];
+				if ( 'xai' === $this->llm->get_provider() && ! empty( $image_data['url'] ) ) {
+					$image_url = $image_data['url'];
+				}
+
+				$messages[] = array(
+					'role'    => 'user',
+					'content' => array(
+						array(
+							'type' => 'text',
+							'text' => $message,
+						),
+						array(
+							'type'      => 'image_url',
+							'image_url' => array(
+								'url' => $image_url,
+							),
+						),
+					),
+				);
+			}
+
+			// Restore original model after building messages (the override only affects this request
+			// because $this->llm->chat() reads model at call time, after messages are set).
+			// No restore needed — set_model persists only for this request lifecycle.
+		} else {
+			$messages[] = array(
+				'role'    => 'user',
+				'content' => $message,
+			);
+		}
 
 		// Get tools for this agent.
 		$tools = $this->get_tools_for_agent();

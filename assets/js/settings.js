@@ -8,11 +8,11 @@ const llmProviders = {
 		name: 'OpenAI',
 		docs: 'https://platform.openai.com/api-keys',
 		models: {
-			'gpt-4o': 'GPT-4o (Recommended)',
-			'gpt-4o-mini': 'GPT-4o Mini (Faster, cheaper)',
-			'gpt-4-turbo': 'GPT-4 Turbo',
-			'gpt-4': 'GPT-4',
-			'gpt-3.5-turbo': 'GPT-3.5 Turbo'
+			'gpt-4o':         { label: 'GPT-4o (Recommended)',      vision: true },
+			'gpt-4o-mini':    { label: 'GPT-4o Mini (Faster, cheaper)', vision: true },
+			'gpt-4-turbo':    { label: 'GPT-4 Turbo',               vision: true },
+			'gpt-4':          { label: 'GPT-4',                     vision: false },
+			'gpt-3.5-turbo':  { label: 'GPT-3.5 Turbo',             vision: false }
 		},
 		default: 'gpt-4o',
 		steps: [
@@ -27,9 +27,9 @@ const llmProviders = {
 		name: 'Anthropic',
 		docs: 'https://console.anthropic.com/settings/keys',
 		models: {
-			'claude-3-5-sonnet-20241022': 'Claude 3.5 Sonnet (Recommended)',
-			'claude-3-5-haiku-20241022': 'Claude 3.5 Haiku (Fast)',
-			'claude-3-opus-20240229': 'Claude 3 Opus (Most capable)'
+			'claude-3-5-sonnet-20241022': { label: 'Claude 3.5 Sonnet (Recommended)', vision: true },
+			'claude-3-5-haiku-20241022':  { label: 'Claude 3.5 Haiku (Fast)',         vision: true },
+			'claude-3-opus-20240229':     { label: 'Claude 3 Opus (Most capable)',    vision: true }
 		},
 		default: 'claude-3-5-sonnet-20241022',
 		steps: [
@@ -44,10 +44,11 @@ const llmProviders = {
 		name: 'xAI',
 		docs: 'https://console.x.ai/',
 		models: {
-			'grok-3': 'Grok 3 (Recommended)',
-			'grok-3-fast': 'Grok 3 Fast (Lower latency)',
-			'grok-3-mini': 'Grok 3 Mini (Efficient)',
-			'grok-3-mini-fast': 'Grok 3 Mini Fast (Fastest)'
+			'grok-3':             { label: 'Grok 3 (Recommended)',         vision: false },
+			'grok-3-fast':        { label: 'Grok 3 Fast (Lower latency)',  vision: false },
+			'grok-3-mini':        { label: 'Grok 3 Mini (Efficient)',      vision: false },
+			'grok-3-mini-fast':   { label: 'Grok 3 Mini Fast (Fastest)',   vision: false },
+			'grok-2-vision-latest': { label: 'Grok 2 Vision',             vision: true }
 		},
 		default: 'grok-3',
 		steps: [
@@ -62,9 +63,9 @@ const llmProviders = {
 		name: 'Google',
 		docs: 'https://makersuite.google.com/app/apikey',
 		models: {
-			'gemini-2.0-flash-exp': 'Gemini 2.0 Flash (Recommended)',
-			'gemini-1.5-pro': 'Gemini 1.5 Pro',
-			'gemini-1.5-flash': 'Gemini 1.5 Flash (Fast)'
+			'gemini-2.0-flash-exp': { label: 'Gemini 2.0 Flash (Recommended)', vision: true },
+			'gemini-1.5-pro':       { label: 'Gemini 1.5 Pro',                 vision: true },
+			'gemini-1.5-flash':     { label: 'Gemini 1.5 Flash (Fast)',        vision: true }
 		},
 		default: 'gemini-2.0-flash-exp',
 		steps: [
@@ -79,9 +80,10 @@ const llmProviders = {
 		name: 'Mistral',
 		docs: 'https://console.mistral.ai/api-keys/',
 		models: {
-			'mistral-large-latest': 'Mistral Large (Recommended)',
-			'mistral-medium-latest': 'Mistral Medium',
-			'mistral-small-latest': 'Mistral Small (Fast)'
+			'mistral-large-latest':  { label: 'Mistral Large (Recommended)', vision: false },
+			'mistral-medium-latest': { label: 'Mistral Medium',              vision: false },
+			'mistral-small-latest':  { label: 'Mistral Small (Fast)',        vision: false },
+			'pixtral-large-latest':  { label: 'Pixtral Large',              vision: true }
 		},
 		default: 'mistral-large-latest',
 		steps: [
@@ -126,16 +128,16 @@ function updateLLMFields() {
 
 	// Update model dropdown
 	modelSelect.innerHTML = '';
-	for (const [value, label] of Object.entries(config.models)) {
+	for (const [value, info] of Object.entries(config.models)) {
 		const option = document.createElement('option');
 		option.value = value;
-		option.textContent = label;
+		option.textContent = info.vision ? info.label + ' 👁' : info.label;
 		option.selected = (value === currentModel || value === config.default);
 		modelSelect.appendChild(option);
 	}
 
 	// Update model help text
-	modelHelp.innerHTML = `The ${config.name} model to use for agent responses. The recommended option provides the best results.`;
+	modelHelp.innerHTML = '👁 = supports image/vision';
 
 	// Re-attach event listener for show instructions link
 	setTimeout(() => {

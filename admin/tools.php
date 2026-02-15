@@ -4,6 +4,7 @@
  *
  * Displays all available tools across all agents: core tools and
  * agent-specific tools. Provides visibility into what each agent can do.
+ * Administrators can enable or disable individual tools via toggle switches.
  *
  * @package    Agent_Builder
  * @subpackage Admin
@@ -23,9 +24,15 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agent-builder' ) );
 }
 
-// Collect core tool definitions.
+// Collect core tool definitions (unfiltered — we need all tools for the admin UI).
 $agentic_core_tools = new \Agentic\Agent_Tools();
-$agentic_core_defs  = $agentic_core_tools->get_tool_definitions();
+$agentic_core_defs  = $agentic_core_tools->get_all_tool_definitions();
+
+// Get currently disabled tools.
+$agentic_disabled_tools = get_option( 'agentic_disabled_tools', array() );
+if ( ! is_array( $agentic_disabled_tools ) ) {
+	$agentic_disabled_tools = array();
+}
 
 // Known core tool names (tools defined in Agent_Tools, not from agents).
 $agentic_core_names = array(
@@ -38,6 +45,16 @@ $agentic_core_names = array(
 	'update_documentation',
 	'request_code_change',
 	'manage_schedules',
+	'query_database',
+	'get_error_log',
+	'get_site_health',
+	'manage_wp_cron',
+	'get_users',
+	'get_option',
+	'write_file',
+	'modify_option',
+	'manage_transients',
+	'modify_postmeta',
 );
 
 // Collect agent instances and their tools.
@@ -71,6 +88,7 @@ foreach ( $agentic_core_defs as $agentic_def ) {
 		'type'        => 'Core',
 		'agents'      => array(),
 		'params'      => $agentic_param_list,
+		'enabled'     => ! in_array( $agentic_fname, $agentic_disabled_tools, true ),
 	);
 }
 
@@ -99,6 +117,7 @@ foreach ( $agentic_instances as $agentic_agent ) {
 				'type'        => 'Agent',
 				'agents'      => array( $agentic_agent->get_name() ),
 				'params'      => $agentic_param_list,
+				'enabled'     => ! in_array( $agentic_fname, $agentic_disabled_tools, true ),
 			);
 		}
 	}
@@ -111,6 +130,20 @@ if ( $agentic_filter_type ) {
 		$agentic_all_tools,
 		fn( $t ) => strtolower( $t['type'] ) === strtolower( $agentic_filter_type )
 	);
+}
+
+// Query tool usage counts from the audit log.
+global $wpdb;
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table aggregate.
+$agentic_usage_rows = $wpdb->get_results(
+	"SELECT target_type AS tool_name, COUNT(*) AS call_count FROM {$wpdb->prefix}agentic_audit_log WHERE action = 'tool_call' GROUP BY target_type",
+	ARRAY_A
+);
+$agentic_usage_counts = array();
+if ( is_array( $agentic_usage_rows ) ) {
+	foreach ( $agentic_usage_rows as $agentic_row ) {
+		$agentic_usage_counts[ $agentic_row['tool_name'] ] = (int) $agentic_row['call_count'];
+	}
 }
 
 // Count totals.
@@ -161,16 +194,25 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 		<table class="widefat striped" style="margin-top: 10px;">
 			<thead>
 				<tr>
+					<th style="width: 80px;"><?php esc_html_e( 'Enabled', 'agent-builder' ); ?></th>
 					<th style="width: 200px;"><?php esc_html_e( 'Tool Name', 'agent-builder' ); ?></th>
 					<th><?php esc_html_e( 'Description', 'agent-builder' ); ?></th>
 					<th style="width: 100px;"><?php esc_html_e( 'Type', 'agent-builder' ); ?></th>
-					<th style="width: 200px;"><?php esc_html_e( 'Used By', 'agent-builder' ); ?></th>
+					<th style="width: 100px;"><?php esc_html_e( 'Usage', 'agent-builder' ); ?></th>
 					<th style="width: 200px;"><?php esc_html_e( 'Parameters', 'agent-builder' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php foreach ( $agentic_all_tools as $agentic_tool ) : ?>
-				<tr>
+				<tr<?php echo $agentic_tool['enabled'] ? '' : ' style="opacity: 0.6;"'; ?> data-tool="<?php echo esc_attr( $agentic_tool['name'] ); ?>">
+					<td style="text-align: center;">
+						<label class="agentic-toggle" title="<?php echo $agentic_tool['enabled'] ? esc_attr__( 'Click to disable this tool', 'agent-builder' ) : esc_attr__( 'Click to enable this tool', 'agent-builder' ); ?>">
+							<input type="checkbox" class="agentic-tool-toggle"
+								data-tool="<?php echo esc_attr( $agentic_tool['name'] ); ?>"
+								<?php checked( $agentic_tool['enabled'] ); ?> />
+							<span class="agentic-toggle-slider"></span>
+						</label>
+					</td>
 					<td>
 						<strong><code><?php echo esc_html( $agentic_tool['name'] ); ?></code></strong>
 					</td>
@@ -190,10 +232,15 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 					</td>
 					<td>
 						<?php
-						if ( empty( $agentic_tool['agents'] ) ) {
-							echo '<span style="color: #646970;">' . esc_html__( 'All agents (core)', 'agent-builder' ) . '</span>';
+						$agentic_tool_uses = $agentic_usage_counts[ $agentic_tool['name'] ] ?? 0;
+						if ( $agentic_tool_uses > 0 ) {
+							printf(
+								'<span style="background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: 600;">%s</span>',
+								/* translators: %s: number of times a tool was called */
+								esc_html( sprintf( _n( '%s call', '%s calls', $agentic_tool_uses, 'agent-builder' ), number_format_i18n( $agentic_tool_uses ) ) )
+							);
 						} else {
-							echo esc_html( implode( ', ', $agentic_tool['agents'] ) );
+							echo '<span style="color: #9ca3af; font-size: 12px;">' . esc_html__( 'No calls yet', 'agent-builder' ) . '</span>';
 						}
 						?>
 					</td>
@@ -212,6 +259,21 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 		</table>
 	<?php endif; ?>
 
+	<div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+		<h3 style="margin-top: 0;"><?php esc_html_e( 'Tool Permission System', 'agent-builder' ); ?></h3>
+		<p style="margin-bottom: 8px;"><?php esc_html_e( 'Use the toggle switches above to control which tools agents can access. When a tool is disabled:', 'agent-builder' ); ?></p>
+		<ul style="margin: 0 0 10px; list-style: disc; padding-left: 20px;">
+			<li><?php esc_html_e( 'The tool is hidden from the AI model — agents will not know it exists and cannot request it.', 'agent-builder' ); ?></li>
+			<li><?php esc_html_e( 'Even if an agent attempts to call a disabled tool directly, execution is blocked and an error is returned.', 'agent-builder' ); ?></li>
+			<li><?php esc_html_e( 'Disabled tool calls are logged in the Audit Log for security visibility.', 'agent-builder' ); ?></li>
+			<li><?php esc_html_e( 'Changes take effect immediately — no restart or reload required.', 'agent-builder' ); ?></li>
+		</ul>
+		<p style="margin: 0; font-size: 12px; color: #856404;">
+			<strong><?php esc_html_e( 'Tip:', 'agent-builder' ); ?></strong>
+			<?php esc_html_e( 'Disable write tools (request_code_change, update_documentation, write_file) for a read-only agent experience. Core read tools like read_file and list_directory are needed by most agents.', 'agent-builder' ); ?>
+		</p>
+	</div>
+
 	<div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 4px;">
 		<h3 style="margin-top: 0;"><?php esc_html_e( 'About Tools', 'agent-builder' ); ?></h3>
 		<ul style="margin: 0; list-style: disc; padding-left: 20px;">
@@ -222,3 +284,96 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 		</ul>
 	</div>
 </div>
+
+<!-- Toggle switch CSS -->
+<style>
+	.agentic-toggle {
+		position: relative;
+		display: inline-block;
+		width: 40px;
+		height: 22px;
+		cursor: pointer;
+	}
+	.agentic-toggle input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+	.agentic-toggle-slider {
+		position: absolute;
+		top: 0; left: 0; right: 0; bottom: 0;
+		background-color: #ccc;
+		border-radius: 22px;
+		transition: background-color 0.2s;
+	}
+	.agentic-toggle-slider::before {
+		content: "";
+		position: absolute;
+		height: 16px;
+		width: 16px;
+		left: 3px;
+		bottom: 3px;
+		background-color: #fff;
+		border-radius: 50%;
+		transition: transform 0.2s;
+	}
+	.agentic-toggle input:checked + .agentic-toggle-slider {
+		background-color: #2271b1;
+	}
+	.agentic-toggle input:checked + .agentic-toggle-slider::before {
+		transform: translateX(18px);
+	}
+	.agentic-toggle input:focus + .agentic-toggle-slider {
+		box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.4);
+	}
+	.agentic-toggle.is-saving .agentic-toggle-slider {
+		opacity: 0.5;
+	}
+</style>
+
+<!-- Toggle AJAX handler -->
+<script>
+(function() {
+	'use strict';
+	document.querySelectorAll('.agentic-tool-toggle').forEach(function(toggle) {
+		toggle.addEventListener('change', function() {
+			var toolName = this.dataset.tool;
+			var enabled  = this.checked;
+			var row      = this.closest('tr');
+			var label    = this.closest('.agentic-toggle');
+
+			label.classList.add('is-saving');
+
+			var data = new FormData();
+			data.append('action', 'agentic_toggle_tool');
+			data.append('tool', toolName);
+			data.append('enabled', enabled ? '1' : '0');
+			data.append('_wpnonce', '<?php echo esc_js( wp_create_nonce( 'agentic_toggle_tool' ) ); ?>');
+
+			fetch(ajaxurl, {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data,
+			})
+			.then(function(response) { return response.json(); })
+			.then(function(result) {
+				label.classList.remove('is-saving');
+				if (result.success) {
+					row.style.opacity = enabled ? '1' : '0.6';
+					label.title = enabled
+						? '<?php echo esc_js( __( 'Click to disable this tool', 'agent-builder' ) ); ?>'
+						: '<?php echo esc_js( __( 'Click to enable this tool', 'agent-builder' ) ); ?>';
+				} else {
+					// Revert on failure.
+					toggle.checked = !enabled;
+					alert(result.data || 'Failed to update tool status.');
+				}
+			})
+			.catch(function() {
+				label.classList.remove('is-saving');
+				toggle.checked = !enabled;
+			});
+		});
+	});
+})();
+</script>

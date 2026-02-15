@@ -94,6 +94,16 @@ class LLM_Client {
 	}
 
 	/**
+	 * Override the model for the current request
+	 *
+	 * @param string $model Model identifier.
+	 * @return void
+	 */
+	public function set_model( string $model ): void {
+		$this->model = $model;
+	}
+
+	/**
 	 * Check if the client is configured
 	 *
 	 * @return bool
@@ -360,9 +370,14 @@ class LLM_Client {
 				$msgs   = array();
 				foreach ( $messages as $msg ) {
 					if ( 'system' === $msg['role'] ) {
-						$system = $msg['content'];
+						$system = is_string( $msg['content'] ) ? $msg['content'] : '';
 					} else {
-						$msgs[] = $msg;
+						// Convert multimodal content for Anthropic's format.
+						$converted = $this->convert_content_for_anthropic( $msg['content'] );
+						$msgs[]    = array(
+							'role'    => $msg['role'],
+							'content' => $converted,
+						);
 					}
 				}
 				$body['model']      = $this->model;
@@ -377,16 +392,17 @@ class LLM_Client {
 				// Google uses different format.
 				$contents = array();
 				foreach ( $messages as $msg ) {
+					$parts = $this->convert_content_for_google( $msg['content'] );
 					$contents[] = array(
 						'role'  => 'user' === $msg['role'] ? 'user' : 'model',
-						'parts' => array( array( 'text' => $msg['content'] ) ),
+						'parts' => $parts,
 					);
 				}
 				$body['contents'] = $contents;
 				break;
 
 			default:
-				// OpenAI, xAI, Mistral use same format.
+				// OpenAI, xAI, Mistral use same format (natively supports multimodal content arrays).
 				$body['model']    = $this->model;
 				$body['messages'] = $messages;
 				if ( ! empty( $tools ) ) {
@@ -396,5 +412,116 @@ class LLM_Client {
 		}
 
 		return $body;
+	}
+
+	/**
+	 * Convert multimodal content to Anthropic's format.
+	 *
+	 * Supports both data URLs (data:image/...;base64,...) and HTTP URLs.
+	 * Anthropic requires inline base64, so HTTP URLs are fetched and encoded.
+	 *
+	 * @param string|array $content Message content (string or multimodal array).
+	 * @return string|array Converted content.
+	 */
+	private function convert_content_for_anthropic( $content ) {
+		if ( is_string( $content ) ) {
+			return $content;
+		}
+
+		if ( ! is_array( $content ) ) {
+			return '';
+		}
+
+		$parts = array();
+		foreach ( $content as $part ) {
+			if ( 'text' === ( $part['type'] ?? '' ) ) {
+				$parts[] = array(
+					'type' => 'text',
+					'text' => $part['text'] ?? '',
+				);
+			} elseif ( 'image_url' === ( $part['type'] ?? '' ) ) {
+				$url = $part['image_url']['url'] ?? '';
+				$media_type = '';
+				$b64_data   = '';
+
+				// Try data URL first.
+				if ( preg_match( '/^data:(image\/[a-z]+);base64,(.+)$/s', $url, $matches ) ) {
+					$media_type = $matches[1];
+					$b64_data   = $matches[2];
+				} elseif ( str_starts_with( $url, 'http' ) ) {
+					// Fetch the image and base64-encode it.
+					$response = wp_remote_get( $url, array( 'timeout' => 15 ) );
+					if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+						$media_type = wp_remote_retrieve_header( $response, 'content-type' );
+						$b64_data   = base64_encode( wp_remote_retrieve_body( $response ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+					}
+				}
+
+				if ( $media_type && $b64_data ) {
+					$parts[] = array(
+						'type'   => 'image',
+						'source' => array(
+							'type'       => 'base64',
+							'media_type' => $media_type,
+							'data'       => $b64_data,
+						),
+					);
+				}
+			}
+		}
+
+		return $parts;
+	}
+
+	/**
+	 * Convert multimodal content to Google's format.
+	 *
+	 * Supports both data URLs and HTTP URLs. Google requires inline_data,
+	 * so HTTP URLs are fetched and encoded.
+	 *
+	 * @param string|array $content Message content (string or multimodal array).
+	 * @return array Google-format parts.
+	 */
+	private function convert_content_for_google( $content ) {
+		if ( is_string( $content ) ) {
+			return array( array( 'text' => $content ) );
+		}
+
+		if ( ! is_array( $content ) ) {
+			return array( array( 'text' => '' ) );
+		}
+
+		$parts = array();
+		foreach ( $content as $part ) {
+			if ( 'text' === ( $part['type'] ?? '' ) ) {
+				$parts[] = array( 'text' => $part['text'] ?? '' );
+			} elseif ( 'image_url' === ( $part['type'] ?? '' ) ) {
+				$url       = $part['image_url']['url'] ?? '';
+				$mime_type = '';
+				$b64_data  = '';
+
+				if ( preg_match( '/^data:(image\/[a-z]+);base64,(.+)$/s', $url, $matches ) ) {
+					$mime_type = $matches[1];
+					$b64_data  = $matches[2];
+				} elseif ( str_starts_with( $url, 'http' ) ) {
+					$response = wp_remote_get( $url, array( 'timeout' => 15 ) );
+					if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+						$mime_type = wp_remote_retrieve_header( $response, 'content-type' );
+						$b64_data  = base64_encode( wp_remote_retrieve_body( $response ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+					}
+				}
+
+				if ( $mime_type && $b64_data ) {
+					$parts[] = array(
+						'inline_data' => array(
+							'mime_type' => $mime_type,
+							'data'      => $b64_data,
+						),
+					);
+				}
+			}
+		}
+
+		return $parts;
 	}
 }

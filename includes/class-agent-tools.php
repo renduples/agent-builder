@@ -90,9 +90,38 @@ class Agent_Tools {
 	/**
 	 * Get tool definitions for OpenAI function calling
 	 *
+	 * Returns only enabled tools. Disabled tools (stored in agentic_disabled_tools
+	 * option) are filtered out so the LLM never sees them.
+	 *
 	 * @return array Tool definitions.
 	 */
 	public function get_tool_definitions(): array {
+		$all_tools      = $this->get_all_tool_definitions();
+		$disabled_tools = get_option( 'agentic_disabled_tools', array() );
+
+		if ( ! is_array( $disabled_tools ) || empty( $disabled_tools ) ) {
+			return $all_tools;
+		}
+
+		return array_values(
+			array_filter(
+				$all_tools,
+				function ( $tool ) use ( $disabled_tools ) {
+					$name = $tool['function']['name'] ?? '';
+					return ! in_array( $name, $disabled_tools, true );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Get all tool definitions regardless of enabled/disabled status
+	 *
+	 * Used by the admin tools page to display every tool with its toggle state.
+	 *
+	 * @return array Tool definitions.
+	 */
+	public function get_all_tool_definitions(): array {
 		// Core tools always available.
 		$core_tools = array(
 			array(
@@ -555,6 +584,25 @@ class Agent_Tools {
 	 * @return array|\WP_Error Tool result.
 	 */
 	public function execute( string $name, array $arguments, string $agent_id = 'onboarding_agent' ): array|\WP_Error {
+		// Block disabled tools before any execution.
+		$disabled_tools = get_option( 'agentic_disabled_tools', array() );
+		if ( is_array( $disabled_tools ) && in_array( $name, $disabled_tools, true ) ) {
+			$this->audit->log(
+				$agent_id,
+				'tool_blocked',
+				$name,
+				array( 'reason' => 'Tool is disabled by administrator' )
+			);
+			return new \WP_Error(
+				'tool_disabled',
+				sprintf(
+					/* translators: %s: tool name */
+					__( 'The tool "%s" has been disabled by an administrator and cannot be used.', 'agent-builder' ),
+					$name
+				)
+			);
+		}
+
 		$this->audit->log( $agent_id, 'tool_call', $name, $arguments );
 
 		// Check for agent-registered tool handlers first.

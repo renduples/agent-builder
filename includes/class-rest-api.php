@@ -66,6 +66,10 @@ class REST_API {
 						'type'    => 'array',
 						'default' => array(),
 					),
+					'image'      => array(
+						'type'    => 'string',
+						'default' => '',
+					),
 				),
 			)
 		);
@@ -175,6 +179,28 @@ class REST_API {
 		$history    = $request->get_param( 'history' ) ? $request->get_param( 'history' ) : array();
 		$user_id    = get_current_user_id();
 
+		// Validate optional image attachment (base64 data URL, max 5 MB).
+		$image_data = null;
+		$raw_image  = $request->get_param( 'image' );
+		if ( $raw_image ) {
+			if ( preg_match( '/^data:(image\/(jpeg|png|gif|webp));base64,/', $raw_image, $matches ) ) {
+				$base64_part = substr( $raw_image, strlen( $matches[0] ) );
+				// Rough size check: base64 is ~4/3 of original, so 5 MB encoded ≈ 6.7 MB base64 chars.
+				if ( strlen( $base64_part ) <= 7 * 1024 * 1024 ) {
+					// Save as a temporary upload so we have a public URL (required by some LLM providers).
+					$temp_url = $this->save_temp_image( $base64_part, $matches[1] );
+					if ( $temp_url ) {
+						$image_data = array(
+							'url'       => $temp_url,
+							'data_url'  => $raw_image,
+							'mime_type' => $matches[1],
+							'base64'    => $base64_part,
+						);
+					}
+				}
+			}
+		}
+
 		// Validate and sanitize history messages.
 		foreach ( $history as &$msg ) {
 			// Ensure all messages have a content field (required by some LLM providers).
@@ -226,7 +252,7 @@ class REST_API {
 		);
 
 		$controller = new Agent_Controller();
-		$response   = $controller->chat( $message, $history, $user_id, $session_id, $agent_id );
+		$response   = $controller->chat( $message, $history, $user_id, $session_id, $agent_id, $image_data );
 
 		// Log errors to audit log.
 		if ( ! empty( $response['error'] ) ) {
@@ -553,5 +579,84 @@ class REST_API {
 	 */
 	public function check_admin(): bool {
 		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Save a base64-encoded image as a temporary file in uploads and return its public URL.
+	 *
+	 * The file is placed in /uploads/agentic-tmp/ and prefixed with a unique ID.
+	 * Temporary files older than 1 hour are cleaned up on each call.
+	 *
+	 * @param string $base64    Base64-encoded image data (no header/prefix).
+	 * @param string $mime_type MIME type (e.g., 'image/png').
+	 * @return string|false Public URL on success, false on failure.
+	 */
+	private function save_temp_image( string $base64, string $mime_type ): string|false {
+		$ext_map = array(
+			'image/jpeg' => 'jpg',
+			'image/png'  => 'png',
+			'image/gif'  => 'gif',
+			'image/webp' => 'webp',
+		);
+		$ext = $ext_map[ $mime_type ] ?? 'png';
+
+		$upload_dir = wp_upload_dir();
+		$tmp_dir    = $upload_dir['basedir'] . '/agentic-tmp';
+		$tmp_url    = $upload_dir['baseurl'] . '/agentic-tmp';
+
+		// Ensure directory exists.
+		if ( ! is_dir( $tmp_dir ) ) {
+			wp_mkdir_p( $tmp_dir );
+			// Add an index.php to prevent directory listing.
+			file_put_contents( $tmp_dir . '/index.php', "<?php\n// Silence is golden.\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		}
+
+		// Cleanup files older than 1 hour.
+		$this->cleanup_temp_images( $tmp_dir );
+
+		$filename = 'agentic-' . wp_generate_uuid4() . '.' . $ext;
+		$filepath = $tmp_dir . '/' . $filename;
+
+		$decoded = base64_decode( $base64, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		if ( false === $decoded ) {
+			return false;
+		}
+
+		// Write using WP_Filesystem if available, fallback to file_put_contents.
+		global $wp_filesystem;
+		if ( function_exists( 'WP_Filesystem' ) ) {
+			if ( ! $wp_filesystem ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				WP_Filesystem();
+			}
+			$wp_filesystem->put_contents( $filepath, $decoded, FS_CHMOD_FILE );
+		} else {
+			file_put_contents( $filepath, $decoded ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		}
+
+		if ( ! file_exists( $filepath ) ) {
+			return false;
+		}
+
+		return $tmp_url . '/' . $filename;
+	}
+
+	/**
+	 * Remove temp images older than 1 hour.
+	 *
+	 * @param string $dir Path to agentic-tmp directory.
+	 * @return void
+	 */
+	private function cleanup_temp_images( string $dir ): void {
+		$files = glob( $dir . '/agentic-*.{jpg,png,gif,webp}', GLOB_BRACE );
+		if ( ! $files ) {
+			return;
+		}
+		$cutoff = time() - HOUR_IN_SECONDS;
+		foreach ( $files as $file ) {
+			if ( filemtime( $file ) < $cutoff ) {
+				wp_delete_file( $file );
+			}
+		}
 	}
 }

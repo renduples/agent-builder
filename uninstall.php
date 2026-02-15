@@ -31,6 +31,8 @@ $agentic_options_to_delete = array(
 	'agentic_license_key',
 	'agentic_license_status',
 	'agentic_license_data',
+	'agentic_plugin_license_key',
+	'agentic_plugin_license_data',
 	'agentic_api_key',
 	'agentic_provider',
 	'agentic_model',
@@ -85,6 +87,8 @@ $agentic_cron_hooks = array(
 	'agentic_cleanup_jobs',
 	'agentic_process_queue',
 	'agentic_license_check',
+	'agentic_license_revalidate',
+	'agentic_check_agent_updates',
 );
 
 foreach ( $agentic_cron_hooks as $agentic_hook ) {

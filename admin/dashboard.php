@@ -39,8 +39,34 @@ $agentic_plugin_license_key = get_option( 'agentic_plugin_license_key', '' );
 $agentic_license_status     = 'free'; // Default to free tier.
 $agentic_license_display    = 'Free';
 
-if ( ! empty( $agentic_plugin_license_key ) ) {
-	// Check license status via marketplace API.
+if ( class_exists( '\Agentic\License_Client' ) ) {
+	$agentic_lc_instance = \Agentic\License_Client::get_instance();
+	$agentic_lc_status   = $agentic_lc_instance->get_status();
+
+	$agentic_license_status = $agentic_lc_status['status'] ?? 'free';
+	$agentic_tier           = $agentic_lc_status['type'] ?? 'free';
+
+	switch ( $agentic_license_status ) {
+		case 'active':
+			$agentic_license_display = '<span style="color: #00a32a; font-weight: 600;">● ' . ucfirst( $agentic_tier ) . '</span>';
+			break;
+		case 'grace_period':
+			$agentic_license_display = '<span style="color: #dba617; font-weight: 600;">⚠ ' . ucfirst( $agentic_tier ) . ' (Expiring)</span>';
+			break;
+		case 'expired':
+		case 'license_expired':
+		case 'revoked':
+		case 'license_revoked':
+		case 'invalid':
+		case 'invalid_key':
+			$agentic_license_display = '<span style="color: #d63638;">✕ ' . ucfirst( str_replace( '_', ' ', $agentic_license_status ) ) . '</span> <a href="https://agentic-plugin.com/pricing/" target="_blank">Renew</a>';
+			break;
+		default:
+			$agentic_license_display = 'Free <a href="https://agentic-plugin.com/pricing/" target="_blank" style="font-size: 12px;">(Upgrade)</a>';
+			break;
+	}
+} elseif ( ! empty( $agentic_plugin_license_key ) ) {
+	// Fallback: direct API call if License_Client not loaded.
 	$agentic_response = wp_remote_get(
 		'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/licenses/status',
 		array(

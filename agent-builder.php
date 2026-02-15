@@ -92,6 +92,12 @@ final class Plugin {
 		// Agent event listeners: bind WordPress action hooks after agents are loaded.
 		add_action( 'agentic_agents_loaded', array( $this, 'bind_agent_event_listeners' ) );
 
+		// AJAX handler for tool toggle switches.
+		add_action( 'wp_ajax_agentic_toggle_tool', array( $this, 'ajax_toggle_tool' ) );
+
+		// AJAX handler for Run Task (scheduled tasks).
+		add_action( 'wp_ajax_agentic_run_task', array( $this, 'ajax_run_task' ) );
+
 		// Handler for async LLM event processing (queued via wp_schedule_single_event).
 		add_action( 'agentic_async_event', array( $this, 'handle_async_event' ), 10, 4 );
 
@@ -165,6 +171,163 @@ final class Plugin {
 	}
 
 	/**
+	 * AJAX handler for enabling/disabling individual tools
+	 *
+	 * Stores an array of disabled tool names in the agentic_disabled_tools option.
+	 * When a tool is disabled it is removed from tool definitions sent to the LLM
+	 * and execution is blocked in Agent_Tools::execute().
+	 *
+	 * @return void
+	 */
+	public function ajax_toggle_tool(): void {
+		check_ajax_referer( 'agentic_toggle_tool' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'agent-builder' ) );
+		}
+
+		$tool_name = sanitize_text_field( wp_unslash( $_POST['tool'] ?? '' ) );
+		$enabled   = (bool) ( $_POST['enabled'] ?? true );
+
+		if ( empty( $tool_name ) ) {
+			wp_send_json_error( __( 'Missing tool name.', 'agent-builder' ) );
+		}
+
+		$disabled_tools = get_option( 'agentic_disabled_tools', array() );
+		if ( ! is_array( $disabled_tools ) ) {
+			$disabled_tools = array();
+		}
+
+		if ( $enabled ) {
+			$disabled_tools = array_values( array_diff( $disabled_tools, array( $tool_name ) ) );
+		} else {
+			if ( ! in_array( $tool_name, $disabled_tools, true ) ) {
+				$disabled_tools[] = $tool_name;
+			}
+		}
+
+		update_option( 'agentic_disabled_tools', $disabled_tools );
+
+		// Log the change.
+		$audit = new Audit_Log();
+		$audit->log(
+			'system',
+			$enabled ? 'tool_enabled' : 'tool_disabled',
+			$tool_name,
+			array( 'user_id' => get_current_user_id() )
+		);
+
+		wp_send_json_success(
+			array(
+				'tool'    => $tool_name,
+				'enabled' => $enabled,
+			)
+		);
+	}
+
+	/**
+	 * AJAX handler: execute a scheduled task and return JSON results.
+	 *
+	 * @return void
+	 */
+	public function ajax_run_task(): void {
+		check_ajax_referer( 'agentic_run_task' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'agent-builder' ) ) );
+		}
+
+		$agent_id = sanitize_text_field( wp_unslash( $_POST['agent'] ?? '' ) );
+		$task_id  = sanitize_text_field( wp_unslash( $_POST['task'] ?? '' ) );
+
+		if ( empty( $agent_id ) || empty( $task_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Missing agent or task parameter.', 'agent-builder' ) ) );
+		}
+
+		$registry = \Agentic_Agent_Registry::get_instance();
+		$instance = $registry->get_agent_instance( $agent_id );
+
+		if ( ! $instance ) {
+			wp_send_json_error( array( 'message' => __( 'Agent not found or not active.', 'agent-builder' ) ) );
+		}
+
+		$task_def = null;
+		foreach ( $instance->get_scheduled_tasks() as $t ) {
+			if ( $t['id'] === $task_id ) {
+				$task_def = $t;
+				break;
+			}
+		}
+
+		if ( ! $task_def ) {
+			wp_send_json_error( array( 'message' => __( 'Task not found on this agent.', 'agent-builder' ) ) );
+		}
+
+		$start_time = microtime( true );
+		$error_msg  = null;
+
+		try {
+			$this->execute_scheduled_task( $instance, $task_def );
+		} catch ( \Throwable $e ) {
+			$error_msg = $e->getMessage();
+		}
+
+		$duration = round( microtime( true ) - $start_time, 2 );
+
+		// Fetch result from audit log.
+		global $wpdb;
+		$audit_table = $wpdb->prefix . 'agentic_audit_log';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time admin read.
+		$result_json = $wpdb->get_var(
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe prefix.
+				"SELECT details FROM {$audit_table} WHERE agent_id = %s AND action = 'scheduled_task_complete' AND target_type = %s ORDER BY id DESC LIMIT 1",
+				$agent_id,
+				$task_id
+			)
+		);
+
+		$details = $result_json ? json_decode( $result_json, true ) : null;
+
+		// Extract LLM response text.
+		$response_text = '';
+		if ( is_array( $details ) && ! empty( $details['result'] ) && is_string( $details['result'] ) ) {
+			$decoded = json_decode( $details['result'], true );
+			if ( is_array( $decoded ) && ! empty( $decoded['response'] ) ) {
+				$response_text = $decoded['response'];
+			} elseif ( str_starts_with( $details['result'], '{"response":"' ) ) {
+				// Handle truncated JSON from older audit entries.
+				$inner = substr( $details['result'], 14 );
+				$inner = rtrim( $inner, '"}' );
+				$response_text = str_replace(
+					array( '\\n', '\\t', '\\/', '\\"', '\\\\' ),
+					array( "\n", "\t", '/', '"', '\\' ),
+					$inner
+				);
+			} else {
+				$response_text = $details['result'];
+			}
+		}
+
+		if ( $error_msg ) {
+			wp_send_json_error(
+				array(
+					'message'  => $error_msg,
+					'duration' => $duration,
+				)
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'duration'    => $duration,
+				'duration_s'  => $details['duration_s'] ?? null,
+				'response'    => $response_text,
+			)
+		);
+	}
+
+	/**
 	 * Add admin menu
 	 *
 	 * @return void
@@ -229,20 +392,40 @@ final class Plugin {
 
 		add_submenu_page(
 			'agent-builder',
+			__( 'Agent Deployment', 'agent-builder' ),
+			__( 'Agent Deployment', 'agent-builder' ),
+			'manage_options',
+			'agentic-deployment',
+			array( $this, 'render_deployment_page' )
+		);
+
+		// Hidden pages — keep old slugs so bookmarks/links still work.
+		add_submenu_page(
+			null,
 			__( 'Scheduled Tasks', 'agent-builder' ),
 			__( 'Scheduled Tasks', 'agent-builder' ),
 			'manage_options',
 			'agentic-scheduled-tasks',
-			array( $this, 'render_scheduled_tasks_page' )
+			array( $this, 'redirect_to_deployment_tab' )
 		);
 
 		add_submenu_page(
-			'agent-builder',
+			null,
 			__( 'Event Listeners', 'agent-builder' ),
 			__( 'Event Listeners', 'agent-builder' ),
 			'manage_options',
 			'agentic-event-listeners',
-			array( $this, 'render_event_listeners_page' )
+			array( $this, 'redirect_to_deployment_tab' )
+		);
+
+		// Hidden page — Run Task (dedicated execution page).
+		add_submenu_page(
+			null,
+			__( 'Run Task', 'agent-builder' ),
+			__( 'Run Task', 'agent-builder' ),
+			'manage_options',
+			'agentic-run-task',
+			array( $this, 'render_run_task_page' )
 		);
 
 		add_submenu_page(
@@ -412,6 +595,10 @@ final class Plugin {
 		// System requirements checker.
 		include_once AGENTIC_PLUGIN_DIR . 'includes/class-system-checker.php';
 
+		// License client — handles revalidation, update gating, feature degradation.
+		include_once AGENTIC_PLUGIN_DIR . 'includes/class-license-client.php';
+		License_Client::get_instance();
+
 		// Marketplace components.
 		include_once AGENTIC_PLUGIN_DIR . 'includes/class-marketplace-client.php';
 
@@ -450,21 +637,34 @@ final class Plugin {
 	}
 
 	/**
-	 * Render scheduled tasks page
+	 * Render the unified Agent Deployment page (Shortcodes / Scheduled Tasks / Event Listeners).
 	 *
 	 * @return void
 	 */
-	public function render_scheduled_tasks_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/scheduled-tasks.php';
+	public function render_deployment_page(): void {
+		include AGENTIC_PLUGIN_DIR . 'admin/deployment.php';
 	}
 
 	/**
-	 * Render event listeners page
+	 * Render the dedicated Run Task page.
 	 *
 	 * @return void
 	 */
-	public function render_event_listeners_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/event-listeners.php';
+	public function render_run_task_page(): void {
+		include AGENTIC_PLUGIN_DIR . 'admin/run-task.php';
+	}
+
+	/**
+	 * Redirect legacy Scheduled Tasks / Event Listeners pages to the Deployment page.
+	 *
+	 * @return void
+	 */
+	public function redirect_to_deployment_tab(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only redirect based on page slug.
+		$page = sanitize_text_field( wp_unslash( $_GET['page'] ?? '' ) );
+		$tab  = 'agentic-scheduled-tasks' === $page ? 'scheduled-tasks' : 'event-listeners';
+		wp_safe_redirect( admin_url( 'admin.php?page=agentic-deployment&tab=' . $tab ) );
+		exit;
 	}
 
 	/**

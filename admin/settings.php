@@ -113,6 +113,7 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 
 	<h2 class="nav-tab-wrapper">
 		<a href="?page=agentic-settings&tab=general" class="nav-tab <?php echo 'general' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">General</a>
+		<a href="?page=agentic-settings&tab=license" class="nav-tab <?php echo 'license' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">License</a>
 		<a href="?page=agentic-settings&tab=developer" class="nav-tab <?php echo 'developer' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">Developer</a>
 		<a href="?page=agentic-settings&tab=cache" class="nav-tab <?php echo 'cache' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">Cache</a>
 		<a href="?page=agentic-settings&tab=security" class="nav-tab <?php echo 'security' === $agentic_active_tab ? 'nav-tab-active' : ''; ?>">Security</a>
@@ -123,7 +124,161 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 		<?php wp_nonce_field( 'agentic_settings_nonce' ); ?>
 		<input type="hidden" name="tab" value="<?php echo esc_attr( $agentic_active_tab ); ?>" />
 
-		<?php if ( 'general' === $agentic_active_tab ) : ?>
+		<?php if ( 'license' === $agentic_active_tab ) : ?>
+		<?php
+		$agentic_lc = \Agentic\License_Client::get_instance();
+		$agentic_ls = $agentic_lc->get_status();
+		$agentic_lk = get_option( \Agentic\License_Client::OPTION_LICENSE_KEY, '' );
+		?>
+		<h2>License</h2>
+		<p>Enter your license key to unlock premium marketplace features and automatic updates.</p>
+
+		<table class="form-table">
+			<tr>
+				<th scope="row"><label for="agentic_license_key_input">License Key</label></th>
+				<td>
+					<input type="text" name="agentic_license_key_input" id="agentic_license_key_input"
+						value="<?php echo esc_attr( $agentic_lk ); ?>"
+						class="regular-text" placeholder="AGNT-XXXX-XXXX-XXXX-XXXX"
+						style="font-family: monospace;" />
+					<?php if ( ! empty( $agentic_lk ) ) : ?>
+						<button type="button" id="agentic-deactivate-license" class="button" style="margin-left: 8px; color: #b91c1c;">Deactivate</button>
+					<?php endif; ?>
+					<p class="description">Purchase a license at <a href="https://agentic-plugin.com/pricing/" target="_blank">agentic-plugin.com/pricing</a></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row">Status</th>
+				<td>
+					<?php
+					$agentic_status_label = $agentic_ls['status'] ?? 'free';
+					$agentic_status_color = '#646970';
+					$agentic_status_icon  = '○';
+
+					switch ( $agentic_status_label ) {
+						case 'active':
+							$agentic_status_color = '#00a32a';
+							$agentic_status_icon  = '●';
+							break;
+						case 'grace_period':
+							$agentic_status_color = '#dba617';
+							$agentic_status_icon  = '⚠';
+							break;
+						case 'expired':
+						case 'license_expired':
+						case 'revoked':
+						case 'license_revoked':
+						case 'invalid':
+						case 'invalid_key':
+							$agentic_status_color = '#d63638';
+							$agentic_status_icon  = '✕';
+							break;
+					}
+					?>
+					<span style="color: <?php echo esc_attr( $agentic_status_color ); ?>; font-weight: 600; font-size: 14px;">
+						<?php echo esc_html( $agentic_status_icon . ' ' . ucfirst( str_replace( '_', ' ', $agentic_status_label ) ) ); ?>
+					</span>
+					<?php if ( ! empty( $agentic_ls['type'] ) && 'free' !== $agentic_ls['type'] ) : ?>
+						<span style="margin-left: 8px; color: #646970;">(<?php echo esc_html( ucfirst( $agentic_ls['type'] ) ); ?> License)</span>
+					<?php endif; ?>
+				</td>
+			</tr>
+			<?php if ( ! empty( $agentic_ls['expires_at'] ) ) : ?>
+			<tr>
+				<th scope="row">Expires</th>
+				<td><?php echo esc_html( date( 'F j, Y', strtotime( $agentic_ls['expires_at'] ) ) ); ?></td>
+			</tr>
+			<?php endif; ?>
+			<?php if ( isset( $agentic_ls['activations_used'] ) ) : ?>
+			<tr>
+				<th scope="row">Activations</th>
+				<td><?php echo esc_html( $agentic_ls['activations_used'] . ' / ' . $agentic_ls['activations_limit'] ); ?></td>
+			</tr>
+			<?php endif; ?>
+			<?php if ( ! empty( $agentic_ls['validated_at'] ) ) : ?>
+			<tr>
+				<th scope="row">Last Validated</th>
+				<td><?php echo esc_html( $agentic_ls['validated_at'] ); ?></td>
+			</tr>
+			<?php endif; ?>
+		</table>
+
+		<h3>What You Get With a License</h3>
+		<ul style="list-style: disc; padding-left: 20px;">
+			<li><strong>Automatic updates</strong> — receive new features and security patches</li>
+			<li><strong>Premium agents</strong> — install and run premium marketplace agents</li>
+			<li><strong>Priority support</strong> — get help from the development team</li>
+		</ul>
+		<p class="description" style="margin-top: 16px;">Without a license, the core plugin and all bundled agents work normally. Only marketplace premium agents and auto-updates require a license.</p>
+
+		<script>
+		(function() {
+			const input = document.getElementById('agentic_license_key_input');
+			const deactivateBtn = document.getElementById('agentic-deactivate-license');
+
+			// Activate on form submit.
+			const form = input.closest('form');
+			const submitBtn = form.querySelector('input[type="submit"], .button-primary[type="submit"]');
+			if (submitBtn) {
+				submitBtn.addEventListener('click', function(e) {
+					e.preventDefault();
+					const key = input.value.trim();
+					if (!key) { alert('Please enter a license key.'); return; }
+
+					submitBtn.disabled = true;
+					submitBtn.value = 'Activating...';
+
+					fetch(ajaxurl, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: new URLSearchParams({
+							action: 'agentic_activate_plugin_license',
+							_ajax_nonce: '<?php echo esc_js( wp_create_nonce( 'agentic_license_nonce' ) ); ?>',
+							license_key: key
+						})
+					})
+					.then(r => r.json())
+					.then(data => {
+						if (data.success) {
+							location.reload();
+						} else {
+							alert(data.data || 'Activation failed.');
+							submitBtn.disabled = false;
+							submitBtn.value = 'Save Settings';
+						}
+					})
+					.catch(() => {
+						alert('Connection error. Please try again.');
+						submitBtn.disabled = false;
+						submitBtn.value = 'Save Settings';
+					});
+				});
+			}
+
+			// Deactivate button.
+			if (deactivateBtn) {
+				deactivateBtn.addEventListener('click', function() {
+					if (!confirm('Deactivate your license from this site?')) return;
+					deactivateBtn.disabled = true;
+					deactivateBtn.textContent = 'Deactivating...';
+
+					fetch(ajaxurl, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: new URLSearchParams({
+							action: 'agentic_deactivate_plugin_license',
+							_ajax_nonce: '<?php echo esc_js( wp_create_nonce( 'agentic_license_nonce' ) ); ?>'
+						})
+					})
+					.then(r => r.json())
+					.then(() => location.reload())
+					.catch(() => location.reload());
+				});
+			}
+		})();
+		</script>
+
+		<?php elseif ( 'general' === $agentic_active_tab ) : ?>
 		<h2>API Configuration</h2>
 		<p>Configure your AI provider and model settings.</p>
 

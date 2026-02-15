@@ -483,6 +483,18 @@ class Agentic_Agent_Registry {
 
 		foreach ( $active_slugs as $slug ) {
 			if ( isset( $installed[ $slug ] ) ) {
+				// License check: skip non-bundled premium agents if license invalid.
+				if ( empty( $installed[ $slug ]['bundled'] ) && class_exists( '\Agentic\License_Client' ) ) {
+					$license_client = \Agentic\License_Client::get_instance();
+					if ( ! $license_client->can_agent_run( $slug ) ) {
+						if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+							// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled.
+							error_log( sprintf( 'Agentic: Skipping agent %s — license invalid.', $slug ) );
+						}
+						continue;
+					}
+				}
+
 				$result = $this->load_agent( $installed[ $slug ] );
 
 				if ( is_wp_error( $result ) ) {

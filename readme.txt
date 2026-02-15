@@ -1,77 +1,139 @@
 === Agent Builder ===
+Build, deploy, and manage AI agents directly in WordPress. Supports multiple LLMs with secure, permission-controlled tools.
 Contributors: agenticplugin
-Tags: AI, LLM, automation, chatbot, AI agent
+Tags: ai, llm, ai-agent, chatbot, openai, anthropic, xai
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
 Stable tag: 1.7.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Donate link: https://agentic-plugin.com/donate
 
-Build AI agents for WordPress without coding. Automate content creation, SEO, chat, and more with OpenAI, Anthropic Claude, and other LLMs.
+Create, install, and manage AI-powered agents in WordPress. Supports OpenAI, Anthropic, xAI, Google, Mistral, and local Ollama models.
 
 == Description ==
 
-Agent Builder turns WordPress into an AI-agent ecosystem — similar to how plugins and themes extend your site, but powered by large language models (LLMs).
+Agent Builder adds an AI agent system to WordPress. Agents are modular units of AI functionality that can be installed, activated, and deactivated through the admin interface — similar to how plugins work.
 
-Describe your desired AI agent in natural language, and the plugin builds it for you. Install, activate, and manage agents just like regular plugins. Browse a growing library of community agents or create your own.
+Each agent defines a set of tools (PHP functions the AI model can call), a system prompt, and optional scheduled tasks or event listeners. The plugin handles LLM communication, tool execution, conversation history, security scanning, and audit logging.
 
-Key benefits:
-- No-code agent creation via chat interface
-- Multi-provider support: OpenAI, Anthropic (Claude), local models (Ollama), and more
-- Plugin-style management: install, activate, deactivate, delete
-- Built-in safeguards: audit logs, human-in-the-loop approvals, rate limiting, cost controls
-- Extensible: developers can build custom agents with tools and share them
+= What It Does =
 
-= Agent Categories =
-- **Content** — Drafting, SEO optimization, translation, alt text generation
-- **Admin** — Security monitoring, backups, performance tuning
-- **E-commerce** — Product management, pricing optimization, inventory
-- **Frontend** — Visitor chat, comment moderation, support
-- **Developer** — Code generation, debugging, theme/plugin building
-- **Marketing** — Campaigns, multi-platform content
+* **Chat interface** — An admin chat screen and optional frontend shortcode (`[agentic_chat]`) for interacting with agents.
+* **Agent management** — Activate, deactivate, or remove agents from the Agents admin screen. Custom agents are stored in `wp-content/agents/` and survive plugin updates.
+* **Multi-provider LLM support** — Connect to OpenAI, Anthropic (Claude), xAI (Grok), Google (Gemini), Mistral, or local Ollama models. Configure your provider and API key in Settings.
+* **Tool execution** — Agents can read files, query WordPress data, read posts, make suggestions and more. All tool calls go through a permission system.
+* **Permissions and approvals** — Six granular permission scopes (all disabled by default). A confirmation mode creates proposals with diffs instead of executing changes directly.
+* **Scheduled tasks** — Agents can define recurring tasks that run via wp_cron, with optional LLM-powered execution.
+* **Event listeners** — Agents can react to WordPress action hooks (e.g., user registration, failed logins) synchronously or asynchronously.
+* **Audit logging** — All agent actions, tool calls, and chat sessions are logged with timestamps and details.
+* **Security** — Input scanning, rate limiting, PII detection, and a security event log.
+* **Image and voice input** — Upload images for vision-capable models; use voice input via the Web Speech API.
+
+= Bundled Agents =
+
+The plugin ships with five agents:
+
+1. **Onboarding Agent** — Guides new users through setup and introduces the other agents.
+2. **Content Builder** — Drafts and edits WordPress posts and pages.
+3. **Agent Builder** — Creates new agents from natural language descriptions.
+4. **Plugin Builder** — Generates WordPress plugin scaffolding from requirements.
+5. **Theme Builder** — Helps implement WordPress themes with accessibility and modern CSS practices.
+
+= Creating Custom Agents =
+
+Place an `agent.php` file in `wp-content/agents/your-agent-name/`. The file must contain a class extending `Agent_Base` with methods for `get_id()`, `get_name()`, `get_description()`, `get_system_prompt()`, and optionally `get_tools()` and `execute_tool()`. Register it via the `agentic_register_agents` action hook. Custom agents are sandboxed with permission checks and proposal workflows.
 
 = Requirements =
-- WordPress 6.4+
-- PHP 8.1+
-- MySQL 8.0 / MariaDB 10.6+
+
+* WordPress 6.4 or higher
+* PHP 8.1 or higher
+* MySQL 8.0 or MariaDB 10.6+
+* An API key from at least one supported LLM provider (or a local Ollama installation)
 
 == Installation ==
 
-1. Search for "Agent Builder" in **Plugins → Add New** and install it (or upload the ZIP via **Add New → Upload Plugin**).
-2. Activate the plugin.
-3. Go to **Agentic → Settings** in the WordPress admin menu.
-4. Enter your AI provider API key (OpenAI, Anthropic, etc.) or configure local models.
-5. Visit **Agentic → Agents** to browse/install pre-built agents.
-6. Activate any agent to enable its features on your site.
+1. Go to **Plugins → Add New** in your WordPress admin and search for "Agent Builder", then click **Install Now**. Alternatively, download the ZIP file and upload it via **Plugins → Add New → Upload Plugin**.
+2. Click **Activate** on the Plugins screen.
+3. Navigate to **Agentic → Settings** in the admin menu.
+4. Select your AI provider (OpenAI, Anthropic, xAI, Google, Mistral, or Ollama) and enter your API key. For Ollama, enter your local server URL instead.
+5. Go to **Agentic → Agents** to see the bundled agents. Activate the ones you want to use.
+6. Visit **Agentic → Chat** to start interacting with your active agents.
+
+To display a chat interface on the frontend, add the `[agentic_chat]` shortcode to any page or post.
 
 == Frequently Asked Questions ==
 
-= How does this differ from regular WordPress plugins? =
-Agents are AI-powered automations that follow a standardized structure. They register tools the LLM can call, integrate with approval workflows, and are managed like plugins (activate/deactivate/delete).
+= Which AI providers are supported? =
+OpenAI (GPT-4o, GPT-4, etc.), Anthropic (Claude), xAI (Grok), Google (Gemini), Mistral, and local models via Ollama. You choose your provider and model in Settings.
+
+= Is my data sent to external services? =
+Only when you use a cloud-based AI provider. Chat messages and tool context are sent to the provider's API endpoint to generate responses. No data is sent without your configuration — you must enter an API key and initiate a conversation. If you want to keep all data local, use Ollama. See the "External Services" section below for full details.
+
+= Can I use this without an API key? =
+Yes, if you run Ollama locally. For cloud providers (OpenAI, Anthropic, xAI, Google, Mistral), you need an API key from that provider. API usage is billed directly by the provider, not by this plugin.
 
 = Can I create my own agents? =
-Yes. Create an `agent.php` file with standard headers, register tools/functions, and place it in `wp-content/agents/`. The plugin auto-discovers them. Share your agents with the community!
+Yes. Create an `agent.php` file in `wp-content/agents/your-agent-name/`, extend the `Agent_Base` class, and register via the `agentic_register_agents` hook. The plugin auto-discovers agents in that directory. Custom agents are kept separate from the plugin and survive updates.
 
-= Where do custom agents go? =
-Place custom agents in `wp-content/agents/` (outside the plugin folder). This keeps them safe during updates. Bundled demo agents live in the plugin's `library/` folder.
+= What permissions do agents have? =
+All write permissions are disabled by default. You can enable six granular scopes (file writes, option modifications, post meta, etc.) in **Agentic → Settings → Permissions**. A "confirmation mode" shows proposed changes as diffs for you to approve or reject before execution.
 
-= Is my data sent to external AI services? =
-Only if using cloud providers (OpenAI, Anthropic, etc.). Use local models via Ollama for full privacy. All external calls are logged and rate-limited.
-
-= Is it production-ready? =
-Version 1.1.0+ is stable with strong security (no exec(), nonces, escaping), GDPR-compliant uninstall, and audit logging. Test thoroughly on staging first.
-
-= Which AI providers work? =
-xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More coming soon.
+= Does uninstalling remove all data? =
+Yes. Uninstalling (not just deactivating) removes all plugin options, custom database tables, transients, user meta, and scheduled cron jobs. Custom agents in `wp-content/agents/` are not deleted.
 
 == Screenshots ==
 
-1. Intuitive chat interface for describing and building new AI agents.
-2. Agent library screen — browse, install, and manage your agents with one click.
-3. Settings page to configure your preferred AI provider, API keys, rate limits, and approvals.
-4. Detailed agent controls — permissions, security, and audit log viewer.
+1. Chat interface for interacting with AI agents, with quick-action buttons and markdown rendering.
+2. Agents screen showing installed agents with activate, deactivate, and status controls.
+3. Settings page for selecting AI provider, entering API keys, and configuring rate limits.
+4. Audit log and security controls for reviewing agent actions and tool usage.
+
+== External Services ==
+
+This plugin connects to third-party AI services to process chat messages and execute agent tasks. **No data is transmitted unless you configure an API key and actively use the chat interface.** The plugin sends conversation messages (user input and system context) to your selected provider's API to receive AI-generated responses.
+
+= OpenAI =
+* **Endpoint:** `https://api.openai.com/v1/chat/completions`
+* **When used:** When OpenAI is selected as the AI provider in Settings.
+* **Data sent:** Chat messages, system prompts, tool definitions, and tool call results.
+* **Terms of Service:** [https://openai.com/terms](https://openai.com/terms)
+* **Privacy Policy:** [https://openai.com/privacy](https://openai.com/privacy)
+
+= Anthropic =
+* **Endpoint:** `https://api.anthropic.com/v1/messages`
+* **When used:** When Anthropic is selected as the AI provider in Settings.
+* **Data sent:** Chat messages, system prompts, tool definitions, and tool call results.
+* **Terms of Service:** [https://www.anthropic.com/terms](https://www.anthropic.com/terms)
+* **Privacy Policy:** [https://www.anthropic.com/privacy](https://www.anthropic.com/privacy)
+
+= xAI =
+* **Endpoint:** `https://api.x.ai/v1/chat/completions`
+* **When used:** When xAI is selected as the AI provider in Settings.
+* **Data sent:** Chat messages, system prompts, tool definitions, and tool call results.
+* **Terms of Service:** [https://x.ai/legal/terms-of-service](https://x.ai/legal/terms-of-service)
+* **Privacy Policy:** [https://x.ai/legal/privacy-policy](https://x.ai/legal/privacy-policy)
+
+= Google (Gemini) =
+* **Endpoint:** `https://generativelanguage.googleapis.com/v1beta/models/`
+* **When used:** When Google is selected as the AI provider in Settings.
+* **Data sent:** Chat messages, system prompts, tool definitions, and tool call results.
+* **Terms of Service:** [https://ai.google.dev/terms](https://ai.google.dev/terms)
+* **Privacy Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
+
+= Mistral =
+* **Endpoint:** `https://api.mistral.ai/v1/chat/completions`
+* **When used:** When Mistral is selected as the AI provider in Settings.
+* **Data sent:** Chat messages, system prompts, tool definitions, and tool call results.
+* **Terms of Service:** [https://mistral.ai/terms/](https://mistral.ai/terms/)
+* **Privacy Policy:** [https://mistral.ai/terms/#privacy-policy](https://mistral.ai/terms/#privacy-policy)
+
+= Ollama (Local) =
+* **Endpoint:** User-configured local URL (default: `http://localhost:11434`)
+* **When used:** When Ollama is selected as the AI provider in Settings.
+* **Data sent:** All data stays on your local machine. No external network requests are made.
+
+You provide your own API key for each cloud provider. The plugin does not collect, store, or transmit API keys to any third party. API usage costs are billed directly by each provider according to their pricing.
 
 == Changelog ==
 
@@ -218,20 +280,14 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 * Fixed: Naming convention violations in uninstall.php.
 
 = 1.1.2 - 2026-02-02 =
-* Fixed: Automatic API key saving when returning from marketplace registration
-* Improved: Revenue page messaging with link to licensing documentation
+* Fixed: Automatic API key saving when returning from provider registration.
 
 = 1.1.1 - 2026-02-02 =
-* Added marketplace dashboard stats widget with latest/popular agents and developer revenue.
-* Added plugin license validation system (Free/Pro/Enterprise tiers).
-* Added developer API key management in Settings with Update Key and Disconnect options.
-* Added automatic API key pre-fill when returning from marketplace registration.
-* Added support ticketing system integration across all admin pages.
-* Implemented Revenue page with full marketplace API integration and Chart.js visualizations.
-* Updated dashboard with improved UI, proper timestamps, and marketplace stats.
-* Fixed active agent count to show accurate numbers from database.
-* Removed obsolete license validation code from marketplace access.
-* Created comprehensive API specification documents for marketplace team.
+* Added: Dashboard stats widget.
+* Added: Plugin license validation system.
+* Added: Developer API key management in Settings.
+* Updated: Dashboard with improved UI and proper timestamps.
+* Fixed: Active agent count accuracy.
 
 = 1.1.0 - 2026-02-01 =
 * Added full GDPR-compliant uninstall handler (deletes options, tables, transients, user meta, crons).
@@ -253,50 +309,16 @@ xAI (GROK), OpenAI (GPT models), Anthropic (Claude), local Ollama models. More c
 * Added System Requirements Checker.
 * Brand consistency updates ("Agent Builder").
 
-= 0.1.3-alpha - 2026-01-28 =
-* Added System Requirements Checker.
-* Simplified namespace and plugin naming.
-
-= 0.1.2-alpha - 2026-01-15 =
-* Introduced Async Job Queue for background tasks.
-* Added real-time progress tracking and job management API.
-
-= 0.1.0-alpha - 2026-01-01 =
-* Initial public alpha.
-* Core no-code agent builder.
-* 10 bundled agents.
-* Admin dashboard and multi-LLM support.
-* Human-in-the-loop approvals and audit trails.
-* Marketplace foundation.
-
 == Upgrade Notice ==
 
-= 1.6.3 =
-Improved: All 11 agent system prompts rewritten with scope boundaries and ecosystem context. Dashboard marketplace stats fixed.
+= 1.7.5 =
+PHPCS compliance fixes and minor bug fixes. No breaking changes.
 
-= 1.6.2 =
-Patch: Fixed 3 risky tests, added missing changelog and git tag entries. Full green test suite.
-
-= 1.6.1 =
-Patch: Fixed job processor loading and class reference bugs that prevented the agent builder from working.
+= 1.7.0 =
+License client and update gating added. No breaking changes.
 
 = 1.6.0 =
-New: Two-zone user-space permissions and proposals. Agents can now write theme files, modify options, manage transients, and update post meta — all permission-gated with confirmation diffs. No breaking changes.
-
-= 1.5.0 =
-New: Event listeners let agents react to WordPress hooks (login failures, new users, etc.). No breaking changes.
-
-= 1.4.0 =
-New: Scheduled tasks with autonomous AI execution, tools admin, and audit log improvements. No breaking changes.
-
-= 1.3.0 =
-Test suite added (346 tests). Add Agents page overhauled. 8 bugs fixed. No breaking changes.
-
-= 1.1.0 =
-Important: GDPR-compliant uninstall added. No data loss or breaking changes. Recommended update for all users.
+User-space permissions and proposals added. All write permissions disabled by default. No breaking changes.
 
 = 1.0.0 =
-First stable release. Smooth upgrade — no migrations needed. Full standards compliance and security hardening.
-
-= 0.1.x-alpha =
-Early development versions. Upgrade to 1.0.0+ for stability, i18n, and security fixes.
+First stable release. Full WordPress Coding Standards compliance and security hardening.

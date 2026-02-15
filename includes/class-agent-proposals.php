@@ -69,10 +69,15 @@ class Agent_Proposals {
 
 		// Log the proposal creation.
 		$audit = new Audit_Log();
-		$audit->log( $agent_id, 'proposal_created', $tool_name, array(
-			'proposal_id' => $proposal_id,
-			'description' => $description,
-		) );
+		$audit->log(
+			$agent_id,
+			'proposal_created',
+			$tool_name,
+			array(
+				'proposal_id' => $proposal_id,
+				'description' => $description,
+			)
+		);
 
 		return $proposal;
 	}
@@ -122,10 +127,15 @@ class Agent_Proposals {
 
 		// Log approval.
 		$audit = new Audit_Log();
-		$audit->log( $proposal['agent_id'], 'proposal_approved', $proposal['tool'], array(
-			'proposal_id' => $proposal_id,
-			'result'      => is_array( $result ) ? ( $result['success'] ?? false ) : false,
-		) );
+		$audit->log(
+			$proposal['agent_id'],
+			'proposal_approved',
+			$proposal['tool'],
+			array(
+				'proposal_id' => $proposal_id,
+				'result'      => is_array( $result ) ? ( $result['success'] ?? false ) : false,
+			)
+		);
 
 		// Clean up transient.
 		delete_transient( self::TRANSIENT_PREFIX . $proposal_id );
@@ -152,9 +162,14 @@ class Agent_Proposals {
 
 		// Log rejection.
 		$audit = new Audit_Log();
-		$audit->log( $proposal['agent_id'], 'proposal_rejected', $proposal['tool'], array(
-			'proposal_id' => $proposal_id,
-		) );
+		$audit->log(
+			$proposal['agent_id'],
+			'proposal_rejected',
+			$proposal['tool'],
+			array(
+				'proposal_id' => $proposal_id,
+			)
+		);
 
 		// Clean up.
 		delete_transient( self::TRANSIENT_PREFIX . $proposal_id );
@@ -189,9 +204,9 @@ class Agent_Proposals {
 		}
 
 		// Create a timestamped backup.
-		$relative   = str_replace( WP_CONTENT_DIR . '/', '', $full_path );
-		$safe_name  = str_replace( '/', '__', $relative );
-		$timestamp  = gmdate( 'Ymd-His' );
+		$relative    = str_replace( WP_CONTENT_DIR . '/', '', $full_path );
+		$safe_name   = str_replace( '/', '__', $relative );
+		$timestamp   = gmdate( 'Ymd-His' );
 		$backup_path = $backup_dir . '/' . $timestamp . '_' . $safe_name;
 
 		if ( $wp_filesystem->copy( $full_path, $backup_path ) ) {

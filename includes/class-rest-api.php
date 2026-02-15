@@ -598,7 +598,7 @@ class REST_API {
 			'image/gif'  => 'gif',
 			'image/webp' => 'webp',
 		);
-		$ext = $ext_map[ $mime_type ] ?? 'png';
+		$ext     = $ext_map[ $mime_type ] ?? 'png';
 
 		$upload_dir = wp_upload_dir();
 		$tmp_dir    = $upload_dir['basedir'] . '/agentic-tmp';

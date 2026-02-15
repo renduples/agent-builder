@@ -242,8 +242,18 @@ class Test_Security_Log extends TestCase {
 			Security_Log::log( 'blocked', 1, '127.0.0.1', "msg{$i}" );
 		}
 
-		$page1 = Security_Log::get_events( array( 'limit' => 3, 'offset' => 0 ) );
-		$page2 = Security_Log::get_events( array( 'limit' => 3, 'offset' => 3 ) );
+		$page1 = Security_Log::get_events(
+			array(
+				'limit'  => 3,
+				'offset' => 0,
+			)
+		);
+		$page2 = Security_Log::get_events(
+			array(
+				'limit'  => 3,
+				'offset' => 3,
+			)
+		);
 
 		$this->assertCount( 3, $page1 );
 		$this->assertCount( 3, $page2 );

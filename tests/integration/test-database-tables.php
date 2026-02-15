@@ -34,11 +34,11 @@ class Test_Database_Tables extends TestCase {
 
 		global $wpdb;
 		$this->tables = array(
-			'audit_log'       => $wpdb->prefix . 'agentic_audit_log',
-			'approval_queue'  => $wpdb->prefix . 'agentic_approval_queue',
-			'memory'          => $wpdb->prefix . 'agentic_memory',
-			'jobs'            => $wpdb->prefix . 'agentic_jobs',
-			'security_log'    => $wpdb->prefix . 'agentic_security_log',
+			'audit_log'      => $wpdb->prefix . 'agentic_audit_log',
+			'approval_queue' => $wpdb->prefix . 'agentic_approval_queue',
+			'memory'         => $wpdb->prefix . 'agentic_memory',
+			'jobs'           => $wpdb->prefix . 'agentic_jobs',
+			'security_log'   => $wpdb->prefix . 'agentic_security_log',
 		);
 	}
 
@@ -71,8 +71,17 @@ class Test_Database_Tables extends TestCase {
 		$columns = $this->get_column_names( $this->tables['audit_log'] );
 
 		$expected = array(
-			'id', 'agent_id', 'action', 'target_type', 'target_id',
-			'details', 'reasoning', 'tokens_used', 'cost', 'user_id', 'created_at',
+			'id',
+			'agent_id',
+			'action',
+			'target_type',
+			'target_id',
+			'details',
+			'reasoning',
+			'tokens_used',
+			'cost',
+			'user_id',
+			'created_at',
 		);
 		foreach ( $expected as $col ) {
 			$this->assertContains( $col, $columns, "audit_log missing column: {$col}" );
@@ -114,8 +123,16 @@ class Test_Database_Tables extends TestCase {
 		$columns = $this->get_column_names( $this->tables['approval_queue'] );
 
 		$expected = array(
-			'id', 'agent_id', 'action', 'params', 'reasoning',
-			'status', 'approved_by', 'approved_at', 'created_at', 'expires_at',
+			'id',
+			'agent_id',
+			'action',
+			'params',
+			'reasoning',
+			'status',
+			'approved_by',
+			'approved_at',
+			'created_at',
+			'expires_at',
 		);
 		foreach ( $expected as $col ) {
 			$this->assertContains( $col, $columns, "approval_queue missing column: {$col}" );
@@ -150,8 +167,14 @@ class Test_Database_Tables extends TestCase {
 		$columns = $this->get_column_names( $this->tables['memory'] );
 
 		$expected = array(
-			'id', 'memory_type', 'entity_id', 'memory_key',
-			'memory_value', 'created_at', 'updated_at', 'expires_at',
+			'id',
+			'memory_type',
+			'entity_id',
+			'memory_key',
+			'memory_value',
+			'created_at',
+			'updated_at',
+			'expires_at',
 		);
 		foreach ( $expected as $col ) {
 			$this->assertContains( $col, $columns, "memory missing column: {$col}" );
@@ -178,9 +201,17 @@ class Test_Database_Tables extends TestCase {
 		$columns = $this->get_column_names( $this->tables['jobs'] );
 
 		$expected = array(
-			'id', 'user_id', 'agent_id', 'status', 'progress',
-			'message', 'request_data', 'response_data', 'error_message',
-			'created_at', 'updated_at',
+			'id',
+			'user_id',
+			'agent_id',
+			'status',
+			'progress',
+			'message',
+			'request_data',
+			'response_data',
+			'error_message',
+			'created_at',
+			'updated_at',
 		);
 		foreach ( $expected as $col ) {
 			$this->assertContains( $col, $columns, "jobs missing column: {$col}" );
@@ -224,8 +255,14 @@ class Test_Database_Tables extends TestCase {
 		$columns = $this->get_column_names( $this->tables['security_log'] );
 
 		$expected = array(
-			'id', 'event_type', 'user_id', 'ip_address',
-			'message', 'pattern_matched', 'pii_types', 'created_at',
+			'id',
+			'event_type',
+			'user_id',
+			'ip_address',
+			'message',
+			'pattern_matched',
+			'pii_types',
+			'created_at',
 		);
 		foreach ( $expected as $col ) {
 			$this->assertContains( $col, $columns, "security_log missing column: {$col}" );

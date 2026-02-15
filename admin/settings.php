@@ -39,7 +39,7 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 				'google'    => 'gemini-2.0-flash-exp',
 				'mistral'   => 'mistral-large-latest',
 			);
-			$agentic_new_model = $agentic_provider_defaults[ $agentic_new_provider ] ?? 'gpt-4o';
+			$agentic_new_model         = $agentic_provider_defaults[ $agentic_new_provider ] ?? 'gpt-4o';
 		}
 
 		update_option( 'agentic_llm_provider', $agentic_new_provider );
@@ -125,11 +125,11 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 		<input type="hidden" name="tab" value="<?php echo esc_attr( $agentic_active_tab ); ?>" />
 
 		<?php if ( 'license' === $agentic_active_tab ) : ?>
-		<?php
-		$agentic_lc = \Agentic\License_Client::get_instance();
-		$agentic_ls = $agentic_lc->get_status();
-		$agentic_lk = get_option( \Agentic\License_Client::OPTION_LICENSE_KEY, '' );
-		?>
+			<?php
+			$agentic_lc = \Agentic\License_Client::get_instance();
+			$agentic_ls = $agentic_lc->get_status();
+			$agentic_lk = get_option( \Agentic\License_Client::OPTION_LICENSE_KEY, '' );
+			?>
 		<h2>License</h2>
 		<p>Enter your license key to unlock premium marketplace features and automatic updates.</p>
 
@@ -608,10 +608,10 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 		</table>
 
 		<?php elseif ( 'permissions' === $agentic_active_tab ) : ?>
-		<?php
-		$agentic_perm_settings = \Agentic\Agent_Permissions::get_settings();
-		$agentic_perm_scopes   = \Agentic\Agent_Permissions::get_scopes();
-		?>
+			<?php
+			$agentic_perm_settings = \Agentic\Agent_Permissions::get_settings();
+			$agentic_perm_scopes   = \Agentic\Agent_Permissions::get_scopes();
+			?>
 		<h2>Agent Permissions</h2>
 		<p>Control what user-space write operations agents can perform. All changes are logged in the Audit Log.</p>
 

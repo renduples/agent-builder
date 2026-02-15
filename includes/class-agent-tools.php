@@ -345,7 +345,7 @@ class Agent_Tools {
 					'parameters'  => array(
 						'type'       => 'object',
 						'properties' => array(
-							'lines' => array(
+							'lines'  => array(
 								'type'        => 'integer',
 								'description' => 'Number of lines to read from the end of the log file (default: 50, max: 200)',
 							),
@@ -524,23 +524,23 @@ class Agent_Tools {
 					'parameters'  => array(
 						'type'       => 'object',
 						'properties' => array(
-							'operation' => array(
+							'operation'  => array(
 								'type'        => 'string',
 								'enum'        => array( 'get', 'set', 'delete' ),
 								'description' => 'Operation: get (read), set (create/update), or delete post meta',
 							),
-							'post_id'   => array(
+							'post_id'    => array(
 								'type'        => 'integer',
 								'description' => 'Post ID',
 							),
-							'meta_key'  => array(
+							'meta_key'   => array(
 								'type'        => 'string',
 								'description' => 'Meta key name',
 							),
 							'meta_value' => array(
 								'description' => 'Meta value (required for set operation)',
 							),
-							'reasoning' => array(
+							'reasoning'  => array(
 								'type'        => 'string',
 								'description' => 'Explanation of why this change is needed (required for set/delete)',
 							),
@@ -1401,10 +1401,10 @@ class Agent_Tools {
 
 		// Memory usage.
 		$memory = array(
-			'current_usage'    => size_format( memory_get_usage() ),
-			'peak_usage'       => size_format( memory_get_peak_usage() ),
-			'wp_memory_limit'  => defined( 'WP_MEMORY_LIMIT' ) ? WP_MEMORY_LIMIT : 'not set',
-			'wp_max_memory'    => defined( 'WP_MAX_MEMORY_LIMIT' ) ? WP_MAX_MEMORY_LIMIT : 'not set',
+			'current_usage'   => size_format( memory_get_usage() ),
+			'peak_usage'      => size_format( memory_get_peak_usage() ),
+			'wp_memory_limit' => defined( 'WP_MEMORY_LIMIT' ) ? WP_MEMORY_LIMIT : 'not set',
+			'wp_max_memory'   => defined( 'WP_MAX_MEMORY_LIMIT' ) ? WP_MAX_MEMORY_LIMIT : 'not set',
 		);
 
 		// Database info.
@@ -1417,13 +1417,13 @@ class Agent_Tools {
 
 		// Table sizes.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time diagnostic query.
-		$tables = $wpdb->get_results(
+		$tables            = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT table_name, ROUND(((data_length + index_length) / 1024 / 1024), 2) AS size_mb
+				'SELECT table_name, ROUND(((data_length + index_length) / 1024 / 1024), 2) AS size_mb
 				 FROM information_schema.TABLES
 				 WHERE table_schema = %s
 				 ORDER BY (data_length + index_length) DESC
-				 LIMIT 20",
+				 LIMIT 20',
 				DB_NAME
 			),
 			ARRAY_A
@@ -1451,11 +1451,11 @@ class Agent_Tools {
 		// Active theme.
 		$theme      = wp_get_theme();
 		$theme_info = array(
-			'name'        => $theme->get( 'Name' ),
-			'version'     => $theme->get( 'Version' ),
-			'template'    => $theme->get_template(),
-			'stylesheet'  => $theme->get_stylesheet(),
-			'parent'      => $theme->parent() ? $theme->parent()->get( 'Name' ) : null,
+			'name'       => $theme->get( 'Name' ),
+			'version'    => $theme->get( 'Version' ),
+			'template'   => $theme->get_template(),
+			'stylesheet' => $theme->get_stylesheet(),
+			'parent'     => $theme->parent() ? $theme->parent()->get( 'Name' ) : null,
 		);
 
 		// Cron info.
@@ -1479,7 +1479,7 @@ class Agent_Tools {
 		$post_counts = array();
 		$post_types  = get_post_types( array( 'public' => true ), 'names' );
 		foreach ( $post_types as $pt ) {
-			$counts = wp_count_posts( $pt );
+			$counts             = wp_count_posts( $pt );
 			$post_counts[ $pt ] = array(
 				'publish' => (int) $counts->publish,
 				'draft'   => (int) $counts->draft,
@@ -1605,7 +1605,7 @@ class Agent_Tools {
 		}
 
 		// Available roles.
-		$wp_roles       = wp_roles();
+		$wp_roles        = wp_roles();
 		$available_roles = array();
 		foreach ( $wp_roles->role_names as $slug => $name ) {
 			$available_roles[ $slug ] = $name;
@@ -1633,9 +1633,20 @@ class Agent_Tools {
 
 		// Block sensitive options.
 		$sensitive_patterns = array(
-			'password', 'secret', 'api_key', 'apikey', 'auth_key', 'auth_salt',
-			'logged_in_key', 'logged_in_salt', 'nonce_key', 'nonce_salt',
-			'secure_auth_key', 'secure_auth_salt', 'stripe', 'paypal',
+			'password',
+			'secret',
+			'api_key',
+			'apikey',
+			'auth_key',
+			'auth_salt',
+			'logged_in_key',
+			'logged_in_salt',
+			'nonce_key',
+			'nonce_salt',
+			'secure_auth_key',
+			'secure_auth_salt',
+			'stripe',
+			'paypal',
 		);
 
 		$lower_name = strtolower( $name );
@@ -1891,10 +1902,15 @@ class Agent_Tools {
 			return array( 'error' => 'Failed to write file: ' . $path );
 		}
 
-		$this->audit->log( 'system', 'user_space_write', $path, array(
-			'reasoning' => $reason,
-			'size'      => strlen( $content ),
-		) );
+		$this->audit->log(
+			'system',
+			'user_space_write',
+			$path,
+			array(
+				'reasoning' => $reason,
+				'size'      => strlen( $content ),
+			)
+		);
 
 		return array(
 			'success'   => true,
@@ -1922,15 +1938,31 @@ class Agent_Tools {
 
 		// Block sensitive options.
 		$sensitive_patterns = array(
-			'password', 'secret', 'api_key', 'apikey', 'auth_key', 'auth_salt',
-			'logged_in_key', 'logged_in_salt', 'nonce_key', 'nonce_salt',
-			'secure_auth_key', 'secure_auth_salt', 'stripe', 'paypal',
+			'password',
+			'secret',
+			'api_key',
+			'apikey',
+			'auth_key',
+			'auth_salt',
+			'logged_in_key',
+			'logged_in_salt',
+			'nonce_key',
+			'nonce_salt',
+			'secure_auth_key',
+			'secure_auth_salt',
+			'stripe',
+			'paypal',
 		);
 
 		// Block critical WordPress options that should never be modified by agents.
 		$blocked_exact = array(
-			'siteurl', 'home', 'admin_email', 'users_can_register',
-			'default_role', 'db_version', 'initial_db_version',
+			'siteurl',
+			'home',
+			'admin_email',
+			'users_can_register',
+			'default_role',
+			'db_version',
+			'initial_db_version',
 		);
 
 		if ( in_array( strtolower( $name ), $blocked_exact, true ) ) {
@@ -1959,15 +1991,20 @@ class Agent_Tools {
 		}
 
 		// Set operation.
-		$value    = $args['value'] ?? '';
-		$old      = get_option( $name, null );
-		$updated  = update_option( $name, $value );
+		$value   = $args['value'] ?? '';
+		$old     = get_option( $name, null );
+		$updated = update_option( $name, $value );
 
-		$this->audit->log( 'system', 'option_set', $name, array(
-			'reasoning' => $reason,
-			'old_type'  => null !== $old ? gettype( $old ) : 'none',
-			'new_type'  => gettype( $value ),
-		) );
+		$this->audit->log(
+			'system',
+			'option_set',
+			$name,
+			array(
+				'reasoning' => $reason,
+				'old_type'  => null !== $old ? gettype( $old ) : 'none',
+				'new_type'  => gettype( $value ),
+			)
+		);
 
 		return array(
 			'success'   => true,
@@ -1994,7 +2031,7 @@ class Agent_Tools {
 				$where  = "option_name LIKE '_transient_%' AND option_name NOT LIKE '_transient_timeout_%'";
 
 				if ( $search ) {
-					$where .= $wpdb->prepare( " AND option_name LIKE %s", '%' . $wpdb->esc_like( $search ) . '%' );
+					$where .= $wpdb->prepare( ' AND option_name LIKE %s', '%' . $wpdb->esc_like( $search ) . '%' );
 				}
 
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Dynamic WHERE clause built safely above.
@@ -2005,8 +2042,8 @@ class Agent_Tools {
 
 				$result = array();
 				foreach ( $transients as $t ) {
-					$name    = str_replace( '_transient_', '', $t['option_name'] );
-					$timeout = get_option( '_transient_timeout_' . $name );
+					$name     = str_replace( '_transient_', '', $t['option_name'] );
+					$timeout  = get_option( '_transient_timeout_' . $name );
 					$result[] = array(
 						'name'       => $name,
 						'size_bytes' => (int) $t['size_bytes'],
@@ -2062,10 +2099,10 @@ class Agent_Tools {
 	 * @return array Result.
 	 */
 	private function user_modify_postmeta( array $args ): array {
-		$operation  = $args['operation'] ?? 'get';
-		$post_id    = (int) ( $args['post_id'] ?? 0 );
-		$meta_key   = $args['meta_key'] ?? '';
-		$reason     = $args['reasoning'] ?? '';
+		$operation = $args['operation'] ?? 'get';
+		$post_id   = (int) ( $args['post_id'] ?? 0 );
+		$meta_key  = $args['meta_key'] ?? '';
+		$reason    = $args['reasoning'] ?? '';
 
 		if ( ! $post_id || empty( $meta_key ) ) {
 			return array( 'error' => 'post_id and meta_key are required.' );
@@ -2096,10 +2133,15 @@ class Agent_Tools {
 
 				update_post_meta( $post_id, $meta_key, $meta_value );
 
-				$this->audit->log( 'system', 'postmeta_set', $meta_key, array(
-					'post_id'   => $post_id,
-					'reasoning' => $reason,
-				) );
+				$this->audit->log(
+					'system',
+					'postmeta_set',
+					$meta_key,
+					array(
+						'post_id'   => $post_id,
+						'reasoning' => $reason,
+					)
+				);
 
 				return array(
 					'success'   => true,
@@ -2113,10 +2155,15 @@ class Agent_Tools {
 				$existed = metadata_exists( 'post', $post_id, $meta_key );
 				delete_post_meta( $post_id, $meta_key );
 
-				$this->audit->log( 'system', 'postmeta_deleted', $meta_key, array(
-					'post_id'   => $post_id,
-					'reasoning' => $reason,
-				) );
+				$this->audit->log(
+					'system',
+					'postmeta_deleted',
+					$meta_key,
+					array(
+						'post_id'   => $post_id,
+						'reasoning' => $reason,
+					)
+				);
 
 				return array(
 					'success'   => true,

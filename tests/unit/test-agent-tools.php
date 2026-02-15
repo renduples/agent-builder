@@ -295,7 +295,10 @@ class Test_Agent_Tools extends TestCase {
 	public function test_search_code_with_file_type() {
 		$result = $this->tools->execute(
 			'search_code',
-			array( 'pattern' => 'class', 'file_type' => 'php' )
+			array(
+				'pattern'   => 'class',
+				'file_type' => 'php',
+			)
 		);
 		$this->assertIsArray( $result );
 		$this->assertArrayHasKey( 'results', $result );
@@ -397,7 +400,7 @@ class Test_Agent_Tools extends TestCase {
 		$post_id = $this->factory->post->create();
 		$this->factory->comment->create(
 			array(
-				'comment_post_ID' => $post_id,
+				'comment_post_ID'  => $post_id,
 				'comment_approved' => 1,
 			)
 		);
@@ -444,7 +447,7 @@ class Test_Agent_Tools extends TestCase {
 	public function test_create_comment_content() {
 		$post_id = $this->factory->post->create();
 
-		$result  = $this->tools->execute(
+		$result = $this->tools->execute(
 			'create_comment',
 			array(
 				'post_id' => $post_id,
@@ -555,7 +558,10 @@ class Test_Agent_Tools extends TestCase {
 					'name'        => 'test_handler',
 					'description' => 'Test handler tool',
 					'handler'     => function ( $args ) {
-						return array( 'handled' => true, 'input' => $args );
+						return array(
+							'handled' => true,
+							'input'   => $args,
+						);
 					},
 				);
 				return $tools;
@@ -656,7 +662,7 @@ class Test_Agent_Tools extends TestCase {
 	public function test_query_database_rejects_delete() {
 		$result = $this->tools->execute(
 			'query_database',
-			array( 'query' => "DELETE FROM {prefix}posts" )
+			array( 'query' => 'DELETE FROM {prefix}posts' )
 		);
 		$this->assertArrayHasKey( 'error', $result );
 	}
@@ -667,7 +673,7 @@ class Test_Agent_Tools extends TestCase {
 	public function test_query_database_rejects_drop() {
 		$result = $this->tools->execute(
 			'query_database',
-			array( 'query' => "DROP TABLE {prefix}posts" )
+			array( 'query' => 'DROP TABLE {prefix}posts' )
 		);
 		$this->assertArrayHasKey( 'error', $result );
 	}
@@ -777,7 +783,7 @@ class Test_Agent_Tools extends TestCase {
 	public function test_get_site_health_sections() {
 		$result = $this->tools->execute( 'get_site_health', array() );
 		$this->assertIsArray( $result );
-		$this->assertArrayHasKey( 'wordpress', $result );
+		$this->assertArrayHasKey( 'WordPress', $result );
 		$this->assertArrayHasKey( 'php', $result );
 		$this->assertArrayHasKey( 'memory', $result );
 		$this->assertArrayHasKey( 'database', $result );
@@ -1083,7 +1089,7 @@ class Test_Agent_Tools extends TestCase {
 	 * Test write_file tool is defined.
 	 */
 	public function test_write_file_tool_defined() {
-		$tools = $this->tools->get_tool_definitions();
+		$tools      = $this->tools->get_tool_definitions();
 		$flat_names = array();
 		foreach ( $tools as $tool ) {
 			$flat_names[] = $tool['function']['name'] ?? $tool['name'] ?? '';
@@ -1095,7 +1101,7 @@ class Test_Agent_Tools extends TestCase {
 	 * Test modify_option tool is defined.
 	 */
 	public function test_modify_option_tool_defined() {
-		$tools = $this->tools->get_tool_definitions();
+		$tools      = $this->tools->get_tool_definitions();
 		$flat_names = array();
 		foreach ( $tools as $tool ) {
 			$flat_names[] = $tool['function']['name'] ?? $tool['name'] ?? '';
@@ -1107,7 +1113,7 @@ class Test_Agent_Tools extends TestCase {
 	 * Test manage_transients tool is defined.
 	 */
 	public function test_manage_transients_tool_defined() {
-		$tools = $this->tools->get_tool_definitions();
+		$tools      = $this->tools->get_tool_definitions();
 		$flat_names = array();
 		foreach ( $tools as $tool ) {
 			$flat_names[] = $tool['function']['name'] ?? $tool['name'] ?? '';
@@ -1119,7 +1125,7 @@ class Test_Agent_Tools extends TestCase {
 	 * Test modify_postmeta tool is defined.
 	 */
 	public function test_modify_postmeta_tool_defined() {
-		$tools = $this->tools->get_tool_definitions();
+		$tools      = $this->tools->get_tool_definitions();
 		$flat_names = array();
 		foreach ( $tools as $tool ) {
 			$flat_names[] = $tool['function']['name'] ?? $tool['name'] ?? '';
@@ -1136,10 +1142,14 @@ class Test_Agent_Tools extends TestCase {
 	 */
 	public function test_write_file_permission_denied() {
 		// All permissions are disabled by default.
-		$result = $this->tools->execute( 'write_file', array(
-			'path'    => 'themes/' . get_stylesheet() . '/test.css',
-			'content' => 'body { color: red; }',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'write_file',
+			array(
+				'path'    => 'themes/' . get_stylesheet() . '/test.css',
+				'content' => 'body { color: red; }',
+			),
+			'test-agent'
+		);
 
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'permission', strtolower( $result['error'] ) );
@@ -1149,11 +1159,15 @@ class Test_Agent_Tools extends TestCase {
 	 * Test modify_option with permission denied.
 	 */
 	public function test_modify_option_permission_denied() {
-		$result = $this->tools->execute( 'modify_option', array(
-			'name'      => 'agentic_test_opt',
-			'value'     => 'test',
-			'operation' => 'set',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'modify_option',
+			array(
+				'name'      => 'agentic_test_opt',
+				'value'     => 'test',
+				'operation' => 'set',
+			),
+			'test-agent'
+		);
 
 		$this->assertArrayHasKey( 'error', $result );
 	}
@@ -1162,9 +1176,13 @@ class Test_Agent_Tools extends TestCase {
 	 * Test manage_transients with permission denied.
 	 */
 	public function test_manage_transients_permission_denied() {
-		$result = $this->tools->execute( 'manage_transients', array(
-			'operation' => 'flush',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'manage_transients',
+			array(
+				'operation' => 'flush',
+			),
+			'test-agent'
+		);
 
 		$this->assertArrayHasKey( 'error', $result );
 	}
@@ -1173,12 +1191,16 @@ class Test_Agent_Tools extends TestCase {
 	 * Test modify_postmeta with permission denied.
 	 */
 	public function test_modify_postmeta_permission_denied() {
-		$result = $this->tools->execute( 'modify_postmeta', array(
-			'post_id'   => 1,
-			'meta_key'  => 'test_key',
-			'meta_value' => 'test',
-			'operation' => 'set',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'modify_postmeta',
+			array(
+				'post_id'    => 1,
+				'meta_key'   => 'test_key',
+				'meta_value' => 'test',
+				'operation'  => 'set',
+			),
+			'test-agent'
+		);
 
 		$this->assertArrayHasKey( 'error', $result );
 	}
@@ -1193,11 +1215,15 @@ class Test_Agent_Tools extends TestCase {
 	public function test_modify_option_auto_approve() {
 		\Agentic\Agent_Permissions::save_settings( array( 'modify_options' => true ), 'auto' );
 
-		$result = $this->tools->execute( 'modify_option', array(
-			'name'      => 'agentic_test_userspace_opt',
-			'value'     => 'hello world',
-			'operation' => 'set',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'modify_option',
+			array(
+				'name'      => 'agentic_test_userspace_opt',
+				'value'     => 'hello world',
+				'operation' => 'set',
+			),
+			'test-agent'
+		);
 
 		$this->assertTrue( $result['success'] ?? false, 'modify_option should succeed: ' . wp_json_encode( $result ) );
 		$this->assertEquals( 'hello world', get_option( 'agentic_test_userspace_opt' ) );
@@ -1213,11 +1239,15 @@ class Test_Agent_Tools extends TestCase {
 	public function test_modify_option_creates_proposal() {
 		\Agentic\Agent_Permissions::save_settings( array( 'modify_options' => true ), 'confirm' );
 
-		$result = $this->tools->execute( 'modify_option', array(
-			'name'      => 'agentic_test_prop',
-			'value'     => 'test',
-			'operation' => 'set',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'modify_option',
+			array(
+				'name'      => 'agentic_test_prop',
+				'value'     => 'test',
+				'operation' => 'set',
+			),
+			'test-agent'
+		);
 
 		$this->assertTrue( $result['pending_proposal'] ?? false );
 		$this->assertArrayHasKey( 'proposal_id', $result );
@@ -1234,21 +1264,29 @@ class Test_Agent_Tools extends TestCase {
 	public function test_modify_option_blocks_sensitive() {
 		\Agentic\Agent_Permissions::save_settings( array( 'modify_options' => true ), 'auto' );
 
-		$result = $this->tools->execute( 'modify_option', array(
-			'name'      => 'siteurl',
-			'value'     => 'http://evil.com',
-			'operation' => 'set',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'modify_option',
+			array(
+				'name'      => 'siteurl',
+				'value'     => 'http://evil.com',
+				'operation' => 'set',
+			),
+			'test-agent'
+		);
 
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'sensitive', strtolower( $result['error'] ) );
 
 		// Also test pattern-based blocking.
-		$result2 = $this->tools->execute( 'modify_option', array(
-			'name'      => 'my_api_key_setting',
-			'value'     => 'sk-1234',
-			'operation' => 'set',
-		), 'test-agent' );
+		$result2 = $this->tools->execute(
+			'modify_option',
+			array(
+				'name'      => 'my_api_key_setting',
+				'value'     => 'sk-1234',
+				'operation' => 'set',
+			),
+			'test-agent'
+		);
 
 		$this->assertArrayHasKey( 'error', $result2 );
 
@@ -1262,10 +1300,14 @@ class Test_Agent_Tools extends TestCase {
 		\Agentic\Agent_Permissions::save_settings( array( 'manage_transients' => true ), 'auto' );
 		set_transient( 'agentic_test_trans', 'value', 3600 );
 
-		$result = $this->tools->execute( 'manage_transients', array(
-			'operation' => 'list',
-			'search'    => 'agentic_test',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'manage_transients',
+			array(
+				'operation' => 'list',
+				'search'    => 'agentic_test',
+			),
+			'test-agent'
+		);
 
 		// List operation returns transients array, not 'success' key.
 		$this->assertArrayHasKey( 'transients', $result, 'manage_transients list should return transients: ' . wp_json_encode( $result ) );
@@ -1284,12 +1326,16 @@ class Test_Agent_Tools extends TestCase {
 
 		$post_id = self::factory()->post->create();
 
-		$result = $this->tools->execute( 'modify_postmeta', array(
-			'post_id'    => $post_id,
-			'meta_key'   => 'agentic_test_meta',
-			'meta_value' => 'test_value',
-			'operation'  => 'set',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'modify_postmeta',
+			array(
+				'post_id'    => $post_id,
+				'meta_key'   => 'agentic_test_meta',
+				'meta_value' => 'test_value',
+				'operation'  => 'set',
+			),
+			'test-agent'
+		);
 
 		$this->assertTrue( $result['success'] ?? false, 'modify_postmeta should succeed: ' . wp_json_encode( $result ) );
 		$this->assertEquals( 'test_value', get_post_meta( $post_id, 'agentic_test_meta', true ) );
@@ -1304,12 +1350,16 @@ class Test_Agent_Tools extends TestCase {
 	public function test_modify_postmeta_nonexistent_post() {
 		\Agentic\Agent_Permissions::save_settings( array( 'modify_postmeta' => true ), 'auto' );
 
-		$result = $this->tools->execute( 'modify_postmeta', array(
-			'post_id'    => 999999,
-			'meta_key'   => 'test_key',
-			'meta_value' => 'test',
-			'operation'  => 'set',
-		), 'test-agent' );
+		$result = $this->tools->execute(
+			'modify_postmeta',
+			array(
+				'post_id'    => 999999,
+				'meta_key'   => 'test_key',
+				'meta_value' => 'test',
+				'operation'  => 'set',
+			),
+			'test-agent'
+		);
 
 		$this->assertArrayHasKey( 'error', $result );
 

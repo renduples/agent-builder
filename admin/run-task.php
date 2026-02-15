@@ -70,9 +70,9 @@ if ( ! $agentic_task_def ) {
 	);
 }
 
-$agentic_mode     = ! empty( $agentic_task_def['prompt'] ) ? 'autonomous' : 'direct';
-$agentic_back_url = admin_url( 'admin.php?page=agentic-deployment&tab=scheduled-tasks' );
-$agentic_schedules = wp_get_schedules();
+$agentic_mode           = ! empty( $agentic_task_def['prompt'] ) ? 'autonomous' : 'direct';
+$agentic_back_url       = admin_url( 'admin.php?page=agentic-deployment&tab=scheduled-tasks' );
+$agentic_schedules      = wp_get_schedules();
 $agentic_schedule_label = $agentic_schedules[ $agentic_task_def['schedule'] ]['display'] ?? ucfirst( $agentic_task_def['schedule'] );
 ?>
 <div class="wrap">

@@ -198,19 +198,22 @@ class Marketplace_Client {
 			// Call the server validation endpoint directly (bypass GET cache).
 			$url      = trailingslashit( $this->api_base ) . 'wp-json/agentic-marketplace/v1/licenses/validate';
 			$version  = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
-			$response = wp_remote_post( $url, array(
-				'timeout' => 15,
-				'headers' => array(
-					'Accept'                    => 'application/json',
-					'X-Agentic-Site-URL'        => $site_url,
-					'X-Agentic-Site-Name'       => get_bloginfo( 'name' ),
-					'X-Agentic-Plugin-Version'  => $version,
-					'X-Agentic-WP-Version'      => get_bloginfo( 'version' ),
-					'X-Agentic-PHP-Version'     => PHP_VERSION,
-					'User-Agent'                => 'AgentBuilder/' . $version . '; ' . $site_url,
-				),
-				'body'    => $params,
-			) );
+			$response = wp_remote_post(
+				$url,
+				array(
+					'timeout' => 15,
+					'headers' => array(
+						'Accept'                   => 'application/json',
+						'X-Agentic-Site-URL'       => $site_url,
+						'X-Agentic-Site-Name'      => get_bloginfo( 'name' ),
+						'X-Agentic-Plugin-Version' => $version,
+						'X-Agentic-WP-Version'     => get_bloginfo( 'version' ),
+						'X-Agentic-PHP-Version'    => PHP_VERSION,
+						'User-Agent'               => 'AgentBuilder/' . $version . '; ' . $site_url,
+					),
+					'body'    => $params,
+				)
+			);
 
 			// Fail-open: if server is unreachable, keep existing cached data.
 			if ( is_wp_error( $response ) ) {
@@ -231,7 +234,7 @@ class Marketplace_Client {
 				$licenses[ $slug ]['activations_used'] = $body['data']['activations_used'] ?? $license_data['activations_used'];
 				$licenses[ $slug ]['activation_limit'] = $body['data']['activation_limit'] ?? $license_data['activation_limit'];
 				$licenses[ $slug ]['customer_email']   = $body['data']['customer_email'] ?? $license_data['customer_email'];
-				$licenses[ $slug ]['validated_at']      = current_time( 'mysql' );
+				$licenses[ $slug ]['validated_at']     = current_time( 'mysql' );
 				$updated                               = true;
 			} elseif ( isset( $body['error']['code'] ) ) {
 				// License is invalid/revoked/expired — update status accordingly.
@@ -995,19 +998,19 @@ class Marketplace_Client {
 	private function api_request( string $endpoint, array $params = array(), string $method = 'GET' ): array|\WP_Error {
 		$url = trailingslashit( $this->api_base ) . 'wp-json/agentic-marketplace/v1/' . $endpoint;
 
-		$version = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
+		$version  = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
 		$site_url = home_url();
 
 		$args = array(
 			'timeout' => 30,
 			'headers' => array(
-				'Accept'                    => 'application/json',
-				'X-Agentic-Site-URL'        => $site_url,
-				'X-Agentic-Site-Name'       => get_bloginfo( 'name' ),
-				'X-Agentic-Plugin-Version'  => $version,
-				'X-Agentic-WP-Version'      => get_bloginfo( 'version' ),
-				'X-Agentic-PHP-Version'     => PHP_VERSION,
-				'User-Agent'                => 'AgentBuilder/' . $version . '; ' . $site_url,
+				'Accept'                   => 'application/json',
+				'X-Agentic-Site-URL'       => $site_url,
+				'X-Agentic-Site-Name'      => get_bloginfo( 'name' ),
+				'X-Agentic-Plugin-Version' => $version,
+				'X-Agentic-WP-Version'     => get_bloginfo( 'version' ),
+				'X-Agentic-PHP-Version'    => PHP_VERSION,
+				'User-Agent'               => 'AgentBuilder/' . $version . '; ' . $site_url,
 			),
 		);
 

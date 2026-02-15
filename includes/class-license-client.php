@@ -166,10 +166,10 @@ class License_Client {
 		if ( empty( $stored ) || empty( $stored['status'] ) ) {
 			// Have a key but no cached data — trigger async revalidation.
 			$this->cached_status = array(
-				'status'     => 'pending',
-				'is_valid'   => false,
+				'status'      => 'pending',
+				'is_valid'    => false,
 				'license_key' => $this->mask_key( $license_key ),
-				'message'    => 'License validation pending.',
+				'message'     => 'License validation pending.',
 			);
 			// Schedule immediate revalidation.
 			if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
@@ -179,7 +179,7 @@ class License_Client {
 		}
 
 		// Check if cached data has expired (server unreachable for > CACHE_TTL).
-		$validated_at = strtotime( $stored['validated_at'] ?? '2000-01-01' );
+		$validated_at  = strtotime( $stored['validated_at'] ?? '2000-01-01' );
 		$cache_expired = ( time() - $validated_at ) > self::CACHE_TTL;
 
 		if ( $cache_expired ) {
@@ -287,7 +287,7 @@ class License_Client {
 			$license_data['message'] = $body['message'] ?? 'License validation failed.';
 
 			// Preserve type from previous data if available.
-			$existing = get_option( self::OPTION_LICENSE_DATA, array() );
+			$existing                   = get_option( self::OPTION_LICENSE_DATA, array() );
 			$license_data['type']       = $existing['type'] ?? 'personal';
 			$license_data['expires_at'] = $existing['expires_at'] ?? '';
 		}
@@ -445,7 +445,7 @@ class License_Client {
 			return;
 		}
 
-		$our_pages = array( 'toplevel_page_agent-builder', 'dashboard' );
+		$our_pages   = array( 'toplevel_page_agent-builder', 'dashboard' );
 		$is_our_page = in_array( $screen->id, $our_pages, true )
 			|| str_starts_with( $screen->id, 'agentic_page_' )
 			|| str_starts_with( $screen->id, 'agent-builder_page_' );
@@ -530,9 +530,9 @@ class License_Client {
 				'timeout' => 15,
 				'headers' => $this->get_site_headers(),
 				'body'    => array(
-					'license_key' => $license_key,
-					'site_url'    => home_url(),
-					'site_name'   => get_bloginfo( 'name' ),
+					'license_key'    => $license_key,
+					'site_url'       => home_url(),
+					'site_name'      => get_bloginfo( 'name' ),
 					'plugin_version' => AGENTIC_PLUGIN_VERSION,
 					'wp_version'     => get_bloginfo( 'version' ),
 					'php_version'    => PHP_VERSION,
@@ -541,14 +541,16 @@ class License_Client {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( sprintf(
+			wp_send_json_error(
+				sprintf(
 				/* translators: %s: error message */
-				__( 'Could not connect to license server: %s', 'agent-builder' ),
-				$response->get_error_message()
-			) );
+					__( 'Could not connect to license server: %s', 'agent-builder' ),
+					$response->get_error_message()
+				)
+			);
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
 		$http_code = wp_remote_retrieve_response_code( $response );
 
 		if ( empty( $body['activated'] ) ) {
@@ -577,10 +579,12 @@ class License_Client {
 		// Reset in-memory cache.
 		$this->cached_status = null;
 
-		wp_send_json_success( array(
-			'message' => $body['message'] ?? __( 'License activated successfully!', 'agent-builder' ),
-			'status'  => $this->get_status(),
-		) );
+		wp_send_json_success(
+			array(
+				'message' => $body['message'] ?? __( 'License activated successfully!', 'agent-builder' ),
+				'status'  => $this->get_status(),
+			)
+		);
 	}
 
 	/**
@@ -615,9 +619,11 @@ class License_Client {
 		delete_option( self::OPTION_LICENSE_DATA );
 		$this->cached_status = null;
 
-		wp_send_json_success( array(
-			'message' => __( 'License deactivated.', 'agent-builder' ),
-		) );
+		wp_send_json_success(
+			array(
+				'message' => __( 'License deactivated.', 'agent-builder' ),
+			)
+		);
 	}
 
 	// =========================================================================
@@ -634,12 +640,12 @@ class License_Client {
 		$version  = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
 
 		return array(
-			'X-Agentic-Site-URL'        => $site_url,
-			'X-Agentic-Site-Name'       => get_bloginfo( 'name' ),
-			'X-Agentic-Plugin-Version'  => $version,
-			'X-Agentic-WP-Version'      => get_bloginfo( 'version' ),
-			'X-Agentic-PHP-Version'     => PHP_VERSION,
-			'User-Agent'                => 'AgentBuilder/' . $version . '; ' . $site_url,
+			'X-Agentic-Site-URL'       => $site_url,
+			'X-Agentic-Site-Name'      => get_bloginfo( 'name' ),
+			'X-Agentic-Plugin-Version' => $version,
+			'X-Agentic-WP-Version'     => get_bloginfo( 'version' ),
+			'X-Agentic-PHP-Version'    => PHP_VERSION,
+			'User-Agent'               => 'AgentBuilder/' . $version . '; ' . $site_url,
 		);
 	}
 
@@ -650,7 +656,7 @@ class License_Client {
 	 * @return array Evaluated status with is_valid flag.
 	 */
 	private function evaluate_status( array $data ): array {
-		$license_key = get_option( self::OPTION_LICENSE_KEY, '' );
+		$license_key         = get_option( self::OPTION_LICENSE_KEY, '' );
 		$data['license_key'] = $this->mask_key( $license_key );
 
 		$status = $data['status'] ?? 'invalid';
@@ -670,14 +676,14 @@ class License_Client {
 		// Expired — check grace period.
 		if ( in_array( $status, array( 'expired', 'license_expired' ), true ) ) {
 			if ( ! empty( $data['expires_at'] ) ) {
-				$expires    = strtotime( $data['expires_at'] );
-				$grace_end  = $expires + ( self::GRACE_PERIOD_DAYS * DAY_IN_SECONDS );
-				$days_left  = max( 0, (int) ceil( ( $grace_end - time() ) / DAY_IN_SECONDS ) );
+				$expires   = strtotime( $data['expires_at'] );
+				$grace_end = $expires + ( self::GRACE_PERIOD_DAYS * DAY_IN_SECONDS );
+				$days_left = max( 0, (int) ceil( ( $grace_end - time() ) / DAY_IN_SECONDS ) );
 
 				if ( time() <= $grace_end ) {
-					$data['status']           = 'grace_period';
-					$data['grace_days_left']  = $days_left;
-					$data['is_valid']         = true;
+					$data['status']          = 'grace_period';
+					$data['grace_days_left'] = $days_left;
+					$data['is_valid']        = true;
 					return $data;
 				}
 			}
@@ -729,8 +735,8 @@ class License_Client {
 			return substr( $key, 0, 4 ) . '****' . substr( $key, -4 );
 		}
 
-		$first = $parts[0];
-		$last  = end( $parts );
+		$first  = $parts[0];
+		$last   = end( $parts );
 		$middle = array_fill( 0, count( $parts ) - 2, '****' );
 
 		return $first . '-' . implode( '-', $middle ) . '-' . $last;

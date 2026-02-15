@@ -136,7 +136,12 @@ class Test_Response_Cache extends TestCase {
 	 * Test should_cache rejects messages with history.
 	 */
 	public function test_should_cache_rejects_with_history() {
-		$history = array( array( 'role' => 'user', 'content' => 'previous' ) );
+		$history = array(
+			array(
+				'role'    => 'user',
+				'content' => 'previous',
+			),
+		);
 		$this->assertFalse( Response_Cache::should_cache( 'This is a follow-up message', $history ) );
 	}
 
@@ -277,7 +282,10 @@ class Test_Response_Cache extends TestCase {
 		$result = Response_Cache::set(
 			'Error test question',
 			'test-agent',
-			array( 'response' => 'fail', 'error' => true )
+			array(
+				'response' => 'fail',
+				'error'    => true,
+			)
 		);
 		$this->assertFalse( $result );
 	}
@@ -301,7 +309,10 @@ class Test_Response_Cache extends TestCase {
 		$result = Response_Cache::set(
 			'Tool test question here',
 			'test-agent',
-			array( 'response' => 'Answer', 'tools_used' => array( 'read_file' ) )
+			array(
+				'response'   => 'Answer',
+				'tools_used' => array( 'read_file' ),
+			)
 		);
 		$this->assertFalse( $result );
 	}

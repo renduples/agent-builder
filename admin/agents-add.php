@@ -404,7 +404,7 @@ $agentic_library = $agentic_registry->get_library_agents(
 		<pre><code>wp-content/agents/my-agent/
 ├── agent.php                       # Main file with agent headers &amp; class
 └── templates/
-    └── system-prompt.txt           # System prompt for the AI provider</code></pre>
+	└── system-prompt.txt           # System prompt for the AI provider</code></pre>
 		<p>
 			<strong><?php esc_html_e( 'Agent Headers:', 'agent-builder' ); ?></strong>
 		</p>

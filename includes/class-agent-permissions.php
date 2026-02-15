@@ -37,7 +37,7 @@ class Agent_Permissions {
 	 * @var array<string, array{label: string, description: string}>
 	 */
 	private const SCOPES = array(
-		'write_theme_files' => array(
+		'write_theme_files'    => array(
 			'label'       => 'Write Theme Files',
 			'description' => 'Allow agents to create or modify files in the active theme (CSS, PHP, templates).',
 		),
@@ -45,15 +45,15 @@ class Agent_Permissions {
 			'label'       => 'Create Custom Plugins',
 			'description' => 'Allow agents to create or modify plugin files in wp-content/plugins/agentic-custom/.',
 		),
-		'modify_options' => array(
+		'modify_options'       => array(
 			'label'       => 'Modify Options',
 			'description' => 'Allow agents to create, update, or delete WordPress options.',
 		),
-		'manage_transients' => array(
+		'manage_transients'    => array(
 			'label'       => 'Manage Transients',
 			'description' => 'Allow agents to list, delete, or flush transients.',
 		),
-		'modify_postmeta' => array(
+		'modify_postmeta'      => array(
 			'label'       => 'Modify Post Meta',
 			'description' => 'Allow agents to update or delete post meta fields.',
 		),
@@ -66,8 +66,8 @@ class Agent_Permissions {
 	/**
 	 * Confirmation modes.
 	 */
-	public const MODE_CONFIRM     = 'confirm';
-	public const MODE_AUTO        = 'auto';
+	public const MODE_CONFIRM = 'confirm';
+	public const MODE_AUTO    = 'auto';
 
 	/**
 	 * Get all available permission scopes.

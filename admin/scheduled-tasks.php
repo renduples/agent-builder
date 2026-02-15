@@ -62,18 +62,18 @@ foreach ( $agentic_instances as $agentic_agent ) {
 		$agentic_schedules = wp_get_schedules();
 
 		$agentic_all_tasks[] = array(
-			'agent_id'    => $agentic_agent->get_id(),
-			'agent_name'  => $agentic_agent->get_name(),
-			'agent_icon'  => $agentic_agent->get_icon(),
-			'task_id'     => $agentic_task['id'],
-			'task_name'   => $agentic_task['name'],
-			'description' => $agentic_task['description'] ?? '',
-			'schedule'    => $agentic_task['schedule'],
+			'agent_id'         => $agentic_agent->get_id(),
+			'agent_name'       => $agentic_agent->get_name(),
+			'agent_icon'       => $agentic_agent->get_icon(),
+			'task_id'          => $agentic_task['id'],
+			'task_name'        => $agentic_task['name'],
+			'description'      => $agentic_task['description'] ?? '',
+			'schedule'         => $agentic_task['schedule'],
 			'schedule_display' => $agentic_schedules[ $agentic_task['schedule'] ]['display'] ?? ucfirst( $agentic_task['schedule'] ),
-			'hook'        => $agentic_hook,
-			'next_run'    => $agentic_next_run,
-			'registered'  => false !== $agentic_next_run,
-			'mode'        => ! empty( $agentic_task['prompt'] ) ? 'autonomous' : 'direct',
+			'hook'             => $agentic_hook,
+			'next_run'         => $agentic_next_run,
+			'registered'       => false !== $agentic_next_run,
+			'mode'             => ! empty( $agentic_task['prompt'] ) ? 'autonomous' : 'direct',
 		);
 	}
 }

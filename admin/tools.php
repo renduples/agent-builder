@@ -66,7 +66,7 @@ $agentic_all_tools = array();
 
 // First: core tools from Agent_Tools.
 foreach ( $agentic_core_defs as $agentic_def ) {
-	$agentic_fname = $agentic_def['function']['name'] ?? '';
+	$agentic_fname   = $agentic_def['function']['name'] ?? '';
 	$agentic_is_core = in_array( $agentic_fname, $agentic_core_names, true );
 
 	if ( ! $agentic_is_core ) {
@@ -74,7 +74,7 @@ foreach ( $agentic_core_defs as $agentic_def ) {
 		continue;
 	}
 
-	$agentic_params = $agentic_def['function']['parameters']['properties'] ?? array();
+	$agentic_params     = $agentic_def['function']['parameters']['properties'] ?? array();
 	$agentic_param_list = array();
 	foreach ( $agentic_params as $agentic_pname => $agentic_pdef ) {
 		if ( is_array( $agentic_pdef ) ) {
@@ -101,7 +101,7 @@ foreach ( $agentic_instances as $agentic_agent ) {
 		if ( isset( $agentic_all_tools[ $agentic_fname ] ) ) {
 			$agentic_all_tools[ $agentic_fname ]['agents'][] = $agentic_agent->get_name();
 		} else {
-			$agentic_params = $agentic_tdef['function']['parameters']['properties'] ?? array();
+			$agentic_params     = $agentic_tdef['function']['parameters']['properties'] ?? array();
 			$agentic_param_list = array();
 			if ( is_array( $agentic_params ) ) {
 				foreach ( $agentic_params as $agentic_pname => $agentic_pdef ) {
@@ -135,7 +135,7 @@ if ( $agentic_filter_type ) {
 // Query tool usage counts from the audit log.
 global $wpdb;
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table aggregate.
-$agentic_usage_rows = $wpdb->get_results(
+$agentic_usage_rows   = $wpdb->get_results(
 	"SELECT target_type AS tool_name, COUNT(*) AS call_count FROM {$wpdb->prefix}agentic_audit_log WHERE action = 'tool_call' GROUP BY target_type",
 	ARRAY_A
 );

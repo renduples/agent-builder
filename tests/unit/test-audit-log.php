@@ -53,7 +53,10 @@ class Test_Audit_Log extends TestCase {
 	 * Test log with all parameters.
 	 */
 	public function test_log_with_all_parameters() {
-		$details = array( 'id' => 42, 'content' => 'Hello world' );
+		$details = array(
+			'id'      => 42,
+			'content' => 'Hello world',
+		);
 		$id      = $this->log->log(
 			'content-builder',
 			'draft_post',
@@ -126,7 +129,10 @@ class Test_Audit_Log extends TestCase {
 	 * Test log details are JSON encoded.
 	 */
 	public function test_log_details_json_encoded() {
-		$details = array( 'file' => 'style.css', 'changes' => 3 );
+		$details = array(
+			'file'    => 'style.css',
+			'changes' => 3,
+		);
 		$id      = $this->log->log( 'onboarding-agent', 'code_change', 'file', $details );
 
 		global $wpdb;

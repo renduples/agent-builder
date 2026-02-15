@@ -66,6 +66,7 @@ class Marketplace_Client {
 		// Schedule update checks.
 		add_action( 'init', array( $this, 'schedule_update_checks' ) );
 		add_action( 'agentic_check_agent_updates', array( $this, 'check_for_updates' ) );
+		add_action( 'agentic_check_agent_updates', array( $this, 'revalidate_agent_licenses' ) );
 	}
 
 	/**
@@ -148,6 +149,105 @@ class Marketplace_Client {
 	}
 
 	/**
+	 * Revalidate agent licenses with the marketplace server.
+	 *
+	 * Runs daily via the agentic_check_agent_updates cron.
+	 * Contacts the server for each stored license where validated_at is older than 72 hours.
+	 * Uses fail-open design: if the server is unreachable, cached license data is preserved.
+	 *
+	 * @since 1.7.1
+	 */
+	public function revalidate_agent_licenses(): void {
+		$licenses = get_option( 'agentic_licenses', array() );
+
+		if ( empty( $licenses ) || ! is_array( $licenses ) ) {
+			return;
+		}
+
+		$stale_threshold = 72 * HOUR_IN_SECONDS; // 72 hours.
+		$now             = current_time( 'timestamp' );
+		$updated         = false;
+
+		foreach ( $licenses as $slug => $license_data ) {
+			if ( empty( $license_data['license_key'] ) ) {
+				continue;
+			}
+
+			// Skip if recently validated (within 72 hours).
+			if ( ! empty( $license_data['validated_at'] ) ) {
+				$validated_time = strtotime( $license_data['validated_at'] );
+				if ( $validated_time && ( $now - $validated_time ) < $stale_threshold ) {
+					continue;
+				}
+			}
+
+			// Build validation request.
+			$site_url  = home_url();
+			$site_hash = defined( 'AGENTIC_SALT' )
+				? hash_hmac( 'sha256', $site_url, AGENTIC_SALT )
+				: ( $license_data['site_hash'] ?? '' );
+
+			$params = array(
+				'license_key' => $license_data['license_key'],
+				'agent_slug'  => $slug,
+				'site_url'    => $site_url,
+				'site_hash'   => $site_hash,
+				'action'      => 'check',
+			);
+
+			// Call the server validation endpoint directly (bypass GET cache).
+			$url      = trailingslashit( $this->api_base ) . 'wp-json/agentic-marketplace/v1/licenses/validate';
+			$response = wp_remote_post( $url, array(
+				'timeout' => 15,
+				'headers' => array( 'Accept' => 'application/json' ),
+				'body'    => $params,
+			) );
+
+			// Fail-open: if server is unreachable, keep existing cached data.
+			if ( is_wp_error( $response ) ) {
+				continue;
+			}
+
+			$code = wp_remote_retrieve_response_code( $response );
+			$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+			if ( ! is_array( $body ) ) {
+				continue; // Invalid response, fail-open.
+			}
+
+			// Update license data from server response.
+			if ( ! empty( $body['success'] ) && ! empty( $body['data'] ) ) {
+				$licenses[ $slug ]['status']           = $body['data']['status'] ?? $license_data['status'];
+				$licenses[ $slug ]['expires_at']       = $body['data']['expires_at'] ?? $license_data['expires_at'];
+				$licenses[ $slug ]['activations_used'] = $body['data']['activations_used'] ?? $license_data['activations_used'];
+				$licenses[ $slug ]['activation_limit'] = $body['data']['activation_limit'] ?? $license_data['activation_limit'];
+				$licenses[ $slug ]['customer_email']   = $body['data']['customer_email'] ?? $license_data['customer_email'];
+				$licenses[ $slug ]['validated_at']      = current_time( 'mysql' );
+				$updated                               = true;
+			} elseif ( isset( $body['error']['code'] ) ) {
+				// License is invalid/revoked/expired — update status accordingly.
+				$error_code = $body['error']['code'];
+
+				if ( in_array( $error_code, array( 'license_invalid', 'license_refunded', 'license_suspended' ), true ) ) {
+					$licenses[ $slug ]['status']       = 'revoked';
+					$licenses[ $slug ]['validated_at'] = current_time( 'mysql' );
+					$updated                           = true;
+				} elseif ( 'license_expired' === $error_code ) {
+					$licenses[ $slug ]['status']       = 'expired';
+					$licenses[ $slug ]['expires_at']   = $body['error']['expired_at'] ?? $license_data['expires_at'];
+					$licenses[ $slug ]['validated_at'] = current_time( 'mysql' );
+					$updated                           = true;
+				}
+				// Rate limit or transient errors: fail-open, don't update.
+			}
+		}
+
+		if ( $updated ) {
+			update_option( 'agentic_licenses', $licenses );
+		}
+	}
+
+	/**
 	 * Get available updates
 	 *
 	 * @return array
@@ -190,14 +290,14 @@ class Marketplace_Client {
 			'agentic-marketplace',
 			AGENTIC_PLUGIN_URL . 'assets/css/marketplace.css',
 			array(),
-			AGENTIC_PLUGIN_VERSION
+			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/marketplace.css' )
 		);
 
 		wp_enqueue_script(
 			'agentic-marketplace',
 			AGENTIC_PLUGIN_URL . 'assets/js/marketplace.js',
 			array( 'jquery', 'wp-util' ),
-			AGENTIC_PLUGIN_VERSION,
+			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/marketplace.js' ),
 			true
 		);
 

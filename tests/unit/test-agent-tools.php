@@ -310,7 +310,7 @@ class Test_Agent_Tools extends TestCase {
 	public function test_search_code_result_fields() {
 		$result = $this->tools->execute(
 			'search_code',
-			array( 'pattern' => 'AGENTIC_PLUGIN_VERSION' )
+			array( 'pattern' => 'AGENT_BUILDER_VERSION' )
 		);
 
 		$this->assertIsArray( $result );

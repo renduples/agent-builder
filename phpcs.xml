@@ -41,6 +41,7 @@
             <property name="prefixes" type="array">
                 <element value="agentic"/>
                 <element value="Agentic"/>
+                <element value="AGENT_BUILDER"/>
             </property>
         </properties>
         <!-- Exclude templates from global prefix requirement -->

@@ -25,10 +25,6 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( esc_html__( 'You do not have permission to access this page.', 'agentbuilder' ) );
 }
 
-// Get available updates.
-$agentic_marketplace_client = new \Agentic\Marketplace_Client();
-$agentic_available_updates  = $agentic_marketplace_client->get_available_updates();
-
 $agentic_agent_action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 $agentic_slug         = isset( $_GET['agent'] ) ? sanitize_text_field( wp_unslash( $_GET['agent'] ) ) : '';
 $agentic_message      = '';
@@ -70,49 +66,9 @@ if ( $agentic_agent_action && $agentic_slug && isset( $_GET['_wpnonce'] ) && wp_
 			if ( is_wp_error( $agentic_result ) ) {
 				$agentic_agent_error = $agentic_result->get_error_message();
 			} else {
-				// Deactivate license if agent had one.
-				$agentic_marketplace            = new \Agentic\Marketplace_Client();
-				$agentic_marketplace_reflection = new \ReflectionClass( $agentic_marketplace );
-				$agentic_deactivate_method      = $agentic_marketplace_reflection->getMethod( 'deactivate_agent_license' );
-				$agentic_deactivate_method->setAccessible( true );
-				$agentic_deactivate_method->invoke( $agentic_marketplace, $agentic_slug );
-
-				// Download and install the update.
-				if ( isset( $agentic_available_updates[ $agentic_slug ] ) ) {
-					$agentic_update_data = $agentic_available_updates[ $agentic_slug ];
-					$agentic_was_active  = $agentic_registry->is_agent_active( $agentic_slug );
-
-					// Deactivate if active.
-					if ( $agentic_was_active ) {
-						$agentic_registry->deactivate_agent( $agentic_slug );
-					}
-
-					// Install the update (replaces files).
-					$agentic_result = $agentic_registry->install_agent( $agentic_slug );
-
-					if ( is_wp_error( $agentic_result ) ) {
-						$agentic_agent_error = $agentic_result->get_error_message();
-					} else {
-						// Reactivate if was active.
-						if ( $agentic_was_active ) {
-							$agentic_registry->activate_agent( $agentic_slug );
-						}
-
-						// Clear update cache to refresh.
-						delete_transient( 'agentic_available_updates' );
-
-						$agentic_message = sprintf(
-						/* translators: 1: agent name, 2: new version */
-							__( '%1$s updated to version %2$s successfully.', 'agentbuilder' ),
-							esc_html( $update_data['name'] ),
-							esc_html( $update_data['latest'] )
-						);
-					}
-				} else {
-					$agentic_agent_error = __( 'No update available for this agent.', 'agentbuilder' );
-				}
-				break;
+				$agentic_message = __( 'Agent deleted.', 'agentbuilder' );
 			}
+			break;
 	}
 }
 
@@ -136,9 +92,6 @@ if ( 'active' === $agentic_filter ) {
 
 <div class="wrap agentic-agents-page">
 	<h1 class="wp-heading-inline"><?php esc_html_e( 'Agents', 'agentbuilder' ); ?></h1>
-	<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add' ) ); ?>" class="page-title-action">
-		<?php esc_html_e( 'Add Agent', 'agentbuilder' ); ?>
-	</a>
 	<hr class="wp-header-end">
 
 	<?php if ( $agentic_message ) : ?>
@@ -197,54 +150,23 @@ if ( 'active' === $agentic_filter ) {
 			<?php if ( empty( $agentic_agents ) ) : ?>
 				<tr class="no-items">
 					<td class="colspanchange" colspan="3">
-						<?php if ( $agentic_search_term ) : ?>
-							<?php esc_html_e( 'No agents found matching your search.', 'agentbuilder' ); ?>
-						<?php else : ?>
-							<?php esc_html_e( 'No agents installed yet.', 'agentbuilder' ); ?>
-							<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add' ) ); ?>">
-								<?php esc_html_e( 'Browse the Marketplace', 'agentbuilder' ); ?>
-							</a>
-						<?php endif; ?>
+						<?php esc_html_e( 'No agents installed yet.', 'agentbuilder' ); ?>
 					</td>
 				</tr>
 			<?php else : ?>
 				<?php foreach ( $agentic_agents as $agentic_slug => $agentic_agent ) : ?>
 					<?php
-					$agentic_row_class    = $agentic_agent['active'] ? 'active' : 'inactive';
-					$agentic_nonce        = wp_create_nonce( 'agentic_agent_action' );
-					$agentic_has_update   = isset( $agentic_available_updates[ $agentic_slug ] );
-					$agentic_update_class = $agentic_has_update ? 'update-available' : '';
+					$agentic_row_class = $agentic_agent['active'] ? 'active' : 'inactive';
+					$agentic_nonce     = wp_create_nonce( 'agentic_agent_action' );
 					?>
-					<tr class="<?php echo esc_attr( $agentic_row_class . ' ' . $agentic_update_class ); ?>" data-slug="<?php echo esc_attr( $agentic_slug ); ?>">
+					<tr class="<?php echo esc_attr( $agentic_row_class ); ?>" data-slug="<?php echo esc_attr( $agentic_slug ); ?>">
 						<th scope="row" class="check-column">
 							<input type="checkbox" name="checked[]" value="<?php echo esc_attr( $agentic_slug ); ?>">
 						</th>
 						<td class="plugin-title column-primary">
 							<strong><?php echo esc_html( $agentic_agent['name'] ); ?></strong>
 
-							<?php if ( $agentic_has_update ) : ?>
-								<div class="notice notice-warning inline" style="margin: 5px 0; padding: 5px 10px;">
-									<p style="margin: 0;">
-										<?php
-										printf(
-											/* translators: 1: current version, 2: new version */
-											esc_html__( 'Update available: %1$s → %2$s', 'agentbuilder' ),
-											'<strong>' . esc_html( $agentic_available_updates[ $agentic_slug ]['current'] ) . '</strong>',
-											'<strong>' . esc_html( $agentic_available_updates[ $agentic_slug ]['latest'] ) . '</strong>'
-										);
-										?>
-									</p>
-								</div>
-							<?php endif; ?>
-
 							<div class="row-actions visible">
-								<?php if ( $agentic_has_update && ! empty( $agentic_agent['bundled'] ) === false ) : ?>
-									<span class="update">
-										<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents&action=update&agent=' . $agentic_slug . '&_wpnonce=' . $agentic_nonce ) ); ?>" style="color: #d63638; font-weight: 600;">
-											<?php esc_html_e( 'Update Now', 'agentbuilder' ); ?>
-										</a> |
-									</span>
-								<?php endif; ?>
 
 								<?php if ( $agentic_agent['active'] ) : ?>
 									<?php

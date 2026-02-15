@@ -274,13 +274,13 @@ class Test_License_Client extends WP_UnitTestCase {
 		$update              = new \stdClass();
 		$update->slug        = 'agentbuilder';
 		$update->new_version = '2.0.0';
-		$transient->response[ AGENTIC_PLUGIN_BASENAME ] = $update;
+		$transient->response[ AGENT_BUILDER_BASENAME ] = $update;
 
 		$result = $client->gate_plugin_updates( $transient );
 
 		// Update should be removed (no license).
-		$this->assertArrayNotHasKey( AGENTIC_PLUGIN_BASENAME, $result->response );
-		$this->assertArrayHasKey( AGENTIC_PLUGIN_BASENAME, $result->no_update );
+		$this->assertArrayNotHasKey( AGENT_BUILDER_BASENAME, $result->response );
+		$this->assertArrayHasKey( AGENT_BUILDER_BASENAME, $result->no_update );
 	}
 
 	public function test_update_gating_allows_update_with_valid_license(): void {
@@ -304,12 +304,12 @@ class Test_License_Client extends WP_UnitTestCase {
 		$update              = new \stdClass();
 		$update->slug        = 'agentbuilder';
 		$update->new_version = '2.0.0';
-		$transient->response[ AGENTIC_PLUGIN_BASENAME ] = $update;
+		$transient->response[ AGENT_BUILDER_BASENAME ] = $update;
 
 		$result = $client->gate_plugin_updates( $transient );
 
 		// Update should remain.
-		$this->assertArrayHasKey( AGENTIC_PLUGIN_BASENAME, $result->response );
+		$this->assertArrayHasKey( AGENT_BUILDER_BASENAME, $result->response );
 	}
 
 	// =========================================================================

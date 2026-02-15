@@ -45,12 +45,12 @@ class License_Client {
 	/**
 	 * Option key for the plugin license key.
 	 */
-	const OPTION_LICENSE_KEY = 'agentic_plugin_license_key';
+	const OPTION_LICENSE_KEY = 'agent_builder_license_key';
 
 	/**
 	 * Option key for cached license data.
 	 */
-	const OPTION_LICENSE_DATA = 'agentic_plugin_license_data';
+	const OPTION_LICENSE_DATA = 'agent_builder_license_data';
 
 	/**
 	 * Cron hook name for revalidation.
@@ -125,7 +125,7 @@ class License_Client {
 		add_action( 'wp_ajax_agentic_deactivate_plugin_license', array( $this, 'ajax_deactivate_license' ) );
 
 		// Clean up on plugin deactivation.
-		register_deactivation_hook( AGENTIC_PLUGIN_FILE, array( $this, 'on_deactivation' ) );
+		register_deactivation_hook( AGENT_BUILDER_FILE, array( $this, 'on_deactivation' ) );
 	}
 
 	// =========================================================================
@@ -319,7 +319,7 @@ class License_Client {
 			return $transient;
 		}
 
-		$plugin_basename = AGENTIC_PLUGIN_BASENAME;
+		$plugin_basename = AGENT_BUILDER_BASENAME;
 
 		// Only act if there's an update available for our plugin.
 		if ( ! isset( $transient->response[ $plugin_basename ] ) ) {
@@ -413,7 +413,7 @@ class License_Client {
 	 * @return string[]
 	 */
 	private function get_bundled_agent_slugs(): array {
-		$library_dir = AGENTIC_PLUGIN_DIR . 'library/';
+		$library_dir = AGENT_BUILDER_DIR . 'library/';
 		if ( ! is_dir( $library_dir ) ) {
 			return array();
 		}
@@ -533,7 +533,7 @@ class License_Client {
 					'license_key'    => $license_key,
 					'site_url'       => home_url(),
 					'site_name'      => get_bloginfo( 'name' ),
-					'plugin_version' => AGENTIC_PLUGIN_VERSION,
+					'plugin_version' => AGENT_BUILDER_VERSION,
 					'wp_version'     => get_bloginfo( 'version' ),
 					'php_version'    => PHP_VERSION,
 				),
@@ -637,7 +637,7 @@ class License_Client {
 	 */
 	private function get_site_headers(): array {
 		$site_url = home_url();
-		$version  = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
+		$version  = defined( 'AGENT_BUILDER_VERSION' ) ? AGENT_BUILDER_VERSION : '0.0.0';
 
 		return array(
 			'X-Agentic-Site-URL'       => $site_url,

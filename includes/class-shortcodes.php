@@ -51,16 +51,16 @@ class Shortcodes {
 	public function register_assets(): void {
 		wp_register_style(
 			'agentic-chat-frontend',
-			AGENTIC_PLUGIN_URL . 'assets/css/chat-frontend.css',
+			AGENT_BUILDER_URL . 'assets/css/chat-frontend.css',
 			array(),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/chat-frontend.css' )
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/css/chat-frontend.css' )
 		);
 
 		wp_register_script(
 			'agentic-chat-frontend',
-			AGENTIC_PLUGIN_URL . 'assets/js/chat.js',
+			AGENT_BUILDER_URL . 'assets/js/chat.js',
 			array(),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/chat.js' ),
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/js/chat.js' ),
 			true
 		);
 	}

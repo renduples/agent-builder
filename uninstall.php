@@ -26,13 +26,13 @@ global $wpdb;
  * Delete all plugin options.
  */
 $agentic_options_to_delete = array(
-	'agentic_plugin_settings',
-	'agentic_plugin_version',
+	'agent_builder_settings',
+	'agent_builder_version',
 	'agentic_license_key',
 	'agentic_license_status',
 	'agentic_license_data',
-	'agentic_plugin_license_key',
-	'agentic_plugin_license_data',
+	'agent_builder_license_key',
+	'agent_builder_license_data',
 	'agentic_api_key',
 	'agentic_provider',
 	'agentic_model',

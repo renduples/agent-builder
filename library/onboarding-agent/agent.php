@@ -184,7 +184,7 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 		$agents = array();
 
 		// Check library directory for agents
-		$library_path = AGENTIC_PLUGIN_DIR . 'library/';
+		$library_path = AGENT_BUILDER_DIR . 'library/';
 
 		if ( is_dir( $library_path ) ) {
 			$dirs = scandir( $library_path );

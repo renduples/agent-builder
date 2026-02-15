@@ -436,7 +436,7 @@ class Agentic_Agent_Builder extends \Agentic\Agent_Base {
 	 * Get library path
 	 */
 	private function get_library_path(): string {
-		return AGENTIC_PLUGIN_DIR . 'library/';
+		return AGENT_BUILDER_DIR . 'library/';
 	}
 
 	/**

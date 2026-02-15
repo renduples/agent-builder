@@ -197,7 +197,7 @@ class Marketplace_Client {
 
 			// Call the server validation endpoint directly (bypass GET cache).
 			$url      = trailingslashit( $this->api_base ) . 'wp-json/agentic-marketplace/v1/licenses/validate';
-			$version  = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
+			$version  = defined( 'AGENT_BUILDER_VERSION' ) ? AGENT_BUILDER_VERSION : '0.0.0';
 			$response = wp_remote_post(
 				$url,
 				array(
@@ -300,16 +300,16 @@ class Marketplace_Client {
 
 		wp_enqueue_style(
 			'agentic-marketplace',
-			AGENTIC_PLUGIN_URL . 'assets/css/marketplace.css',
+			AGENT_BUILDER_URL . 'assets/css/marketplace.css',
 			array(),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/marketplace.css' )
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/css/marketplace.css' )
 		);
 
 		wp_enqueue_script(
 			'agentic-marketplace',
-			AGENTIC_PLUGIN_URL . 'assets/js/marketplace.js',
+			AGENT_BUILDER_URL . 'assets/js/marketplace.js',
 			array( 'jquery', 'wp-util' ),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/marketplace.js' ),
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/js/marketplace.js' ),
 			true
 		);
 
@@ -374,7 +374,7 @@ class Marketplace_Client {
 		}
 
 		// Also check library agents.
-		$library_dir = AGENTIC_PLUGIN_DIR . 'library';
+		$library_dir = AGENT_BUILDER_DIR . 'library';
 		if ( is_dir( $library_dir ) ) {
 			$dirs = glob( $library_dir . '/*', GLOB_ONLYDIR );
 			foreach ( $dirs as $dir ) {
@@ -479,12 +479,12 @@ class Marketplace_Client {
 		// Enqueue Chart.js for revenue charts (local copy for WordPress.org compliance).
 		wp_enqueue_script(
 			'chartjs',
-			AGENTIC_PLUGIN_URL . 'assets/js/vendor/chart.umd.min.js',
+			AGENT_BUILDER_URL . 'assets/js/vendor/chart.umd.min.js',
 			array(),
 			'4.4.1',
 			true
 		);
-		require_once AGENTIC_PLUGIN_DIR . 'admin/revenue.php';
+		require_once AGENT_BUILDER_DIR . 'admin/revenue.php';
 	}
 
 	/**
@@ -998,7 +998,7 @@ class Marketplace_Client {
 	private function api_request( string $endpoint, array $params = array(), string $method = 'GET' ): array|\WP_Error {
 		$url = trailingslashit( $this->api_base ) . 'wp-json/agentic-marketplace/v1/' . $endpoint;
 
-		$version  = defined( 'AGENTIC_PLUGIN_VERSION' ) ? AGENTIC_PLUGIN_VERSION : '0.0.0';
+		$version  = defined( 'AGENT_BUILDER_VERSION' ) ? AGENT_BUILDER_VERSION : '0.0.0';
 		$site_url = home_url();
 
 		$args = array(

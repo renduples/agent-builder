@@ -35,9 +35,9 @@ $agentic_active_agents = get_option( 'agentic_active_agents', array() );
 $agentic_active_count  = is_array( $agentic_active_agents ) ? count( $agentic_active_agents ) : 0;
 
 // Check plugin license status.
-$agentic_plugin_license_key = get_option( 'agentic_plugin_license_key', '' );
-$agentic_license_status     = 'free'; // Default to free tier.
-$agentic_license_display    = 'Free';
+$agent_builder_license_key = get_option( 'agent_builder_license_key', '' );
+$agentic_license_status    = 'free'; // Default to free tier.
+$agentic_license_display   = 'Free';
 
 if ( class_exists( '\Agentic\License_Client' ) ) {
 	$agentic_lc_instance = \Agentic\License_Client::get_instance();
@@ -65,14 +65,14 @@ if ( class_exists( '\Agentic\License_Client' ) ) {
 			$agentic_license_display = 'Free <a href="https://agentic-plugin.com/pricing/" target="_blank" style="font-size: 12px;">(Upgrade)</a>';
 			break;
 	}
-} elseif ( ! empty( $agentic_plugin_license_key ) ) {
+} elseif ( ! empty( $agent_builder_license_key ) ) {
 	// Fallback: direct API call if License_Client not loaded.
 	$agentic_response = wp_remote_get(
 		'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/licenses/status',
 		array(
 			'timeout' => 5,
 			'headers' => array(
-				'Authorization' => 'Bearer ' . $agentic_plugin_license_key,
+				'Authorization' => 'Bearer ' . $agent_builder_license_key,
 			),
 		)
 	);
@@ -153,130 +153,6 @@ if ( class_exists( '\Agentic\License_Client' ) ) {
 					<td><?php echo esc_html( $agentic_active_count ); ?></td>
 				</tr>
 			</table>
-		</div>
-
-		<div class="agentic-card">
-			<h2>Marketplace</h2>
-			<?php
-			// Fetch marketplace stats — derive from /agents endpoint for reliability.
-			$agentic_marketplace_stats = array(
-				'latest_agent'  => array(
-					'name' => 'N/A',
-					'url'  => '',
-				),
-				'popular_agent' => array(
-					'name' => 'N/A',
-					'url'  => '',
-				),
-				'user_sales'    => 0,
-				'user_revenue'  => 0.00,
-			);
-
-			// Get developer API key for user-specific stats (sales/revenue).
-			$agentic_dev_api_key = get_option( 'agentic_developer_api_key', '' );
-
-			// Fetch user sales/revenue from stats endpoint if dev key exists.
-			if ( ! empty( $agentic_dev_api_key ) ) {
-				$agentic_stats_response = wp_remote_get(
-					'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/stats/dashboard',
-					array(
-						'timeout' => 5,
-						'headers' => array(
-							'Authorization' => 'Bearer ' . $agentic_dev_api_key,
-						),
-					)
-				);
-
-				if ( ! is_wp_error( $agentic_stats_response ) && 200 === wp_remote_retrieve_response_code( $agentic_stats_response ) ) {
-					$agentic_stats_data = json_decode( wp_remote_retrieve_body( $agentic_stats_response ), true );
-					if ( isset( $agentic_stats_data['success'] ) && $agentic_stats_data['success'] && isset( $agentic_stats_data['stats'] ) ) {
-						$agentic_marketplace_stats['user_sales']   = (int) ( $agentic_stats_data['stats']['user_sales'] ?? 0 );
-						$agentic_marketplace_stats['user_revenue'] = (float) ( $agentic_stats_data['stats']['user_revenue'] ?? 0 );
-					}
-				}
-			}
-
-			// Fetch agents list to derive latest and most popular — more reliable than stats endpoint.
-			$agentic_agents_response = wp_remote_get(
-				'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/agents',
-				array( 'timeout' => 5 )
-			);
-
-			if ( ! is_wp_error( $agentic_agents_response ) && 200 === wp_remote_retrieve_response_code( $agentic_agents_response ) ) {
-				$agentic_agents_data = json_decode( wp_remote_retrieve_body( $agentic_agents_response ), true );
-				$agentic_agents_list = $agentic_agents_data['agents'] ?? array();
-
-				if ( ! empty( $agentic_agents_list ) ) {
-					// Latest agent = most recently updated.
-					$agentic_latest = $agentic_agents_list[0];
-					foreach ( $agentic_agents_list as $agentic_agent ) {
-						if ( ( $agentic_agent['last_updated'] ?? '' ) > ( $agentic_latest['last_updated'] ?? '' ) ) {
-							$agentic_latest = $agentic_agent;
-						}
-					}
-					$agentic_marketplace_stats['latest_agent'] = array(
-						'name' => $agentic_latest['name'] ?? 'N/A',
-						'url'  => $agentic_latest['url'] ?? '',
-					);
-
-					// Popular agent = most downloads, then highest rating as tiebreaker.
-					$agentic_popular = $agentic_agents_list[0];
-					foreach ( $agentic_agents_list as $agentic_agent ) {
-						$agentic_agent_downloads   = (int) ( $agentic_agent['downloads'] ?? 0 );
-						$agentic_popular_downloads = (int) ( $agentic_popular['downloads'] ?? 0 );
-						if ( $agentic_agent_downloads > $agentic_popular_downloads
-							|| ( $agentic_agent_downloads === $agentic_popular_downloads
-								&& (float) ( $agentic_agent['rating'] ?? 0 ) > (float) ( $agentic_popular['rating'] ?? 0 ) )
-						) {
-							$agentic_popular = $agentic_agent;
-						}
-					}
-					$agentic_marketplace_stats['popular_agent'] = array(
-						'name' => $agentic_popular['name'] ?? 'N/A',
-						'url'  => $agentic_popular['url'] ?? '',
-					);
-				}
-			}
-			?>
-			<table class="widefat">
-				<tr>
-					<td><strong>New Agent</strong></td>
-					<td>
-						<?php
-						if ( ! empty( $agentic_marketplace_stats['latest_agent']['url'] ) ) {
-							echo '<a href="' . esc_url( $agentic_marketplace_stats['latest_agent']['url'] ) . '" target="_blank">' . esc_html( $agentic_marketplace_stats['latest_agent']['name'] ) . '</a>';
-						} else {
-							echo esc_html( $agentic_marketplace_stats['latest_agent']['name'] );
-						}
-						?>
-					</td>
-				</tr>
-				<tr>
-					<td><strong>Popular Agent</strong></td>
-					<td>
-						<?php
-						if ( ! empty( $agentic_marketplace_stats['popular_agent']['url'] ) ) {
-							echo '<a href="' . esc_url( $agentic_marketplace_stats['popular_agent']['url'] ) . '" target="_blank">' . esc_html( $agentic_marketplace_stats['popular_agent']['name'] ) . '</a>';
-						} else {
-							echo esc_html( $agentic_marketplace_stats['popular_agent']['name'] );
-						}
-						?>
-					</td>
-				</tr>
-				<tr>
-					<td><strong>Agent Sales</strong></td>
-					<td><?php echo esc_html( number_format( (int) $agentic_marketplace_stats['user_sales'] ) ); ?></td>
-				</tr>
-				<tr>
-					<td><strong>Total Revenue</strong></td>
-					<td>$<?php echo esc_html( number_format( (float) $agentic_marketplace_stats['user_revenue'], 2 ) ); ?></td>
-				</tr>
-			</table>
-			<p style="margin-top: 15px;">
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-revenue' ) ); ?>" class="button button-primary">
-					<?php echo ( $agentic_marketplace_stats['user_revenue'] > 0 ) ? 'View Revenue' : 'Earn Revenue'; ?>
-				</a>
-			</p>
 		</div>
 
 		<div class="agentic-card">

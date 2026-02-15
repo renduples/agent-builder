@@ -290,8 +290,8 @@ class Test_Database_Tables extends TestCase {
 	public function test_uninstall_options_list() {
 		// Set options that uninstall.php should delete.
 		$options = array(
-			'agentic_plugin_settings',
-			'agentic_plugin_version',
+			'agent_builder_settings',
+			'agent_builder_version',
 			'agentic_license_key',
 			'agentic_api_key',
 			'agentic_provider',

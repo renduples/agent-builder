@@ -249,7 +249,7 @@ class Test_REST_API extends TestCase {
 		$response = $this->server->dispatch( $request );
 		$data     = $response->get_data();
 
-		$this->assertEquals( AGENTIC_PLUGIN_VERSION, $data['version'] );
+		$this->assertEquals( AGENT_BUILDER_VERSION, $data['version'] );
 	}
 
 	// -------------------------------------------------------------------------

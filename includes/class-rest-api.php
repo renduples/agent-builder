@@ -314,7 +314,7 @@ class REST_API {
 
 		return new \WP_REST_Response(
 			array(
-				'version'      => AGENTIC_PLUGIN_VERSION,
+				'version'      => AGENT_BUILDER_VERSION,
 				'configured'   => $llm->is_configured(),
 				'provider'     => $llm->get_provider(),
 				'model'        => $llm->get_model(),

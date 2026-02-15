@@ -51,16 +51,16 @@ if ( ! in_array( $agentic_active_tab, array( 'scheduled-tasks', 'event-listeners
 	<?php
 	switch ( $agentic_active_tab ) {
 		case 'scheduled-tasks':
-			include AGENTIC_PLUGIN_DIR . 'admin/deployment-scheduled-tasks.php';
+			include AGENT_BUILDER_DIR . 'admin/deployment-scheduled-tasks.php';
 			break;
 
 		case 'event-listeners':
-			include AGENTIC_PLUGIN_DIR . 'admin/deployment-event-listeners.php';
+			include AGENT_BUILDER_DIR . 'admin/deployment-event-listeners.php';
 			break;
 
 		case 'shortcodes':
 		default:
-			include AGENTIC_PLUGIN_DIR . 'admin/deployment-shortcodes.php';
+			include AGENT_BUILDER_DIR . 'admin/deployment-shortcodes.php';
 			break;
 	}
 	?>

@@ -250,7 +250,7 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 
 	<div class="agentic-chat-footer">
 		<span class="agentic-footer-info">
-			Powered by Agent Builder v<?php echo esc_html( AGENTIC_PLUGIN_VERSION ); ?>
+			Powered by Agent Builder v<?php echo esc_html( AGENT_BUILDER_VERSION ); ?>
 		</span>
 		<span class="agentic-footer-stats" id="agentic-stats"></span>
 	</div>

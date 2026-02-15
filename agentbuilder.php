@@ -4,7 +4,7 @@
  *
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
- * Description:       Build AI agents without writing code. Describe the AI agent you want and let WordPress build it for you.
+ * Description:       Build AI agents for WordPress using natural language descriptions.
  * Version:           1.7.5
  * Requires at least: 6.4
  * Requires PHP:      8.1
@@ -28,11 +28,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'AGENTIC_PLUGIN_VERSION', '1.7.5' );
-define( 'AGENTIC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'AGENTIC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'AGENTIC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-define( 'AGENTIC_PLUGIN_FILE', __FILE__ );
+define( 'AGENT_BUILDER_VERSION', '1.7.5' );
+define( 'AGENT_BUILDER_DIR', plugin_dir_path( __FILE__ ) );
+define( 'AGENT_BUILDER_URL', plugin_dir_url( __FILE__ ) );
+define( 'AGENT_BUILDER_BASENAME', plugin_basename( __FILE__ ) );
+define( 'AGENT_BUILDER_FILE', __FILE__ );
 
 /**
  * Main plugin class
@@ -374,15 +374,6 @@ final class Plugin {
 
 		add_submenu_page(
 			'agentbuilder',
-			__( 'Add Agent', 'agentbuilder' ),
-			__( 'Add Agent', 'agentbuilder' ),
-			'read',
-			'agentic-agents-add',
-			array( $this, 'render_agents_add_page' )
-		);
-
-		add_submenu_page(
-			'agentbuilder',
 			__( 'Audit Log', 'agentbuilder' ),
 			__( 'Audit Log', 'agentbuilder' ),
 			'manage_options',
@@ -592,28 +583,25 @@ final class Plugin {
 	 * @return void
 	 */
 	private function load_components(): void {
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-llm-client.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-audit-log.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-permissions.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-proposals.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-tools.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-controller.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-rest-api.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-approval-queue.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-agentic-agent-registry.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-chat-security.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-response-cache.php';
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-shortcodes.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-llm-client.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-audit-log.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-agent-permissions.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-agent-proposals.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-agent-tools.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-agent-controller.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-rest-api.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-approval-queue.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-agentic-agent-registry.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-chat-security.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-response-cache.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-shortcodes.php';
 
 		// System requirements checker.
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-system-checker.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-system-checker.php';
 
 		// License client — handles revalidation, update gating, feature degradation.
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-license-client.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-license-client.php';
 		License_Client::get_instance();
-
-		// Marketplace components.
-		include_once AGENTIC_PLUGIN_DIR . 'includes/class-marketplace-client.php';
 
 		// Initialize components.
 		new REST_API();
@@ -621,11 +609,6 @@ final class Plugin {
 		new \Agentic\Shortcodes();
 
 		// Initialize Social Auth (for custom login/register with OAuth).
-
-		// Initialize marketplace (on marketplace site only - controlled by constant).
-
-		// Initialize marketplace client (for installing agents from marketplace).
-		new Marketplace_Client();
 
 		// Load active agents (like WordPress loads active plugins).
 		\Agentic_Agent_Registry::get_instance()->load_active_agents();
@@ -637,7 +620,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function render_admin_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/dashboard.php';
+		include AGENT_BUILDER_DIR . 'admin/dashboard.php';
 	}
 
 	/**
@@ -646,7 +629,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function render_audit_log_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/audit.php';
+		include AGENT_BUILDER_DIR . 'admin/audit.php';
 	}
 
 	/**
@@ -655,7 +638,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function render_deployment_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/deployment.php';
+		include AGENT_BUILDER_DIR . 'admin/deployment.php';
 	}
 
 	/**
@@ -664,7 +647,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function render_run_task_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/run-task.php';
+		include AGENT_BUILDER_DIR . 'admin/run-task.php';
 	}
 
 	/**
@@ -686,7 +669,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function render_tools_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/tools.php';
+		include AGENT_BUILDER_DIR . 'admin/tools.php';
 	}
 
 	/**
@@ -1091,7 +1074,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function render_approvals_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/approvals.php';
+		include AGENT_BUILDER_DIR . 'admin/approvals.php';
 	}
 
 	/**
@@ -1100,7 +1083,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function render_security_log_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/security-log.php';
+		include AGENT_BUILDER_DIR . 'admin/security-log.php';
 	}
 
 	/**
@@ -1109,16 +1092,7 @@ final class Plugin {
 	 * @return void
 	 */
 	public function render_agents_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/agents.php';
-	}
-
-	/**
-	 * Render add new agent page
-	 *
-	 * @return void
-	 */
-	public function render_agents_add_page(): void {
-		include AGENTIC_PLUGIN_DIR . 'admin/agents-add.php';
+		include AGENT_BUILDER_DIR . 'admin/agents.php';
 	}
 
 	/**
@@ -1130,16 +1104,16 @@ final class Plugin {
 		// Enqueue chat assets for admin.
 		wp_enqueue_style(
 			'agentic-chat',
-			AGENTIC_PLUGIN_URL . 'assets/css/chat.css',
+			AGENT_BUILDER_URL . 'assets/css/chat.css',
 			array(),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/chat.css' )
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/css/chat.css' )
 		);
 
 		wp_enqueue_script(
 			'agentic-chat',
-			AGENTIC_PLUGIN_URL . 'assets/js/chat.js',
+			AGENT_BUILDER_URL . 'assets/js/chat.js',
 			array(),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/chat.js' ),
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/js/chat.js' ),
 			true
 		);
 
@@ -1156,7 +1130,7 @@ final class Plugin {
 
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Agent Chat', 'agentbuilder' ) . ' <span class="agentic-status" style="font-size: 14px; font-weight: normal; vertical-align: middle;"><span class="agentic-status-dot"></span>Online</span></h1>';
-		include AGENTIC_PLUGIN_DIR . 'templates/chat-interface.php';
+		include AGENT_BUILDER_DIR . 'templates/chat-interface.php';
 		echo '</div>';
 	}
 
@@ -1169,13 +1143,13 @@ final class Plugin {
 		// Enqueue settings page script.
 		wp_enqueue_script(
 			'agentic-settings',
-			AGENTIC_PLUGIN_URL . 'assets/js/settings.js',
+			AGENT_BUILDER_URL . 'assets/js/settings.js',
 			array(),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/settings.js' ),
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/js/settings.js' ),
 			true
 		);
 
-		include AGENTIC_PLUGIN_DIR . 'admin/settings.php';
+		include AGENT_BUILDER_DIR . 'admin/settings.php';
 	}
 
 	/**
@@ -1187,16 +1161,16 @@ final class Plugin {
 		if ( is_page( 'agent-chat' ) && is_user_logged_in() ) {
 			wp_enqueue_style(
 				'agentic-chat',
-				AGENTIC_PLUGIN_URL . 'assets/css/chat.css',
+				AGENT_BUILDER_URL . 'assets/css/chat.css',
 				array(),
-				(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/chat.css' )
+				(string) filemtime( AGENT_BUILDER_DIR . 'assets/css/chat.css' )
 			);
 
 			wp_enqueue_script(
 				'agentic-chat',
-				AGENTIC_PLUGIN_URL . 'assets/js/chat.js',
+				AGENT_BUILDER_URL . 'assets/js/chat.js',
 				array(),
-				(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/chat.js' ),
+				(string) filemtime( AGENT_BUILDER_DIR . 'assets/js/chat.js' ),
 				true
 			);
 
@@ -1228,16 +1202,16 @@ final class Plugin {
 
 		wp_enqueue_style(
 			'agentic-chat-overlay',
-			AGENTIC_PLUGIN_URL . 'assets/css/chat-overlay.css',
+			AGENT_BUILDER_URL . 'assets/css/chat-overlay.css',
 			array(),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/css/chat-overlay.css' )
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/css/chat-overlay.css' )
 		);
 
 		wp_enqueue_script(
 			'agentic-chat-overlay',
-			AGENTIC_PLUGIN_URL . 'assets/js/chat-overlay.js',
+			AGENT_BUILDER_URL . 'assets/js/chat-overlay.js',
 			array(),
-			(string) filemtime( AGENTIC_PLUGIN_DIR . 'assets/js/chat-overlay.js' ),
+			(string) filemtime( AGENT_BUILDER_DIR . 'assets/js/chat-overlay.js' ),
 			true
 		);
 
@@ -1280,7 +1254,7 @@ final class Plugin {
 		if ( is_page( 'agent-chat' ) ) {
 			if ( is_user_logged_in() ) {
 				ob_start();
-				include AGENTIC_PLUGIN_DIR . 'templates/chat-interface.php';
+				include AGENT_BUILDER_DIR . 'templates/chat-interface.php';
 				return ob_get_clean();
 			} else {
 				$login_url = home_url( '/login/' );
@@ -1577,11 +1551,11 @@ final class Plugin {
 }
 
 // Initialize Job Manager.
-require_once AGENTIC_PLUGIN_DIR . 'includes/class-job-manager.php';
-require_once AGENTIC_PLUGIN_DIR . 'includes/interface-job-processor.php';
-require_once AGENTIC_PLUGIN_DIR . 'includes/class-agent-builder-job-processor.php';
-require_once AGENTIC_PLUGIN_DIR . 'includes/class-jobs-api.php';
-require_once AGENTIC_PLUGIN_DIR . 'includes/class-security-log.php';
+require_once AGENT_BUILDER_DIR . 'includes/class-job-manager.php';
+require_once AGENT_BUILDER_DIR . 'includes/interface-job-processor.php';
+require_once AGENT_BUILDER_DIR . 'includes/class-agent-builder-job-processor.php';
+require_once AGENT_BUILDER_DIR . 'includes/class-jobs-api.php';
+require_once AGENT_BUILDER_DIR . 'includes/class-security-log.php';
 
 Job_Manager::init();
 Jobs_API::init();

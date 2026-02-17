@@ -1,6 +1,6 @@
 <?php
 /**
- * Agent Name: Theme Builder
+ * Agent Name: Theme Assistant
  * Version: 2.0.0
  * Description: Helps beginners choose and customise WordPress themes using the Site Editor. Detects your active theme, recommends free FSE block themes, and guides you through visual customisation — no code needed.
  * Author: Agentic Community
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Theme Builder Agent
+ * Theme Assistant Agent
  *
  * A beginner-friendly agent that helps users choose and customise
  * WordPress themes using the Site Editor. Does not install, download,
@@ -79,7 +79,7 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 		if ( file_exists( $template_file ) ) {
 			return file_get_contents( $template_file );
 		}
-		return 'You are the Theme Builder agent. You help beginners choose and customise WordPress themes.';
+		return 'You are the Theme Assistant agent. You help beginners choose and customise WordPress themes.';
 	}
 
 	/**
@@ -93,7 +93,7 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 * Get agent name
 	 */
 	public function get_name(): string {
-		return 'Theme Builder';
+		return 'Theme Assistant';
 	}
 
 	/**
@@ -142,7 +142,7 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 * Get welcome message
 	 */
 	public function get_welcome_message(): string {
-		return "🎨 **Theme Builder**\n\n" .
+		return "🎨 **Theme Assistant**\n\n" .
 				"I'll help you pick the perfect look for your WordPress site — no coding needed!\n\n" .
 				"I can:\n" .
 				"- **Check your current theme** and suggest quick improvements\n" .

@@ -1,6 +1,6 @@
 <?php
 /**
- * Agent Name: Onboarding Agent
+ * Agent Name: WordPress Assistant
  * Version: 1.1.0
  * Description: Your guide to the Agent Builder ecosystem. Answers questions about the plugin and helps new users get started.
  * Author: Agentic Community
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Onboarding Agent
+ * WordPress Assistant
  *
  * A Q&A agent that helps users get started with Agent Builder.
  * Read-only — does not execute code or make changes.
@@ -45,7 +45,7 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	 * Get agent name
 	 */
 	public function get_name(): string {
-		return 'Onboarding Agent';
+		return 'WordPress Assistant';
 	}
 
 	/**
@@ -101,12 +101,12 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	 * Get welcome message
 	 */
 	public function get_welcome_message(): string {
-		return "Hi there! I'm the Onboarding Agent — here to help you get started.\n\n" .
+		return "Hi there! I'm the WordPress Assistant — here to help you get started.\n\n" .
 				"Here's what I can help you with:\n\n" .
 				"- **Agent Builder** — Build your first AI Agent right now\n" .
-				"- **Content Builder** — Create pages and posts to get you started\n" .
-				"- **Plugin Builder** — Build your first custom plugin for WordPress\n" .
-				"- **Theme Builder** — Get help choosing and installing a Theme\n\n" .
+				"- **Content Assistant** — Create pages and posts to get you started\n" .
+				"- **Plugin Assistant** — Build your first custom plugin for WordPress\n" .
+				"- **Theme Assistant** — Get help choosing and installing a Theme\n\n" .
 				'Just type your question below or choose an option.';
 	}
 

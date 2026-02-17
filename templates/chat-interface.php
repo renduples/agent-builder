@@ -151,9 +151,9 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 					<?php
 					$agentic_quick_agents = array(
 						'agentbuilder'    => __( 'Agent Builder', 'agentbuilder' ),
-						'content-builder' => __( 'Content Builder', 'agentbuilder' ),
-						'plugin-builder'  => __( 'Plugin Builder', 'agentbuilder' ),
-						'theme-builder'   => __( 'Theme Builder', 'agentbuilder' ),
+						'content-builder' => __( 'Content Assistant', 'agentbuilder' ),
+						'plugin-builder'  => __( 'Plugin Assistant', 'agentbuilder' ),
+						'theme-builder'   => __( 'Theme Assistant', 'agentbuilder' ),
 					);
 					foreach ( $agentic_quick_agents as $agentic_slug => $agentic_label ) :
 						$agentic_agent_url = admin_url( 'admin.php?page=agentic-chat&agent=' . $agentic_slug );
@@ -190,12 +190,12 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 				<div class="agent-grid">
 					<div class="agent-preview-card">
 						<span class="agent-icon">👨‍💻</span>
-						<span class="agent-name">Onboarding Agent</span>
+						<span class="agent-name">WordPress Assistant</span>
 						<span class="agent-desc">Getting started & guidance</span>
 					</div>
 					<div class="agent-preview-card">
 						<span class="agent-icon">✍️</span>
-						<span class="agent-name">Content Builder</span>
+						<span class="agent-name">Content Assistant</span>
 						<span class="agent-desc">Write blog posts & pages</span>
 					</div>
 				</div>

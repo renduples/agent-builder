@@ -353,16 +353,16 @@
         if (!msg) return;
         addMessage(msg, 'agent');
 
-        // Add quick-action buttons for onboarding agent.
+        // Add quick-action buttons for WordPress Assistant.
         if (activeAgent === 'onboarding-agent') {
             var msgs = document.getElementById('agentic-overlay-msgs');
             if (!msgs) return;
             var btnsWrap = el('div', { className: 'agentic-overlay-quick-actions' });
             var actions = [
                 { label: 'Agent Builder', slug: 'agent-builder' },
-                { label: 'Content Builder', slug: 'content-builder' },
-                { label: 'Plugin Builder', slug: 'plugin-builder' },
-                { label: 'Theme Builder', slug: 'theme-builder' }
+                { label: 'Content Assistant', slug: 'content-builder' },
+                { label: 'Plugin Assistant', slug: 'plugin-builder' },
+                { label: 'Theme Assistant', slug: 'theme-builder' }
             ];
             actions.forEach(function (action) {
                 var btn = el('button', { className: 'agentic-overlay-quick-btn', textContent: action.label });

@@ -34,11 +34,11 @@ Each agent defines a set of tools (PHP functions the AI model can call), a syste
 
 The plugin ships with five agents:
 
-1. **Onboarding Agent** — Guides new users through setup and introduces the other agents.
-2. **Content Builder** — Drafts and edits WordPress posts and pages.
-3. **Agent Builder** — Creates new agents from natural language descriptions.
-4. **Plugin Builder** — Generates WordPress plugin scaffolding from requirements.
-5. **Theme Builder** — Helps implement WordPress themes with accessibility and modern CSS practices.
+1. **WordPress Assistant** — Guides new users through setup and introduces the other agents.
+2. **Content Assistant** — Drafts and edits WordPress posts and pages.
+3. **Agent Builder** — Creates new AI agents from natural language descriptions.
+4. **Plugin Assistant** — Generates WordPress plugin scaffolding from requirements.
+5. **Theme Assistant** — Helps implement WordPress themes with accessibility and modern CSS practices.
 
 = Creating Custom Agents =
 
@@ -155,6 +155,7 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Improved: License_Client no longer depends on Marketplace_Client for agent license checks.
 * Improved: Onboarding Agent description, tags, and suggested prompts updated to reflect its helper role.
 * Tests: 427 tests, 1,071 assertions — 22 new tests for schema versioning, indexes, audit retention, hook splitting, and enum sanitizer.
+* Changed: Renamed bundled agents for friendlier display names — Content Assistant, Plugin Assistant, Theme Assistant, WordPress Assistant (Agent Builder unchanged).
 
 = 1.7.5 - 2026-02-15 =
 * Fixed: All remaining WordPress Coding Standards (PHPCS) violations resolved — 0 errors, 0 warnings.
@@ -180,7 +181,7 @@ You provide your own API key for each cloud provider. The plugin does not collec
 = 1.7.3 - 2026-02-15 =
 * Streamlined: Removed 6 non-essential bundled agents (Comment Moderator, Product Describer, SEO Analyzer, Security Monitor, Social Media Manager, Code Generator) to focus on the 5 most impactful agents.
 * Changed: Renamed Content Assistant agent to Content Builder for clarity.
-* Final bundled agents: Content Builder, Theme Builder, Agent Builder, Onboarding Agent, Plugin Builder.
+* Final bundled agents: Content Assistant, Theme Assistant, Agent Builder, WordPress Assistant, Plugin Assistant.
 
 = 1.7.2 - 2026-02-15 =
 * Added: Admin bar "AI Agents" quick-chat overlay — chat with any active agent from any page.

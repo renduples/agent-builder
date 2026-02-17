@@ -1408,7 +1408,7 @@ $params_code . "\n" .
 			// Full template with examples
 			$template = file_get_contents( $this->get_library_path() . 'content-builder/agent.php' );
 			// Sanitize for template use
-			$template = preg_replace( '/Content Builder/', '[AGENT_NAME]', $template );
+			$template = preg_replace( '/Content Assistant/', '[AGENT_NAME]', $template );
 			$template = preg_replace( '/content-builder/', '[SLUG]', $template );
 		}
 

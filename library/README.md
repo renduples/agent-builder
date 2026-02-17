@@ -16,7 +16,7 @@ We've built and open-sourced **5 fully functional agents** to help you get start
 
 ### 📝 Content & Writing
 
-#### **[Content Builder](content-builder/agent.php)** ✍️
+#### **[Content Assistant](content-builder/agent.php)** ✍️
 **What it does:** AI-powered writing and editing partner
 - ✅ Drafts blog posts from outlines
 - ✅ Improves tone and readability
@@ -62,7 +62,7 @@ We've built and open-sourced **5 fully functional agents** to help you get start
 
 ###  Development & Design
 
-#### **[Theme Builder](theme-builder/agent.php)** 🎨
+#### **[Theme Assistant](theme-builder/agent.php)** 🎨
 **What it does:** Assists with WordPress theme creation and customization
 - ✅ Creates child themes
 - ✅ Generates CSS from requirements
@@ -83,7 +83,7 @@ We've built and open-sourced **5 fully functional agents** to help you get start
 
 ---
 
-#### **[Onboarding Agent](onboarding-agent/agent.php)** 👨‍💻
+#### **[WordPress Assistant](onboarding-agent/agent.php)** 👨‍💻
 **What it does:** Your personal AI guide to the Agent Builder ecosystem
 - ✅ Answers questions about the platform
 - ✅ Helps debug issues
@@ -146,10 +146,10 @@ We've built and open-sourced **5 fully functional agents** to help you get start
 
 ### Example Usage
 
-**Content Builder:**
+**Content Assistant:**
 > "Draft a blog post outline about WordPress security, targeting developers"
 
-**Theme Builder:**
+**Theme Assistant:**
 > "Create a child theme with custom header and footer styles"
 
 ---
@@ -206,14 +206,14 @@ public function get_tools(): array {
 Combine agents for powerful workflows:
 
 ### **Content Creation Pipeline**
-1. Content Builder (writes post)
-2. Plugin Builder (creates custom functionality)
+1. Content Assistant (writes post)
+2. Plugin Assistant (creates custom functionality)
 
 **Result:** Complete content strategy on autopilot
 
 ### **Development Workflow**
-1. Theme Builder (creates themes)
-2. Plugin Builder (generates plugins)
+1. Theme Assistant (creates themes)
+2. Plugin Assistant (generates plugins)
 3. Agent Builder (builds custom agents)
 
 **Result:** Full-stack WordPress development with AI assistance
@@ -262,7 +262,7 @@ If you customize and publish all 5 agents:
 **This is achievable in Year 2 for active developers.**
 
 Real examples:
-- **Content Builder**: 1,200+ sites = $291,600/year
+- **Content Assistant**: 1,200+ sites = $291,600/year
 
 ---
 

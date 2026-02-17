@@ -1514,7 +1514,7 @@ final class Plugin {
 			wp_insert_post(
 				array(
 					'post_type'    => 'page',
-					'post_title'   => 'Onboarding Agent',
+					'post_title'   => 'WordPress Assistant',
 					'post_name'    => 'agent-chat',
 					'post_status'  => 'publish',
 					'post_content' => '<!-- Chat interface rendered by Agent Builder -->',

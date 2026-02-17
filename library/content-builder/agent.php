@@ -1,6 +1,6 @@
 <?php
 /**
- * Agent Name: Content Builder
+ * Agent Name: Content Assistant
  * Version: 1.1.0
  * Description: Helps draft, edit, and optimize blog posts and pages. Suggests improvements, fixes grammar, and enhances readability.
  * Author: Agentic Community
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Content Builder Agent
+ * Content Assistant Agent
  *
  * A true AI agent specialized in content creation and optimization.
  */
@@ -35,7 +35,7 @@ class Agentic_Content_Assistant extends \Agentic\Agent_Base {
 	}
 
 	public function get_name(): string {
-		return 'Content Builder';
+		return 'Content Assistant';
 	}
 
 	public function get_description(): string {
@@ -59,7 +59,7 @@ class Agentic_Content_Assistant extends \Agentic\Agent_Base {
 	}
 
 	public function get_welcome_message(): string {
-		return "📝 **Content Builder**\n\n" .
+		return "📝 **Content Assistant**\n\n" .
 				"I'm here to help you create and improve your content!\n\n" .
 				"- **Analyze posts** for readability and engagement\n" .
 				"- **Suggest titles** that grab attention\n" .

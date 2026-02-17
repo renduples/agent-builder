@@ -1,6 +1,6 @@
 <?php
 /**
- * Agent Name: Plugin Builder
+ * Agent Name: Plugin Assistant
  * Version: 1.1.0
  * Description: Creates complete WordPress plugins from natural language descriptions. Generates WPCS-compliant code with security best practices.
  * Author: Agentic Community
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Plugin Builder Agent
+ * Plugin Assistant Agent
  *
  * Creates complete WordPress plugins from natural language descriptions.
  * Generates WPCS-compliant, security-hardened plugin code.
@@ -69,7 +69,7 @@ class Agentic_Plugin_Builder extends \Agentic\Agent_Base {
 	 * Get agent name
 	 */
 	public function get_name(): string {
-		return 'Plugin Builder';
+		return 'Plugin Assistant';
 	}
 
 	/**
@@ -125,7 +125,7 @@ class Agentic_Plugin_Builder extends \Agentic\Agent_Base {
 	 * Get welcome message
 	 */
 	public function get_welcome_message(): string {
-		return "🔌 **Plugin Builder**\n\n" .
+		return "🔌 **Plugin Assistant**\n\n" .
 			"I help you create WordPress plugins from scratch!\n\n" .
 			"I can generate:\n" .
 			"- **Complete plugin scaffolds** from descriptions\n" .

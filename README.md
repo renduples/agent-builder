@@ -56,11 +56,11 @@ The Agent Builder comes with **5 pre-built agents** to jumpstart development:
 
 | Agent | Use Case |
 |-------|----------|
-| **Content Builder** | AI-powered post drafting & optimization |
-| **Theme Builder** | Quick WordPress theme customization |
+| **Content Assistant** | AI-powered post drafting & optimization |
+| **Theme Assistant** | Quick WordPress theme customization |
 | **Agent Builder** | Visual agent builder (meta) |
-| **Onboarding Agent** | Your guide to the Agent Builder ecosystem |
-| **Plugin Builder** | Generate complete WordPress plugins |
+| **WordPress Assistant** | Your guide to the Agent Builder ecosystem |
+| **Plugin Assistant** | Generate complete WordPress plugins |
 
 ---
 
@@ -268,7 +268,7 @@ This is an **independent community project** — not affiliated with or endorsed
 1. **Install**: cd wp-content/plugins `git clone https://github.com/renduples/agent-builder.git`
 2. **Activate**: Go to WordPress admin → Plugins
 3. **Configure**: Add API key in Settings
-4. **Test**: Try the Content Builder or Theme Builder
+4. **Test**: Try the Content Assistant or Theme Assistant
 5. **Build**: Create your first custom agent
 
 [Get Started →](https://github.com/renduples/agent-builder/wiki/Quickstart)

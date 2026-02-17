@@ -36,7 +36,6 @@ $agentic_options_to_delete = array(
 	'agentic_api_key',
 	'agentic_provider',
 	'agentic_model',
-	'agentic_marketplace_token',
 	'agentic_installed_agents',
 	'agentic_agent_configs',
 );

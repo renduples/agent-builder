@@ -130,7 +130,7 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			$agentic_lk = get_option( \Agentic\License_Client::OPTION_LICENSE_KEY, '' );
 			?>
 		<h2>License</h2>
-		<p>Enter your license key to unlock premium marketplace features and automatic updates.</p>
+		<p>Enter your license key to unlock premium features and automatic updates.</p>
 
 		<table class="form-table">
 			<tr>
@@ -205,10 +205,10 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 		<h3>What You Get With a License</h3>
 		<ul style="list-style: disc; padding-left: 20px;">
 			<li><strong>Automatic updates</strong> — receive new features and security patches</li>
-			<li><strong>Premium agents</strong> — install and run premium marketplace agents</li>
+			<li><strong>Premium agents</strong> — install and run premium agents</li>
 			<li><strong>Priority support</strong> — get help from the development team</li>
 		</ul>
-		<p class="description" style="margin-top: 16px;">Without a license, the core plugin and all bundled agents work normally. Only marketplace premium agents and auto-updates require a license.</p>
+		<p class="description" style="margin-top: 16px;">Without a license, the core plugin and all bundled agents work normally. Only premium agents and auto-updates require a license.</p>
 
 		<script>
 		document.addEventListener('DOMContentLoaded', function() {

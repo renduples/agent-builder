@@ -182,13 +182,9 @@ $agentic_library = $agentic_registry->get_library_agents(
 
 		<p class="agentic-add-agents-description">
 		<?php
-		printf(
-			wp_kses(
-				/* translators: %s: Marketplace link URL */
-				__( 'AI Agents extend and expand the functionality of WordPress. You may install AI Agents from the <a href="%s">Marketplace</a> right on this page, or upload an Agent in .zip format by clicking the button above.', 'agentbuilder' ),
-				array( 'a' => array( 'href' => array() ) )
-			),
-			'https://agentic-plugin.com/marketplace/'
+		echo wp_kses(
+			__( 'AI Agents extend and expand the functionality of WordPress. You may install AI Agents from the library right on this page, or upload an Agent in .zip format by clicking the button above.', 'agentbuilder' ),
+			array( 'a' => array( 'href' => array() ) )
 		);
 		?>
 	</p>

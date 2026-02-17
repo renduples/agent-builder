@@ -2,11 +2,11 @@
 /**
  * Agent Name: Onboarding Agent
  * Version: 1.1.0
- * Description: Your guide to the Agent Builder ecosystem. Answers questions about the codebase, evaluates feature requests, and helps new developers get started.
+ * Description: Your guide to the Agent Builder ecosystem. Answers questions about the plugin and helps new users get started.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com
  * Category: Developer
- * Tags: development, documentation, onboarding, feature-requests, code-review
+ * Tags: onboarding, documentation, getting-started
  * Capabilities: read
  * Icon: 💻
  * Requires PHP: 8.1
@@ -21,8 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Onboarding Agent
  *
- * A true AI agent for developer onboarding and feature request evaluation.
- * This is a Q&A agent - it does NOT execute code or make changes.
+ * A Q&A agent that helps users get started with Agent Builder.
+ * Read-only — does not execute code or make changes.
  */
 class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 
@@ -52,7 +52,7 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	 * Get agent description
 	 */
 	public function get_description(): string {
-		return 'Your guide to the Agentic ecosystem. Answers questions and evaluates feature requests.';
+		return 'Your guide to the Agentic ecosystem. Answers questions and helps you get started.';
 	}
 
 	/**
@@ -116,9 +116,9 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	public function get_suggested_prompts(): array {
 		return array(
 			'How do I create a new agent?',
-			'Explain the agent architecture',
-			'What files should I look at first?',
-			'I have a feature idea for...',
+			'What agents are available?',
+			'Help me build a plugin',
+			'How do I change my theme?',
 		);
 	}
 
@@ -138,31 +138,6 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 					),
 				),
 			),
-			array(
-				'type'     => 'function',
-				'function' => array(
-					'name'        => 'evaluate_feature_request',
-					'description' => 'Formally evaluate a feature request and record it for the team.',
-					'parameters'  => array(
-						'type'       => 'object',
-						'properties' => array(
-							'title'       => array(
-								'type'        => 'string',
-								'description' => 'Short title for the feature request',
-							),
-							'description' => array(
-								'type'        => 'string',
-								'description' => 'Detailed description of the feature',
-							),
-							'requester'   => array(
-								'type'        => 'string',
-								'description' => 'Name or identifier of who requested this',
-							),
-						),
-						'required'   => array( 'title', 'description' ),
-					),
-				),
-			),
 		);
 	}
 
@@ -171,9 +146,8 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	 */
 	public function execute_tool( string $tool_name, array $arguments ): ?array {
 		return match ( $tool_name ) {
-			'get_agent_list'           => $this->tool_get_agent_list(),
-			'evaluate_feature_request' => $this->tool_evaluate_feature( $arguments ),
-			default                    => null,
+			'get_agent_list' => $this->tool_get_agent_list(),
+			default          => null,
 		};
 	}
 
@@ -212,57 +186,6 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 			'agents'       => $agents,
 			'total'        => count( $agents ),
 			'active_count' => count( array_filter( $agents, fn( $a ) => $a['active'] ) ),
-		);
-	}
-
-	/**
-	 * Tool: Evaluate feature request
-	 */
-	private function tool_evaluate_feature( array $args ): array {
-		$title       = sanitize_text_field( $args['title'] ?? '' );
-		$description = sanitize_textarea_field( $args['description'] ?? '' );
-		$requester   = sanitize_text_field( $args['requester'] ?? 'Anonymous' );
-
-		if ( empty( $title ) || empty( $description ) ) {
-			return array( 'error' => 'Title and description are required' );
-		}
-
-		// Create a feature request post
-		$post_id = wp_insert_post(
-			array(
-				'post_type'    => 'post',
-				'post_status'  => 'draft',
-				'post_title'   => '[Feature Request] ' . $title,
-				'post_content' => sprintf(
-					"## Feature Request\n\n" .
-					"**Requested by:** %s\n\n" .
-					"**Date:** %s\n\n" .
-					"## Description\n\n%s\n\n" .
-					"## Agent Evaluation\n\n" .
-					'_Pending evaluation by Onboarding Agent_',
-					$requester,
-					current_time( 'F j, Y' ),
-					$description
-				),
-				'post_author'  => get_current_user_id(),
-			)
-		);
-
-		if ( is_wp_error( $post_id ) ) {
-			return array( 'error' => $post_id->get_error_message() );
-		}
-
-		// Add meta for tracking
-		update_post_meta( $post_id, '_feature_request', true );
-		update_post_meta( $post_id, '_requester', $requester );
-		update_post_meta( $post_id, '_status', 'pending_evaluation' );
-
-		return array(
-			'success'  => true,
-			'post_id'  => $post_id,
-			'title'    => $title,
-			'message'  => 'Feature request recorded. I will now analyze it for feasibility and alignment.',
-			'edit_url' => admin_url( 'post.php?post=' . $post_id . '&action=edit' ),
 		);
 	}
 

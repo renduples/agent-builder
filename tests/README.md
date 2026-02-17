@@ -112,7 +112,6 @@ tests/
 - **Manual Tests**: 10% (UI/UX only)
   - Frontend chat interface
   - Admin dashboard
-  - Marketplace browsing
 
 ## Writing Tests
 

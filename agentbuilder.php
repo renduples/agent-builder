@@ -5,7 +5,7 @@
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
  * Description:       Build AI agents for WordPress using natural language descriptions.
- * Version:           1.7.5
+ * Version:           1.8.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agent Builder Team
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'AGENT_BUILDER_VERSION', '1.7.5' );
+define( 'AGENT_BUILDER_VERSION', '1.8.0' );
 define( 'AGENT_BUILDER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENT_BUILDER_URL', plugin_dir_url( __FILE__ ) );
 define( 'AGENT_BUILDER_BASENAME', plugin_basename( __FILE__ ) );
@@ -74,42 +74,50 @@ final class Plugin {
 	 * @return void
 	 */
 	private function init_hooks(): void {
+		// --- Hooks needed on every request (frontend, REST, cron) ---
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 		add_action( 'init', array( $this, 'init' ) );
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
-		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-		add_action( 'admin_bar_menu', array( $this, 'admin_bar_menu' ), 100 );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_adminbar_chat_overlay' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_adminbar_chat_overlay' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_adminbar_chat_overlay' ) );
 		add_filter( 'the_content', array( $this, 'render_chat_interface' ) );
 
-		// Add weekly cron schedule (WordPress only provides hourly, twicedaily, daily).
+		// Cron schedules & handlers (must register on every load so WP-Cron can fire them).
 		add_filter( 'cron_schedules', array( $this, 'add_cron_schedules' ) );
-
-		// Agent scheduled tasks: bind cron hooks after agents are loaded.
 		add_action( 'agentic_agents_loaded', array( $this, 'bind_agent_cron_hooks' ) );
-
-		// Agent event listeners: bind WordPress action hooks after agents are loaded.
 		add_action( 'agentic_agents_loaded', array( $this, 'bind_agent_event_listeners' ) );
-
-		// AJAX handler for tool toggle switches.
-		add_action( 'wp_ajax_agentic_toggle_tool', array( $this, 'ajax_toggle_tool' ) );
-
-		// AJAX handler for Run Task (scheduled tasks).
-		add_action( 'wp_ajax_agentic_run_task', array( $this, 'ajax_run_task' ) );
-
-		// Handler for async LLM event processing (queued via wp_schedule_single_event).
 		add_action( 'agentic_async_event', array( $this, 'handle_async_event' ), 10, 4 );
-
-		// Register/unregister cron on agent activate/deactivate.
+		add_action( 'agentic_cleanup_audit_log', array( $this, 'run_audit_cleanup' ) );
 		add_action( 'agentic_agent_activated', array( $this, 'on_agent_activated_schedule' ), 10, 2 );
 		add_action( 'agentic_agent_deactivated', array( $this, 'on_agent_deactivated_schedule' ), 10, 2 );
 
 		// Activation/Deactivation hooks.
 		register_activation_hook( __FILE__, array( $this, 'activate' ) );
 		register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
+
+		// --- Admin-only hooks (menus, settings, AJAX, admin bar, admin assets) ---
+		if ( is_admin() ) {
+			$this->init_admin_hooks();
+		}
+	}
+
+	/**
+	 * Register hooks that are only needed in the admin context.
+	 *
+	 * Keeps frontend requests lean by skipping menu registration,
+	 * settings, AJAX handlers, and admin-only asset enqueues.
+	 *
+	 * @return void
+	 */
+	private function init_admin_hooks(): void {
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
+		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_bar_menu', array( $this, 'admin_bar_menu' ), 100 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_adminbar_chat_overlay' ) );
+
+		// AJAX handlers (wp_ajax_ hooks only fire in admin context).
+		add_action( 'wp_ajax_agentic_toggle_tool', array( $this, 'ajax_toggle_tool' ) );
+		add_action( 'wp_ajax_agentic_run_task', array( $this, 'ajax_run_task' ) );
 	}
 
 	/**
@@ -142,6 +150,15 @@ final class Plugin {
 	}
 
 	/**
+	 * Current database schema version.
+	 *
+	 * Bump this when adding migrations in maybe_upgrade_schema().
+	 *
+	 * @var string
+	 */
+	private const DB_SCHEMA_VERSION = '1.8.0';
+
+	/**
 	 * Initialize plugin
 	 *
 	 * @return void
@@ -152,7 +169,23 @@ final class Plugin {
 
 		// Load core components.
 		$this->load_components();
+
+		// Migrate old tool names to new prefixed names (one-time).
+		$this->maybe_migrate_tool_names();
+
+		// Disable database write tools by default (one-time).
+		$this->maybe_disable_db_write_tools();
+
+		// Run database schema upgrades if needed.
+		$this->maybe_upgrade_schema();
 	}
+
+	/**
+	 * Allowed values for the agentic_agent_mode option.
+	 *
+	 * @var array<string>
+	 */
+	private const ALLOWED_AGENT_MODES = array( 'supervised', 'autonomous', 'restricted' );
 
 	/**
 	 * Admin initialization
@@ -167,9 +200,27 @@ final class Plugin {
 			array(
 				'type'              => 'string',
 				'default'           => 'supervised',
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => array( $this, 'sanitize_agent_mode' ),
 			)
 		);
+	}
+
+	/**
+	 * Sanitize the agent mode setting to an allowed enum value.
+	 *
+	 * Falls back to 'supervised' if an invalid value is provided.
+	 *
+	 * @param mixed $value Raw setting value.
+	 * @return string Validated agent mode.
+	 */
+	public function sanitize_agent_mode( $value ): string {
+		$value = sanitize_text_field( (string) $value );
+
+		if ( in_array( $value, self::ALLOWED_AGENT_MODES, true ) ) {
+			return $value;
+		}
+
+		return 'supervised';
 	}
 
 	/**
@@ -223,6 +274,170 @@ final class Plugin {
 				'enabled' => $enabled,
 			)
 		);
+	}
+
+
+
+	/**
+	 * Migrate old tool names to new context-prefixed names.
+	 *
+	 * Runs once. Updates the agentic_disabled_tools option so that any
+	 * previously disabled tools retain their state under the new names.
+	 *
+	 * @return void
+	 */
+	private function maybe_migrate_tool_names(): void {
+		if ( get_option( 'agentic_tool_names_migrated' ) ) {
+			return;
+		}
+
+		$old_to_new = array(
+			'get_option' => 'db_get_option',
+		);
+
+		$disabled = get_option( 'agentic_disabled_tools', array() );
+		if ( is_array( $disabled ) && ! empty( $disabled ) ) {
+			$migrated = array();
+			foreach ( $disabled as $tool ) {
+				$migrated[] = $old_to_new[ $tool ] ?? $tool;
+			}
+			update_option( 'agentic_disabled_tools', array_unique( $migrated ) );
+		}
+
+		update_option( 'agentic_tool_names_migrated', '1' );
+	}
+
+	/**
+	 * Run version-gated database schema upgrades.
+	 *
+	 * Compares the stored schema version against DB_SCHEMA_VERSION and
+	 * runs any migrations that apply. Uses dbDelta for idempotent DDL.
+	 *
+	 * @return void
+	 */
+	private function maybe_upgrade_schema(): void {
+		$current = get_option( 'agentic_db_schema_version', '0.0.0' );
+
+		if ( version_compare( $current, self::DB_SCHEMA_VERSION, '>=' ) ) {
+			return;
+		}
+
+		global $wpdb;
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+		$charset_collate = $wpdb->get_charset_collate();
+
+		// --- v1.8.0: add composite indexes ---
+		if ( version_compare( $current, '1.8.0', '<' ) ) {
+			$this->migrate_180_indexes( $wpdb, $charset_collate );
+		}
+
+		update_option( 'agentic_db_schema_version', self::DB_SCHEMA_VERSION );
+	}
+
+	/**
+	 * Migration v1.8.0: add composite indexes to core tables.
+	 *
+	 * Uses dbDelta which is idempotent — safe to run on tables that
+	 * already have these indexes.
+	 *
+	 * @param \wpdb  $wpdb             WordPress database object.
+	 * @param string $charset_collate  Character set and collation.
+	 * @return void
+	 */
+	private function migrate_180_indexes( \wpdb $wpdb, string $charset_collate ): void {
+		// Audit log: composite indexes for common queries.
+		$sql_audit = "CREATE TABLE {$wpdb->prefix}agentic_audit_log (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			agent_id varchar(64) NOT NULL,
+			action varchar(128) NOT NULL,
+			target_type varchar(64),
+			target_id varchar(128),
+			details longtext,
+			reasoning text,
+			tokens_used int unsigned DEFAULT 0,
+			cost decimal(10,6) DEFAULT 0,
+			user_id bigint(20) unsigned,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY agent_id (agent_id),
+			KEY action (action),
+			KEY created_at (created_at),
+			KEY idx_agent_created (agent_id, created_at),
+			KEY idx_action_target (action, target_type),
+			KEY idx_user_created (user_id, created_at)
+		) {$charset_collate};";
+
+		dbDelta( $sql_audit );
+
+		// Approval queue: composite index for pending lookups.
+		$sql_queue = "CREATE TABLE {$wpdb->prefix}agentic_approval_queue (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			agent_id varchar(64) NOT NULL,
+			action varchar(128) NOT NULL,
+			params longtext NOT NULL,
+			reasoning text,
+			status varchar(32) DEFAULT 'pending',
+			approved_by bigint(20) unsigned,
+			approved_at datetime,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			expires_at datetime,
+			PRIMARY KEY  (id),
+			KEY status (status),
+			KEY created_at (created_at),
+			KEY idx_status_created (status, created_at),
+			KEY idx_expires (expires_at)
+		) {$charset_collate};";
+
+		dbDelta( $sql_queue );
+
+		// Memory table: expiration index for TTL cleanup.
+		$sql_memory = "CREATE TABLE {$wpdb->prefix}agentic_memory (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			memory_type varchar(50) NOT NULL,
+			entity_id varchar(100) NOT NULL,
+			memory_key varchar(255) NOT NULL,
+			memory_value longtext NOT NULL,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			expires_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			KEY memory_type_entity (memory_type, entity_id),
+			KEY memory_key (memory_key),
+			KEY idx_expires (expires_at)
+		) {$charset_collate};";
+
+		dbDelta( $sql_memory );
+	}
+
+	/**
+	 * One-time migration: disable database write tools by default.
+	 *
+	 * New installs and existing installs both get write tools disabled
+	 * until an administrator explicitly enables them via the Tools page.
+	 *
+	 * @return void
+	 */
+	private function maybe_disable_db_write_tools(): void {
+		if ( get_option( 'agentic_db_write_tools_defaults_set' ) ) {
+			return;
+		}
+
+		$write_tools = array(
+			'db_update_option',
+			'db_create_post',
+			'db_update_post',
+			'db_delete_post',
+		);
+
+		$disabled = get_option( 'agentic_disabled_tools', array() );
+		if ( ! is_array( $disabled ) ) {
+			$disabled = array();
+		}
+
+		$disabled = array_unique( array_merge( $disabled, $write_tools ) );
+		update_option( 'agentic_disabled_tools', $disabled );
+		update_option( 'agentic_db_write_tools_defaults_set', '1' );
 	}
 
 	/**
@@ -435,15 +650,6 @@ final class Plugin {
 			'manage_options',
 			'agentic-approvals',
 			array( $this, 'render_approvals_page' )
-		);
-
-		add_submenu_page(
-			'agentbuilder',
-			__( 'Security Log', 'agentbuilder' ),
-			__( 'Security Log', 'agentbuilder' ),
-			'manage_options',
-			'agentic-security-log',
-			array( $this, 'render_security_log_page' )
 		);
 
 		add_submenu_page(
@@ -1069,21 +1275,24 @@ final class Plugin {
 	}
 
 	/**
+	 * Run the daily audit log retention cleanup.
+	 *
+	 * Hooked to the 'agentic_cleanup_audit_log' cron event.
+	 *
+	 * @return void
+	 */
+	public function run_audit_cleanup(): void {
+		$audit = new Audit_Log();
+		$audit->cleanup_expired();
+	}
+
+	/**
 	 * Render approvals page
 	 *
 	 * @return void
 	 */
 	public function render_approvals_page(): void {
 		include AGENT_BUILDER_DIR . 'admin/approvals.php';
-	}
-
-	/**
-	 * Render security log page
-	 *
-	 * @return void
-	 */
-	public function render_security_log_page(): void {
-		include AGENT_BUILDER_DIR . 'admin/security-log.php';
 	}
 
 	/**
@@ -1294,6 +1503,11 @@ final class Plugin {
 		// Create database tables.
 		$this->create_tables();
 
+		// Schedule daily audit log cleanup.
+		if ( ! wp_next_scheduled( 'agentic_cleanup_audit_log' ) ) {
+			wp_schedule_event( time(), 'daily', 'agentic_cleanup_audit_log' );
+		}
+
 		// Create chat page if it doesn't exist.
 		$chat_page = get_page_by_path( 'agent-chat' );
 		if ( ! $chat_page ) {
@@ -1306,48 +1520,6 @@ final class Plugin {
 					'post_content' => '<!-- Chat interface rendered by Agent Builder -->',
 				)
 			);
-		}
-
-		// Create marketplace pages if this is the marketplace site.
-		if ( defined( 'AGENTIC_IS_MARKETPLACE' ) && AGENTIC_IS_MARKETPLACE ) {
-			$submit_page     = get_page_by_path( 'submit-agent' );
-			$dashboard_page  = get_page_by_path( 'developer-dashboard' );
-			$guidelines_page = get_page_by_path( 'developer-guidelines' );
-
-			// Submit Agent page.
-			if ( ! $submit_page ) {
-				wp_insert_post(
-					array(
-						'post_type'    => 'page',
-						'post_title'   => 'Submit Agent',
-						'post_status'  => 'publish',
-						'post_content' => '[agentic_submit_agent]',
-					)
-				);
-			}
-
-			// Developer Dashboard page.
-			if ( ! $dashboard_page ) {
-				wp_insert_post(
-					array(
-						'post_type'    => 'page',
-						'post_title'   => 'Developer Dashboard',
-						'post_status'  => 'publish',
-						'post_content' => '[agentic_developer_dashboard]',
-					)
-				);
-			}
-
-			// Developer Guidelines page.
-			if ( ! $guidelines_page ) {
-				wp_insert_post(
-					array(
-						'post_type'   => 'page',
-						'post_title'  => 'Developer Guidelines',
-						'post_status' => 'publish',
-					)
-				);
-			}
 		}
 
 		// Flush rewrite rules.
@@ -1406,74 +1578,8 @@ final class Plugin {
 	 * @return void
 	 */
 	public function deactivate(): void {
+		wp_clear_scheduled_hook( 'agentic_cleanup_audit_log' );
 		flush_rewrite_rules();
-	}
-
-	/**
-	 * Get developer guidelines page content.
-	 *
-	 * @return string
-	 */
-	public function get_developer_guidelines(): string {
-		return '
-<h2>Agent Builder Developer Guidelines</h2>
-<p>Welcome to the Agent Builder developer community! Before submitting your agent, please review these guidelines to ensure a smooth review process.</p>
-
-<h3>1. Code Quality Standards</h3>
-<ul>
-<li>Your agent must extend the <code>Agentic\Agent_Base</code> class</li>
-<li>Follow WordPress coding standards</li>
-<li>No obfuscated or minified PHP code</li>
-<li>No external phone-home functionality without clear disclosure</li>
-<li>Include proper documentation and inline comments</li>
-</ul>
-
-<h3>2. Security Requirements</h3>
-<ul>
-<li>Sanitize all inputs and escape all outputs</li>
-<li>Use WordPress nonces for form submissions</li>
-<li>Implement proper capability checks</li>
-<li>No hardcoded API keys, passwords, or credentials</li>
-<li>Follow WordPress security best practices</li>
-</ul>
-
-<h3>3. Licensing</h3>
-<ul>
-<li>Agents must be licensed under GPL-2.0-or-later, or a compatible open-source license</li>
-<li>Include license information in the agent.php file header</li>
-<li>Respect third-party licenses for any included libraries</li>
-<li>Premium agents can charge for support/features but code must be GPL</li>
-</ul>
-
-<h3>4. Naming Conventions</h3>
-<ul>
-<li>Do not use trademarks you do not own (WordPress, OpenAI, etc.)</li>
-<li>Agent slugs cannot be changed after approval</li>
-<li>Choose a unique, descriptive name that reflects your agent&apos;s purpose</li>
-<li>Avoid names that could be confused with official Agent Builder agents</li>
-</ul>
-
-<h3>5. Required Files</h3>
-<ul>
-<li><strong>agent.php</strong> - Main agent file in the root of your ZIP</li>
-<li><strong>README.md</strong> - Documentation with usage instructions</li>
-<li>Proper file headers with: Agent Name, Version, Description, Author, License</li>
-</ul>
-
-<h3>6. Review Process</h3>
-<p>After submission, your agent will enter our review queue. We typically review submissions within <strong>14 business days</strong>. During review, we check for:</p>
-<ul>
-<li>Security vulnerabilities</li>
-<li>Code quality and standards compliance</li>
-<li>Proper extension of Agent_Base class</li>
-<li>License compliance</li>
-<li>Accurate description and functionality</li>
-</ul>
-
-<p>If issues are found, you will receive an email with details on what needs to be fixed. Once approved, your agent will be published to the marketplace.</p>
-
-<h3>Ready to Submit?</h3>
-';
 	}
 
 	/**

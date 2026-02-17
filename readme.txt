@@ -1,15 +1,15 @@
 === Agent Builder ===
-Build, deploy, and manage AI agents directly in WordPress. Supports multiple LLMs with secure, permission-controlled tools.
+AI Powered Automation for WordPress Without Writing Code. Now you can actually talk to WordPress and see AI do the work.
 Contributors: agenticplugin
 Tags: ai, llm, ai-agent, chatbot, openai, anthropic, xai
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.7.5
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Create, install, and manage AI-powered agents in WordPress. Supports OpenAI, Anthropic, xAI, Google, Mistral, and local Ollama models.
+Create, install, and manage AI agents in WordPress. Supports OpenAI, Anthropic, xAI, Google, Mistral, and local Ollama models.
 
 == Description ==
 
@@ -137,6 +137,25 @@ You provide your own API key for each cloud provider. The plugin does not collec
 
 == Changelog ==
 
+= 1.8.0 - 2026-02-17 =
+* Changed: Core tool cleanup — removed 23 core tools not used by bundled agents. Retained db_get_option as example for rebuilding the tool set from scratch.
+* Changed: Agent Tools page simplified to 6 tabs (All, Plugins, Themes, Agents, WordPress, Database). Removed Git, Media, and CLI tabs.
+* Added: 10 new database tools — db_get_option, db_get_posts, db_get_post, db_get_users, db_get_user, db_get_comments, db_get_taxonomies, db_get_terms, db_site_stats, db_query.
+* Added: Agent mode enum sanitizer — validates mode values against an allow-list (ALLOWED_AGENT_MODES constant).
+* Added: Audit log retention cron — daily cleanup of entries older than 90 days (filterable via agentic_audit_retention_days).
+* Added: DB schema versioning — version-gated migrations with agentic_db_schema_version option.
+* Added: Composite database indexes for audit_log, approval_queue, and memory tables (6 new indexes).
+* Changed: Admin-only hooks (admin_init, admin_menu, admin_bar_menu, admin_enqueue_scripts, AJAX handlers) now load behind is_admin() guard.
+* Removed: Marketplace functionality — Marketplace_Client class, marketplace UI, revenue page, Stripe integration, and all related assets removed for WordPress.org compliance.
+* Removed: Per-directory scope toggle system (UI panel, AJAX handler, and JS).
+* Removed: Core tools — git_read_file, git_list_directory, git_search_code, git_request_change, git_update_docs, plugin_read_file, plugin_list_directory, plugin_search_code, plugin_write_file, theme_read_file, theme_write_file, media_list_files, media_read_file, media_get_file_url, wp_get_posts, wp_get_comments, wp_create_comment, wp_get_users, wp_get_error_log, wp_get_site_health, db_query, db_manage_cron, cli_run_command.
+* Removed: Onboarding Agent evaluate_feature_request tool — created draft posts as "feature requests" which polluted user content.
+* Improved: Agent_Tools class reduced from 2616 to ~310 lines.
+* Improved: One-time tool name migration simplified to single legacy mapping (get_option → db_get_option).
+* Improved: License_Client no longer depends on Marketplace_Client for agent license checks.
+* Improved: Onboarding Agent description, tags, and suggested prompts updated to reflect its helper role.
+* Tests: 427 tests, 1,071 assertions — 22 new tests for schema versioning, indexes, audit retention, hook splitting, and enum sanitizer.
+
 = 1.7.5 - 2026-02-15 =
 * Fixed: All remaining WordPress Coding Standards (PHPCS) violations resolved — 0 errors, 0 warnings.
 * Fixed: Missing input sanitization on shortcode deployment delete action.
@@ -185,7 +204,7 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Improved: All API calls now send site identification headers (X-Agentic-Site-URL, Site-Name, Plugin-Version, WP-Version, PHP-Version, User-Agent).
 * Improved: License activation error messages now include HTTP status code and server error detail.
 * Fixed: License tab JS timing — changed from IIFE to DOMContentLoaded to prevent button race condition.
-* Fixed: License_Client and Marketplace_Client use AGENTIC_API_BASE instead of AGENTIC_MARKETPLACE_URL.
+* Fixed: License_Client uses AGENTIC_API_BASE instead of hardcoded URL.
 
 = 1.7.0 - 2026-02-14 =
 * Added: License_Client class for client-side license enforcement.
@@ -209,7 +228,7 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Improved: Onboarding Agent prompt now lists all key classes, files, and bundled agents.
 * Improved: SEO Analyzer prompt adds specific meta length targets and schema markup guidance.
 * Improved: Theme Builder prompt adds accessibility (WCAG 2.1) and modern CSS layout guidance.
-* Improved: Dashboard marketplace stats now derived from /agents endpoint (fixes N/A display).
+* Improved: Dashboard stats now derived from /agents endpoint (fixes N/A display).
 * Changed: All bundled agents bumped from v1.0.0 to v1.1.0.
 
 = 1.6.2 - 2026-02-14 =
@@ -310,6 +329,9 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Brand consistency updates ("Agent Builder").
 
 == Upgrade Notice ==
+
+= 1.8.0 =
+Core tool cleanup — 23 tools removed, 1 retained (db_get_option) as foundation for rebuilding the tool set. Scope toggle system removed. Agent Tools page simplified. No breaking changes for bundled agents (none used core tools).
 
 = 1.7.5 =
 PHPCS compliance fixes and minor bug fixes. No breaking changes.

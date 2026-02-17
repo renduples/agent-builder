@@ -106,8 +106,7 @@ class Agentic_Agent_Builder extends \Agentic\Agent_Base {
 				"Tell me what kind of agent you need and I'll:\n" .
 				"- Generate compliant code\n" .
 				"- Design its tools and capabilities\n" .
-				"- Help test and write documentation\n" .
-				'- Help sell your agent on the <a href="https://agentic-plugin.com/marketplace/" target="_blank" rel="noopener">marketplace</a>' . "\n\n" .
+				"- Help test and write documentation\n\n" .
 				'What agent would you like to build?';
 	}
 
@@ -323,7 +322,7 @@ class Agentic_Agent_Builder extends \Agentic\Agent_Base {
 				'type'     => 'function',
 				'function' => array(
 					'name'        => 'generate_tool_schema',
-					'description' => 'Generate OpenAI function schema for a tool from description',
+					'description' => 'Generate OpenAI function-calling schema for a tool from a structured specification',
 					'parameters'  => array(
 						'type'       => 'object',
 						'properties' => array(

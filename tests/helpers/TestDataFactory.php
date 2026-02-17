@@ -148,28 +148,6 @@ class TestDataFactory {
 	}
 
 	/**
-	 * Create test marketplace agent data.
-	 *
-	 * @param array $overrides Optional agent overrides.
-	 * @return array
-	 */
-	public static function marketplace_agent( $overrides = array() ) {
-		$defaults = array(
-			'id'          => 'marketplace-test-agent',
-			'name'        => 'Marketplace Test Agent',
-			'description' => 'A test agent from marketplace',
-			'version'     => '1.0.0',
-			'author'      => 'Test Developer',
-			'price'       => 0,
-			'downloads'   => 0,
-			'rating'      => 0,
-			'category'    => 'general',
-		);
-
-		return array_merge( $defaults, $overrides );
-	}
-
-	/**
 	 * Create test approval queue item.
 	 *
 	 * @param array $overrides Optional item overrides.

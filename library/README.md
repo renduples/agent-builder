@@ -118,7 +118,7 @@ We've built and open-sourced **5 fully functional agents** to help you get start
 
 **Customization ideas:**
 - Visual agent designer
-- Agent marketplace integration
+- Agent template integration
 - Performance benchmarking
 - Security scanning
 - Version control integration
@@ -272,9 +272,9 @@ Real examples:
 2. **Install it** and test the functionality
 3. **Customize it** with your own ideas
 4. **Add features** that competitors don't have
-5. **Submit to marketplace** and start earning
+5. **Share your agent** with the community
 
-[Submit Your Agent →](https://agentic-plugin.com/submit-agent/)
+[Learn More →](https://github.com/renduples/agent-builder/wiki/Contributing)
 
 ---
 

@@ -26,7 +26,7 @@ msgstr ""
 
 #. Description of the plugin
 #: agentic-plugin.php
-msgid "AI agent marketplace for WordPress - imagine it, build it, monetize it."
+msgid "AI agent ecosystem for WordPress - imagine it, build it, deploy it."
 msgstr ""
 
 #. Author of the plugin
@@ -61,12 +61,10 @@ msgid "Go to Installed Agents"
 msgstr ""
 
 #: admin/agents-add.php:81
-#: includes/class-marketplace-client.php:244
 msgid "Featured"
 msgstr ""
 
 #: admin/agents-add.php:87
-#: includes/class-marketplace-client.php:245
 msgid "Popular"
 msgstr ""
 
@@ -78,8 +76,6 @@ msgid "Search Agents"
 msgstr ""
 
 #: admin/agents-add.php:110
-#: includes/class-marketplace-client.php:119
-#: includes/class-marketplace-client.php:251
 msgid "Search agents..."
 msgstr ""
 
@@ -102,12 +98,10 @@ msgstr ""
 
 #: admin/agents-add.php:158
 #: admin/agents.php:238
-#: includes/class-marketplace-client.php:125
 msgid "By"
 msgstr ""
 
 #: admin/agents-add.php:174
-#: includes/class-marketplace-client.php:109
 msgid "Installed"
 msgstr ""
 
@@ -169,8 +163,6 @@ msgstr ""
 
 #: admin/agents.php:99
 #: agentbuilder.php:179
-#: includes/class-marketplace-client.php:64
-#: includes/class-marketplace-client.php:240
 msgid "Add New Agent"
 msgstr ""
 
@@ -179,7 +171,6 @@ msgid "All"
 msgstr ""
 
 #: admin/agents.php:127
-#: includes/class-marketplace-client.php:112
 msgid "Active"
 msgstr ""
 
@@ -214,12 +205,10 @@ msgid "Chat"
 msgstr ""
 
 #: admin/agents.php:205
-#: includes/class-marketplace-client.php:113
 msgid "Deactivate"
 msgstr ""
 
 #: admin/agents.php:211
-#: includes/class-marketplace-client.php:110
 msgid "Activate"
 msgstr ""
 
@@ -355,176 +344,6 @@ msgstr ""
 
 #: includes/class-agent-registry.php:688
 msgid "Failed to delete agent files."
-msgstr ""
-
-#: includes/class-marketplace-client.php:65
-msgid "Add New"
-msgstr ""
-
-#: includes/class-marketplace-client.php:107
-msgid "Install"
-msgstr ""
-
-#: includes/class-marketplace-client.php:108
-msgid "Installing..."
-msgstr ""
-
-#: includes/class-marketplace-client.php:111
-msgid "Activating..."
-msgstr ""
-
-#: includes/class-marketplace-client.php:114
-msgid "Update"
-msgstr ""
-
-#: includes/class-marketplace-client.php:115
-msgid "Updating..."
-msgstr ""
-
-#: includes/class-marketplace-client.php:116
-msgid "Purchase"
-msgstr ""
-
-#: includes/class-marketplace-client.php:117
-#: includes/class-marketplace-client.php:220
-msgid "Enter License Key"
-msgstr ""
-
-#: includes/class-marketplace-client.php:118
-msgid "An error occurred"
-msgstr ""
-
-#: includes/class-marketplace-client.php:120
-msgid "No agents found"
-msgstr ""
-
-#: includes/class-marketplace-client.php:121
-msgid "View Details"
-msgstr ""
-
-#: includes/class-marketplace-client.php:122
-msgid "downloads"
-msgstr ""
-
-#: includes/class-marketplace-client.php:123
-msgid "Last updated"
-msgstr ""
-
-#: includes/class-marketplace-client.php:124
-msgid "Version"
-msgstr ""
-
-#: includes/class-marketplace-client.php:126
-msgid "Requires"
-msgstr ""
-
-#: includes/class-marketplace-client.php:127
-msgid "Tested up to"
-msgstr ""
-
-#: includes/class-marketplace-client.php:128
-#: includes/class-marketplace-client.php:247
-msgid "Free"
-msgstr ""
-
-#: includes/class-marketplace-client.php:210
-msgid "Agent Marketplace"
-msgstr ""
-
-#: includes/class-marketplace-client.php:213
-msgid "License Required"
-msgstr ""
-
-#: includes/class-marketplace-client.php:214
-msgid "A valid license is required to access the Agent Marketplace and download premium agents."
-msgstr ""
-
-#: includes/class-marketplace-client.php:217
-msgid "Purchase License ($10/year)"
-msgstr ""
-
-#: includes/class-marketplace-client.php:224
-msgid "What you get with a license:"
-msgstr ""
-
-#: includes/class-marketplace-client.php:227
-msgid "Access to 100+ premium agents"
-msgstr ""
-
-#: includes/class-marketplace-client.php:228
-msgid "One-click agent installation"
-msgstr ""
-
-#: includes/class-marketplace-client.php:229
-msgid "Upload and sell your own agents"
-msgstr ""
-
-#: includes/class-marketplace-client.php:230
-msgid "Priority support"
-msgstr ""
-
-#: includes/class-marketplace-client.php:246
-msgid "Recently Updated"
-msgstr ""
-
-#: includes/class-marketplace-client.php:257
-msgid "All Categories"
-msgstr ""
-
-#: includes/class-marketplace-client.php:265
-msgid "Loading agents..."
-msgstr ""
-
-#: includes/class-marketplace-client.php:338
-#: includes/class-marketplace-client.php:364
-msgid "Invalid agent ID"
-msgstr ""
-
-#: includes/class-marketplace-client.php:357
-#: includes/class-marketplace-client.php:495
-#: includes/class-marketplace-client.php:525
-msgid "Permission denied"
-msgstr ""
-
-#: includes/class-marketplace-client.php:376
-msgid "License key required for premium agents"
-msgstr ""
-
-#: includes/class-marketplace-client.php:394
-msgid "Invalid license key"
-msgstr ""
-
-#: includes/class-marketplace-client.php:424
-msgid "Agent installed successfully"
-msgstr ""
-
-#: includes/class-marketplace-client.php:468
-msgid "Invalid agent package: agent.php not found"
-msgstr ""
-
-#: includes/class-marketplace-client.php:501
-#: includes/class-marketplace-client.php:531
-msgid "Invalid agent slug"
-msgstr ""
-
-#: includes/class-marketplace-client.php:512
-msgid "Agent activated"
-msgstr ""
-
-#: includes/class-marketplace-client.php:540
-msgid "Agent deactivated"
-msgstr ""
-
-#: includes/class-marketplace-client.php:564
-msgid "Invalid rating"
-msgstr ""
-
-#: includes/class-marketplace-client.php:624
-msgid "Invalid API response format"
-msgstr ""
-
-#: includes/class-marketplace-client.php:630
-msgid "API request failed"
 msgstr ""
 
 #: includes/class-shortcodes.php:382

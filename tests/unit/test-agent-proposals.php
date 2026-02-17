@@ -45,13 +45,13 @@ class Test_Agent_Proposals extends TestCase {
 	 * Test create returns proposal with ID and pending status.
 	 */
 	public function test_create_returns_proposal() {
-		$proposal = Agent_Proposals::create( 'write_file', array( 'path' => 'themes/test/style.css' ), 'test-agent', 'Test change' );
+		$proposal = Agent_Proposals::create( 'plugin_write_file', array( 'path' => 'themes/test/style.css' ), 'test-agent', 'Test change' );
 
 		$this->created_proposals[] = $proposal['id'];
 
 		$this->assertArrayHasKey( 'id', $proposal );
 		$this->assertEquals( 'pending', $proposal['status'] );
-		$this->assertEquals( 'write_file', $proposal['tool'] );
+		$this->assertEquals( 'plugin_write_file', $proposal['tool'] );
 		$this->assertEquals( 'test-agent', $proposal['agent_id'] );
 		$this->assertEquals( 'Test change', $proposal['description'] );
 	}
@@ -60,7 +60,7 @@ class Test_Agent_Proposals extends TestCase {
 	 * Test create stores proposal in transient.
 	 */
 	public function test_create_stores_transient() {
-		$proposal                  = Agent_Proposals::create( 'modify_option', array( 'name' => 'test' ), 'test-agent', 'Set an option' );
+		$proposal                  = Agent_Proposals::create( 'db_modify_option', array( 'name' => 'test' ), 'test-agent', 'Set an option' );
 		$this->created_proposals[] = $proposal['id'];
 
 		$stored = get_transient( 'agentic_proposal_' . $proposal['id'] );
@@ -73,7 +73,7 @@ class Test_Agent_Proposals extends TestCase {
 	 */
 	public function test_create_with_diff() {
 		$diff                      = "--- old\n+++ new\n-removed\n+added";
-		$proposal                  = Agent_Proposals::create( 'write_file', array(), 'test-agent', 'Apply diff', $diff );
+		$proposal                  = Agent_Proposals::create( 'plugin_write_file', array(), 'test-agent', 'Apply diff', $diff );
 		$this->created_proposals[] = $proposal['id'];
 
 		$this->assertEquals( $diff, $proposal['diff'] );
@@ -87,7 +87,7 @@ class Test_Agent_Proposals extends TestCase {
 	 * Test get retrieves existing proposal.
 	 */
 	public function test_get_existing_proposal() {
-		$proposal                  = Agent_Proposals::create( 'write_file', array(), 'test-agent', 'Get test' );
+		$proposal                  = Agent_Proposals::create( 'plugin_write_file', array(), 'test-agent', 'Get test' );
 		$this->created_proposals[] = $proposal['id'];
 
 		$retrieved = Agent_Proposals::get( $proposal['id'] );
@@ -110,7 +110,7 @@ class Test_Agent_Proposals extends TestCase {
 	 * Test reject removes transient.
 	 */
 	public function test_reject_removes_transient() {
-		$proposal = Agent_Proposals::create( 'write_file', array(), 'test-agent', 'Reject test' );
+		$proposal = Agent_Proposals::create( 'plugin_write_file', array(), 'test-agent', 'Reject test' );
 		// Don't add to created_proposals since reject cleans up.
 
 		$result = Agent_Proposals::reject( $proposal['id'] );
@@ -130,7 +130,7 @@ class Test_Agent_Proposals extends TestCase {
 	 * Test reject already-processed returns error.
 	 */
 	public function test_reject_already_processed() {
-		$proposal = Agent_Proposals::create( 'write_file', array(), 'test-agent', 'Double reject' );
+		$proposal = Agent_Proposals::create( 'plugin_write_file', array(), 'test-agent', 'Double reject' );
 
 		// Reject once.
 		Agent_Proposals::reject( $proposal['id'] );

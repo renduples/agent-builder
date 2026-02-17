@@ -373,10 +373,10 @@ class License_Client {
 	// =========================================================================
 
 	/**
-	 * Check if a premium (marketplace-installed) agent should be allowed to run.
+	 * Check if a premium (user-installed) agent should be allowed to run.
 	 *
 	 * Called by the agent registry before loading user-space agents.
-	 * Bundled agents always run. Only marketplace-installed premium agents
+	 * Bundled agents always run. Only user-installed premium agents
 	 * are gated by the license.
 	 *
 	 * @param string $slug Agent slug.
@@ -397,14 +397,8 @@ class License_Client {
 			return true;
 		}
 
-		// Premium agent — check plugin license AND agent license.
-		if ( ! $this->is_premium() ) {
-			return false;
-		}
-
-		// Check agent-specific license validity.
-		$marketplace_client = new Marketplace_Client();
-		return $marketplace_client->is_agent_license_valid( $slug );
+		// Premium agent — check plugin license.
+		return $this->is_premium();
 	}
 
 	/**
@@ -474,7 +468,7 @@ class License_Client {
 				echo '<div class="notice notice-error"><p>';
 				printf(
 					/* translators: 1: renewal URL */
-					esc_html__( 'Your Agent Builder license has expired. Premium marketplace agents are disabled and updates are blocked. %1$s', 'agentbuilder' ),
+					esc_html__( 'Your Agent Builder license has expired. Premium agents are disabled and updates are blocked. %1$s', 'agentbuilder' ),
 					'<a href="https://agentic-plugin.com/pricing/">' . esc_html__( 'Renew your license', 'agentbuilder' ) . '</a>'
 				);
 				echo '</p></div>';
@@ -483,7 +477,7 @@ class License_Client {
 			case 'revoked':
 			case 'license_revoked':
 				echo '<div class="notice notice-error"><p>';
-				echo esc_html__( 'Your Agent Builder license has been revoked. Premium marketplace agents are disabled. Please contact support.', 'agentbuilder' );
+				echo esc_html__( 'Your Agent Builder license has been revoked. Premium agents are disabled. Please contact support.', 'agentbuilder' );
 				echo '</p></div>';
 				break;
 

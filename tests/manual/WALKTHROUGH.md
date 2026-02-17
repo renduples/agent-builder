@@ -211,53 +211,6 @@ Navigate to http://agentic.test/wp-admin/ → Agent Builder menu.
 
 ---
 
-## Step 5: Marketplace Flow (9 tests)
-
-Work through `tests/manual/marketplace-flow.md`.
-
-### 5.1 Browse Marketplace
-1. Go to **Agent Builder → Marketplace**
-2. **Expected:** Agent cards load (or "no agents available" if marketplace server isn't running)
-
-### 5.2 Search Agents
-1. Use the search box to filter agents by keyword
-2. **Expected:** Results filter correctly
-
-### 5.3 Agent Details
-1. Click an agent card to view its detail page
-2. **Expected:** Full description, version, author, requirements displayed
-
-### 5.4 Install Agent
-1. Click **Install** on an available agent
-2. **Expected:** Download completes, agent appears in Installed Agents
-
-### 5.5 License Validation
-1. If you have a license key, enter it in Settings
-2. **Expected:** Validates against license server, shows active status
-
-### 5.6 Update Check
-1. With marketplace agents installed, verify the update checker runs
-2. Check for errors in debug.log
-3. **Expected:** No errors, update notices shown if available
-
-### 5.7 API Rate Limiting
-1. Hit the marketplace API endpoint rapidly
-2. **Expected:** Graceful handling, no crashes
-
-### 5.8 Offline Handling
-1. Disconnect from network (Wi-Fi off)
-2. Try browsing marketplace
-3. **Expected:** Clear error message, no JS crashes, page recoverable when reconnected
-
-### 5.9 Uninstall Agent
-1. Delete an installed marketplace agent
-2. **Expected:** Clean removal, no orphaned files or database entries
-
-**Section Pass/Fail:** _______  
-**Notes:** _______________________________
-
----
-
 ## Step 6: Comprehensive Procedures (17 tests)
 
 Work through `tests/manual/testing-procedures.md` for broader scenarios:
@@ -312,8 +265,7 @@ For efficiency, follow this order (some tests generate data needed by later step
 9. **Step 3** — Remaining admin tests
 10. **Step 3.11** — Event Listener Integration (end-to-end with failed login + new user)
 11. **Step 4.4–4.10** — Remaining security tests
-12. **Step 5** — Marketplace (requires network)
-13. **Step 6** — Comprehensive procedures (final pass)
+11. **Step 5** — Comprehensive procedures (final pass)
 
 ---
 

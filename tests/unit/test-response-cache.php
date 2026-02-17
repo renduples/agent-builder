@@ -311,7 +311,7 @@ class Test_Response_Cache extends TestCase {
 			'test-agent',
 			array(
 				'response'   => 'Answer',
-				'tools_used' => array( 'read_file' ),
+				'tools_used' => array( 'git_read_file' ),
 			)
 		);
 		$this->assertFalse( $result );

@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						body: new URLSearchParams({
 							action: 'agentic_save_developer_api_key',
 							api_key: apiKeyFromUrl,
-							nonce: agenticMarketplace?.nonce || ''
+							nonce: agenticSettings?.nonce || ''
 						})
 					});
 
@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					body: new URLSearchParams({
 						action: 'agentic_save_developer_api_key',
 						api_key: newApiKey,
-						nonce: agenticMarketplace?.nonce || ''
+						nonce: agenticSettings?.nonce || ''
 					})
 				});
 
@@ -436,7 +436,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					},
 					body: new URLSearchParams({
 						action: 'agentic_disconnect_developer',
-						nonce: agenticMarketplace?.nonce || ''
+						nonce: agenticSettings?.nonce || ''
 					})
 				});
 

@@ -68,7 +68,7 @@ if ( class_exists( '\Agentic\License_Client' ) ) {
 } elseif ( ! empty( $agent_builder_license_key ) ) {
 	// Fallback: direct API call if License_Client not loaded.
 	$agentic_response = wp_remote_get(
-		'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/licenses/status',
+		'https://agentic-plugin.com/wp-json/agentic/v1/licenses/status',
 		array(
 			'timeout' => 5,
 			'headers' => array(

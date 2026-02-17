@@ -161,31 +161,7 @@ This document contains manual test procedures for UI/UX features that cannot be 
 
 ---
 
-### Test 8: Marketplace Browse
-
-**Objective**: Verify marketplace browsing and filtering
-
-**Steps**:
-1. Navigate to **Agentic → Marketplace**
-2. Browse available agents
-3. Use search filter
-4. Change category filter
-5. Click on an agent to view details
-
-**Expected Results**:
-- All agent cards load with images/descriptions
-- Search filters results correctly
-- Category filter updates results
-- Agent detail modal opens
-- Install button is functional
-
-**Pass/Fail**: _______
-
-**Notes**: _______________________________
-
----
-
-### Test 9: Audit Log Viewer
+### Test 8: Audit Log Viewer
 
 **Objective**: Verify audit log displays and filters correctly
 
@@ -293,12 +269,9 @@ This document contains manual test procedures for UI/UX features that cannot be 
 1. Clear browser cache
 2. Navigate to **Agentic → Dashboard**
 3. Record page load time
-4. Navigate to **Agentic → Marketplace**
-5. Record page load time
 
 **Expected Results**:
 - Dashboard loads in < 2 seconds
-- Marketplace loads in < 3 seconds
 - Total assets < 500KB per page
 - No render-blocking resources
 - Images optimized
@@ -348,8 +321,7 @@ This document contains manual test procedures for UI/UX features that cannot be 
 1. Navigate to dashboard
 2. Activate/deactivate an agent
 3. Send chat message
-4. Browse marketplace
-5. Save settings
+4. Save settings
 
 **Expected Results**:
 - All features work identically

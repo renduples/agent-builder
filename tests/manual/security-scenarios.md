@@ -133,7 +133,6 @@
 - `wp_ajax_agentic_browse_agents`
 - `wp_ajax_agentic_install_agent`
 - `wp_ajax_agentic_activate_agent`
-- `wp_ajax_agentic_save_developer_api_key`
 
 **Pass/Fail**: _______
 **Notes**: _______________________________

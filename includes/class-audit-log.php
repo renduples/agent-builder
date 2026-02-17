@@ -152,4 +152,27 @@ class Audit_Log {
 			)
 		);
 	}
+
+	/**
+	 * Run the scheduled retention cleanup.
+	 *
+	 * Retention period defaults to 90 days and can be adjusted via the
+	 * 'agentic_audit_retention_days' filter.
+	 *
+	 * @return int Number of deleted entries.
+	 */
+	public function cleanup_expired(): int {
+		/**
+		 * Filter the number of days to retain audit log entries.
+		 *
+		 * @param int $days Default 90.
+		 */
+		$days = (int) apply_filters( 'agentic_audit_retention_days', 90 );
+
+		if ( $days < 1 ) {
+			$days = 90;
+		}
+
+		return $this->cleanup( $days );
+	}
 }

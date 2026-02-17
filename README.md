@@ -160,7 +160,6 @@ class My_Custom_Agent extends \Agentic\Agent_Base {
 **Next steps:**
 1. Add tools to handle specific tasks
 2. Test in WordPress admin
-3. Submit to marketplace (agentic-plugin.com/submit-agent/)
 
 ---
 
@@ -187,10 +186,8 @@ All documentation is now available on our [GitHub Wiki](https://github.com/rendu
 
 ### Additional Resources
 
-- [Agents Marketplace](https://agentic-plugin.com/agents/)
 - [Ask Agent](https://agentic-plugin.com/agent-chat/)
 - [Discussions](https://agentic-plugin.com/discussions/)
-- [Submit Agent](https://agentic-plugin.com/submit-agent/)
 
 ---
 
@@ -229,7 +226,6 @@ Start with these quick wins:
 1. **Use a pre-built agent** (5 min) – Enable one of the 5 included agents
 2. **Customize an agent** (15 min) – Modify an existing agent slightly
 3. **Build your own agent** (45 min) – Create a simple custom agent
-4. **Publish your agent** (10 min) – Submit to marketplace
 
 Reference guides:
 - [Roadmap Overview](https://github.com/renduples/agent-builder/wiki/Roadmap)
@@ -241,15 +237,13 @@ Reference guides:
 
 ## 🌟 What Others Are Building
 
-Community agents in the marketplace:
+Community agents:
 
 - **Invoice Generator** – AI creates WooCommerce invoices
 - **Email Responder** – Auto-replies with AI-powered suggestions
 - **Backup Monitor** – Proactive backup integrity checking
 - **Customer Segmentation** – ML-based audience analysis
 - **Translation Agent** – Multi-language content automation
-
-[Browse the marketplace →](https://agentic-plugin.com/agents/)
 
 ---
 
@@ -276,9 +270,8 @@ This is an **independent community project** — not affiliated with or endorsed
 3. **Configure**: Add API key in Settings
 4. **Test**: Try the Content Builder or Theme Builder
 5. **Build**: Create your first custom agent
-6. **Share**: Submit your agent to the marketplace
 
-[Submit Your Agent →](https://agentic-plugin.com/submit-agent/)
+[Get Started →](https://github.com/renduples/agent-builder/wiki/Quickstart)
 
 ---
 

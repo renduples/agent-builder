@@ -159,7 +159,7 @@ class Agentic_Plugin_Builder extends \Agentic\Agent_Base {
 				'type'     => 'function',
 				'function' => array(
 					'name'        => 'create_plugin_scaffold',
-					'description' => 'Generate a complete plugin scaffold with main file, folder structure, and base classes',
+					'description' => 'Generate a complete plugin scaffold with main file and folder structure',
 					'parameters'  => array(
 						'type'       => 'object',
 						'properties' => array(
@@ -619,7 +619,7 @@ class Agentic_Plugin_Builder extends \Agentic\Agent_Base {
 				'type'     => 'function',
 				'function' => array(
 					'name'        => 'validate_plugin_code',
-					'description' => 'Validate generated plugin code for syntax and WPCS compliance',
+					'description' => 'Validate generated plugin code for syntax and security best practices',
 					'parameters'  => array(
 						'type'       => 'object',
 						'properties' => array(

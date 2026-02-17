@@ -34,27 +34,85 @@ if ( ! is_array( $agentic_disabled_tools ) ) {
 	$agentic_disabled_tools = array();
 }
 
+// Tool-to-category mapping. Tools not listed here default to 'WordPress'.
+$agentic_tool_categories = array(
+	// Plugins — plugin-specific tools.
+	'create_plugin_scaffold'    => 'plugins',
+	'generate_custom_post_type' => 'plugins',
+	'generate_taxonomy'         => 'plugins',
+	'generate_settings_page'    => 'plugins',
+	'generate_shortcode'        => 'plugins',
+	'generate_rest_endpoint'    => 'plugins',
+	'generate_admin_menu'       => 'plugins',
+	'generate_uninstall'        => 'plugins',
+	'generate_ajax_handler'     => 'plugins',
+	'generate_database_table'   => 'plugins',
+	'validate_plugin_code'      => 'plugins',
+	'save_plugin_file'          => 'plugins',
+
+	// Themes — theme tools.
+	'get_active_theme'          => 'themes',
+	'get_recommended_themes'    => 'themes',
+	'get_site_editor_guide'     => 'themes',
+	'list_installed_themes'     => 'themes',
+
+	// Agents — agent management.
+	'analyze_requirements'      => 'agents',
+	'generate_agent'            => 'agents',
+	'validate_agent_code'       => 'agents',
+	'create_agent_files'        => 'agents',
+	'list_library_agents'       => 'agents',
+	'read_agent_source'         => 'agents',
+	'get_agent_template'        => 'agents',
+	'generate_tool_schema'      => 'agents',
+	'generate_system_prompt'    => 'agents',
+	'delete_agent'              => 'agents',
+	'get_agent_list'            => 'agents',
+
+	// Database — read.
+	'db_get_option'             => 'database',
+	'db_get_posts'              => 'database',
+	'db_get_post'               => 'database',
+	'db_get_users'              => 'database',
+	'db_get_terms'              => 'database',
+	'db_get_post_meta'          => 'database',
+	'db_get_comments'           => 'database',
+
+	// Database — write (disabled by default).
+	'db_update_option'          => 'database',
+	'db_create_post'            => 'database',
+	'db_update_post'            => 'database',
+	'db_delete_post'            => 'database',
+
+	// WordPress — WP functions/content.
+	'analyze_content'           => 'wordpress',
+	'get_recent_posts'          => 'wordpress',
+	'get_post_content'          => 'wordpress',
+);
+
+// Category labels and icons.
+$agentic_category_tabs = array(
+	'all'       => __( 'All', 'agentbuilder' ),
+	'plugins'   => __( 'Plugins', 'agentbuilder' ),
+	'themes'    => __( 'Themes', 'agentbuilder' ),
+	'agents'    => __( 'Agents', 'agentbuilder' ),
+	'wordpress' => __( 'WordPress', 'agentbuilder' ),
+	'database'  => __( 'Database', 'agentbuilder' ),
+);
+
 // Known core tool names (tools defined in Agent_Tools, not from agents).
 $agentic_core_names = array(
-	'read_file',
-	'list_directory',
-	'search_code',
-	'get_posts',
-	'get_comments',
-	'create_comment',
-	'update_documentation',
-	'request_code_change',
-	'manage_schedules',
-	'query_database',
-	'get_error_log',
-	'get_site_health',
-	'manage_wp_cron',
-	'get_users',
-	'get_option',
-	'write_file',
-	'modify_option',
-	'manage_transients',
-	'modify_postmeta',
+	'db_get_option',
+	'db_get_posts',
+	'db_get_post',
+	'db_get_users',
+	'db_get_terms',
+	'db_get_post_meta',
+	'db_get_comments',
+	'db_update_option',
+	'db_create_post',
+	'db_update_post',
+	'db_delete_post',
 );
 
 // Collect agent instances and their tools.
@@ -82,10 +140,12 @@ foreach ( $agentic_core_defs as $agentic_def ) {
 		}
 	}
 
+	$agentic_raw_cat                     = $agentic_tool_categories[ $agentic_fname ] ?? 'WordPress';
 	$agentic_all_tools[ $agentic_fname ] = array(
 		'name'        => $agentic_fname,
 		'description' => $agentic_def['function']['description'] ?? '',
 		'type'        => 'Core',
+		'categories'  => (array) $agentic_raw_cat,
 		'agents'      => array(),
 		'params'      => $agentic_param_list,
 		'enabled'     => ! in_array( $agentic_fname, $agentic_disabled_tools, true ),
@@ -111,10 +171,12 @@ foreach ( $agentic_instances as $agentic_agent ) {
 				}
 			}
 
+			$agentic_raw_cat                     = $agentic_tool_categories[ $agentic_fname ] ?? 'WordPress';
 			$agentic_all_tools[ $agentic_fname ] = array(
 				'name'        => $agentic_fname,
 				'description' => $agentic_tdef['function']['description'] ?? '',
 				'type'        => 'Agent',
+				'categories'  => (array) $agentic_raw_cat,
 				'agents'      => array( $agentic_agent->get_name() ),
 				'params'      => $agentic_param_list,
 				'enabled'     => ! in_array( $agentic_fname, $agentic_disabled_tools, true ),
@@ -132,6 +194,30 @@ if ( $agentic_filter_type ) {
 	);
 }
 
+// Active category tab.
+$agentic_active_cat = sanitize_text_field( wp_unslash( $_GET['category'] ?? 'all' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab switch.
+if ( ! isset( $agentic_category_tabs[ $agentic_active_cat ] ) ) {
+	$agentic_active_cat = 'all';
+}
+
+// Count tools per category (before filtering).
+$agentic_cat_counts = array( 'all' => count( $agentic_all_tools ) );
+foreach ( array_keys( $agentic_category_tabs ) as $agentic_cat_key ) {
+	if ( 'all' !== $agentic_cat_key ) {
+		$agentic_cat_counts[ $agentic_cat_key ] = count(
+			array_filter( $agentic_all_tools, fn( $t ) => in_array( $agentic_cat_key, $t['categories'] ?? array(), true ) )
+		);
+	}
+}
+
+// Filter tools by active category.
+if ( 'all' !== $agentic_active_cat ) {
+	$agentic_all_tools = array_filter(
+		$agentic_all_tools,
+		fn( $t ) => in_array( $agentic_active_cat, $t['categories'] ?? array(), true )
+	);
+}
+
 // Query tool usage counts from the audit log.
 global $wpdb;
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table aggregate.
@@ -145,59 +231,41 @@ if ( is_array( $agentic_usage_rows ) ) {
 		$agentic_usage_counts[ $agentic_row['tool_name'] ] = (int) $agentic_row['call_count'];
 	}
 }
-
-// Count totals.
-$agentic_total_tools = count( $agentic_all_tools );
-$agentic_core_count  = count( array_filter( $agentic_all_tools, fn( $t ) => 'Core' === $t['type'] ) );
-$agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 ?>
 <div class="wrap">
 	<h1><?php esc_html_e( 'Agent Tools', 'agentbuilder' ); ?></h1>
-	<p><?php esc_html_e( 'All tools available to agents. Core tools are shared across all agents; agent tools are specific to individual agents.', 'agentbuilder' ); ?></p>
+	<p><?php esc_html_e( 'All tools available to agents. Use the toggle switches to control which tools agents can access.', 'agentbuilder' ); ?></p>
 
-	<!-- Filter links -->
-	<ul class="subsubsub" style="margin-bottom: 10px;">
-		<li>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-tools' ) ); ?>"
-				<?php echo empty( $agentic_filter_type ) ? 'class="current"' : ''; ?>>
-				<?php
-				/* translators: %d: number of tools */
-				printf( esc_html__( 'All (%d)', 'agentbuilder' ), (int) $agentic_total_tools );
-				?>
-			</a> |
-		</li>
-		<li>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-tools&tool_type=core' ) ); ?>"
-				<?php echo 'core' === $agentic_filter_type ? 'class="current"' : ''; ?>>
-				<?php
-				/* translators: %d: number of core tools */
-				printf( esc_html__( 'Core (%d)', 'agentbuilder' ), (int) $agentic_core_count );
-				?>
-			</a> |
-		</li>
-		<li>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-tools&tool_type=agent' ) ); ?>"
-				<?php echo 'agent' === $agentic_filter_type ? 'class="current"' : ''; ?>>
-				<?php
-				/* translators: %d: number of agent tools */
-				printf( esc_html__( 'Agent (%d)', 'agentbuilder' ), (int) $agentic_agent_count );
-				?>
+	<!-- Category Tabs -->
+	<nav class="nav-tab-wrapper" style="margin-bottom: 0;">
+		<?php foreach ( $agentic_category_tabs as $agentic_tab_key => $agentic_tab_label ) : ?>
+			<?php
+			$agentic_tab_url = admin_url( 'admin.php?page=agentic-tools' );
+			if ( 'all' !== $agentic_tab_key ) {
+				$agentic_tab_url = add_query_arg( 'category', $agentic_tab_key, $agentic_tab_url );
+			}
+			$agentic_tab_count = $agentic_cat_counts[ $agentic_tab_key ] ?? 0;
+			$agentic_tab_class = $agentic_active_cat === $agentic_tab_key ? 'nav-tab nav-tab-active' : 'nav-tab';
+			?>
+			<a href="<?php echo esc_url( $agentic_tab_url ); ?>" class="<?php echo esc_attr( $agentic_tab_class ); ?>">
+				<?php echo esc_html( $agentic_tab_label ); ?>
+				<span class="count" style="font-size: 11px; color: #646970; margin-left: 2px;">(<?php echo esc_html( $agentic_tab_count ); ?>)</span>
 			</a>
-		</li>
-	</ul>
+		<?php endforeach; ?>
+	</nav>
 
 	<?php if ( empty( $agentic_all_tools ) ) : ?>
 		<div class="notice notice-info">
 			<p><?php esc_html_e( 'No tools found. Activate agents to see their available tools.', 'agentbuilder' ); ?></p>
 		</div>
 	<?php else : ?>
-		<table class="widefat striped" style="margin-top: 10px;">
+		<table class="widefat striped" style="margin-top: 0; border-top: none;">
 			<thead>
 				<tr>
 					<th style="width: 80px;"><?php esc_html_e( 'Enabled', 'agentbuilder' ); ?></th>
 					<th style="width: 200px;"><?php esc_html_e( 'Tool Name', 'agentbuilder' ); ?></th>
 					<th><?php esc_html_e( 'Description', 'agentbuilder' ); ?></th>
-					<th style="width: 100px;"><?php esc_html_e( 'Type', 'agentbuilder' ); ?></th>
+					<th style="width: 100px;"><?php esc_html_e( 'Source', 'agentbuilder' ); ?></th>
 					<th style="width: 100px;"><?php esc_html_e( 'Usage', 'agentbuilder' ); ?></th>
 					<th style="width: 200px;"><?php esc_html_e( 'Parameters', 'agentbuilder' ); ?></th>
 				</tr>
@@ -223,6 +291,10 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 						<?php if ( 'Core' === $agentic_tool['type'] ) : ?>
 							<span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
 								<?php esc_html_e( 'Core', 'agentbuilder' ); ?>
+							</span>
+						<?php elseif ( ! empty( $agentic_tool['agents'] ) ) : ?>
+							<span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
+								<?php echo esc_html( implode( ', ', $agentic_tool['agents'] ) ); ?>
 							</span>
 						<?php else : ?>
 							<span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
@@ -270,7 +342,7 @@ $agentic_agent_count = $agentic_total_tools - $agentic_core_count;
 		</ul>
 		<p style="margin: 0; font-size: 12px; color: #856404;">
 			<strong><?php esc_html_e( 'Tip:', 'agentbuilder' ); ?></strong>
-			<?php esc_html_e( 'Disable write tools (request_code_change, update_documentation, write_file) for a read-only agent experience. Core read tools like read_file and list_directory are needed by most agents.', 'agentbuilder' ); ?>
+			<?php esc_html_e( 'Database read tools are enabled by default. Write tools (update option, create/update/delete post) are disabled by default — enable them here when needed.', 'agentbuilder' ); ?>
 		</p>
 	</div>
 

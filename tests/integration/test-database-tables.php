@@ -106,6 +106,22 @@ class Test_Database_Tables extends TestCase {
 	}
 
 	/**
+	 * Test audit_log has composite indexes added in v1.8.0.
+	 */
+	public function test_audit_log_composite_indexes() {
+		// Trigger the schema migration.
+		delete_option( 'agentic_db_schema_version' );
+		$plugin = \Agentic\Plugin::get_instance();
+		// Re-run init to trigger maybe_upgrade_schema.
+		$plugin->init();
+
+		$indexes = $this->get_index_names( $this->tables['audit_log'] );
+		$this->assertContains( 'idx_agent_created', $indexes, 'audit_log should have idx_agent_created composite index' );
+		$this->assertContains( 'idx_action_target', $indexes, 'audit_log should have idx_action_target composite index' );
+		$this->assertContains( 'idx_user_created', $indexes, 'audit_log should have idx_user_created composite index' );
+	}
+
+	/**
 	 * Test audit_log id is auto-increment.
 	 */
 	public function test_audit_log_auto_increment() {
@@ -149,6 +165,19 @@ class Test_Database_Tables extends TestCase {
 	}
 
 	/**
+	 * Test approval_queue has composite indexes added in v1.8.0.
+	 */
+	public function test_approval_queue_composite_indexes() {
+		delete_option( 'agentic_db_schema_version' );
+		$plugin = \Agentic\Plugin::get_instance();
+		$plugin->init();
+
+		$indexes = $this->get_index_names( $this->tables['approval_queue'] );
+		$this->assertContains( 'idx_status_created', $indexes, 'approval_queue should have idx_status_created composite index' );
+		$this->assertContains( 'idx_expires', $indexes, 'approval_queue should have idx_expires index' );
+	}
+
+	/**
 	 * Test approval_queue default status is pending.
 	 */
 	public function test_approval_queue_default_status() {
@@ -188,6 +217,18 @@ class Test_Database_Tables extends TestCase {
 		$indexes = $this->get_index_names( $this->tables['memory'] );
 		$this->assertContains( 'memory_type_entity', $indexes );
 		$this->assertContains( 'memory_key', $indexes );
+	}
+
+	/**
+	 * Test memory table has expires index added in v1.8.0.
+	 */
+	public function test_memory_expires_index() {
+		delete_option( 'agentic_db_schema_version' );
+		$plugin = \Agentic\Plugin::get_instance();
+		$plugin->init();
+
+		$indexes = $this->get_index_names( $this->tables['memory'] );
+		$this->assertContains( 'idx_expires', $indexes, 'memory should have idx_expires index for TTL cleanup' );
 	}
 
 	// -------------------------------------------------------------------------
@@ -278,6 +319,54 @@ class Test_Database_Tables extends TestCase {
 		$this->assertContains( 'idx_user_id', $indexes );
 		$this->assertContains( 'idx_created', $indexes );
 		$this->assertContains( 'idx_ip', $indexes );
+	}
+
+	// -------------------------------------------------------------------------
+	// Schema versioning
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Test schema version is set after migration runs.
+	 */
+	public function test_schema_version_set_after_migration() {
+		delete_option( 'agentic_db_schema_version' );
+
+		$plugin = \Agentic\Plugin::get_instance();
+		$plugin->init();
+
+		$version = get_option( 'agentic_db_schema_version' );
+		$this->assertSame( '1.8.0', $version );
+	}
+
+	/**
+	 * Test migration is skipped when schema version matches.
+	 */
+	public function test_schema_migration_skipped_when_current() {
+		update_option( 'agentic_db_schema_version', '1.8.0' );
+
+		// This should be a no-op (not error out).
+		$plugin = \Agentic\Plugin::get_instance();
+		$plugin->init();
+
+		$this->assertSame( '1.8.0', get_option( 'agentic_db_schema_version' ) );
+	}
+
+	/**
+	 * Test migration is idempotent (running twice doesn't error).
+	 */
+	public function test_schema_migration_idempotent() {
+		delete_option( 'agentic_db_schema_version' );
+
+		$plugin = \Agentic\Plugin::get_instance();
+		$plugin->init();
+
+		$this->assertSame( '1.8.0', get_option( 'agentic_db_schema_version' ) );
+
+		// Reset and run again.
+		delete_option( 'agentic_db_schema_version' );
+		$plugin->init();
+
+		$this->assertSame( '1.8.0', get_option( 'agentic_db_schema_version' ) );
 	}
 
 	// -------------------------------------------------------------------------

@@ -83,7 +83,7 @@ class Agentic_Content_Assistant extends \Agentic\Agent_Base {
 				'type'     => 'function',
 				'function' => array(
 					'name'        => 'analyze_content',
-					'description' => 'Analyze a post for readability, structure, and engagement metrics.',
+					'description' => 'Analyze a post for readability and structure (word count, sentence length, headings, images, links).',
 					'parameters'  => array(
 						'type'       => 'object',
 						'properties' => array(

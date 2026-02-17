@@ -63,6 +63,17 @@ if ( ! is_array( $agentic_deployments ) ) {
 	$agentic_deployments = array();
 }
 
+// Remove deployments referencing agents that no longer exist.
+$agentic_installed_agents  = $agentic_registry->get_installed_agents();
+$agentic_valid_deployments = array_filter(
+	$agentic_deployments,
+	fn( $d ) => isset( $agentic_installed_agents[ $d['agent'] ] )
+);
+if ( count( $agentic_valid_deployments ) < count( $agentic_deployments ) ) {
+	$agentic_deployments = array_values( $agentic_valid_deployments );
+	update_option( 'agentic_shortcode_deployments', $agentic_deployments );
+}
+
 if ( ! empty( $agentic_notice ) ) : ?>
 	<div class="notice notice-success is-dismissible">
 		<p><?php echo esc_html( $agentic_notice ); ?></p>

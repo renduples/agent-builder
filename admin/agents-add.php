@@ -131,6 +131,11 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 						}
 
 						rename( $agentic_agent_root, $agentic_dest ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Moving extracted directory; WP_Filesystem::move() does not support directory moves.
+
+						// Stamp as uploaded (not user-created) so license gating can distinguish.
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+						file_put_contents( $agentic_dest . '/.uploaded', gmdate( 'c' ) );
+
 						$agentic_upload_message = sprintf(
 						/* translators: %s: Agent name */
 							__( 'Agent "%s" has been installed successfully.', 'agentbuilder' ),
@@ -192,15 +197,24 @@ $agentic_library = $agentic_registry->get_library_agents(
 	<!-- Upload Agent Form (hidden by default) -->
 	<div class="upload-agent-wrap" style="display: none;">
 		<div class="upload-agent">
-			<p class="install-help"><?php esc_html_e( 'If you have an agent in a .zip format, you may install it by uploading it here.', 'agentbuilder' ); ?></p>
-			<form method="post" enctype="multipart/form-data" class="wp-upload-form" action="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add' ) ); ?>">
-				<?php wp_nonce_field( 'agentic-agent-upload' ); ?>
-				<label class="screen-reader-text" for="agentzip">
-					<?php esc_html_e( 'Agent zip file', 'agentbuilder' ); ?>
-				</label>
-				<input type="file" id="agentzip" name="agentzip" accept=".zip" />
-				<?php submit_button( __( 'Install Now', 'agentbuilder' ), 'primary', 'install-agent-submit', false ); ?>
-			</form>
+			<?php if ( \Agentic\License_Client::get_instance()->is_premium() ) : ?>
+				<p class="install-help"><?php esc_html_e( 'If you have an agent in a .zip format, you may install it by uploading it here.', 'agentbuilder' ); ?></p>
+				<form method="post" enctype="multipart/form-data" class="wp-upload-form" action="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents-add' ) ); ?>">
+					<?php wp_nonce_field( 'agentic-agent-upload' ); ?>
+					<label class="screen-reader-text" for="agentzip">
+						<?php esc_html_e( 'Agent zip file', 'agentbuilder' ); ?>
+					</label>
+					<input type="file" id="agentzip" name="agentzip" accept=".zip" />
+					<?php submit_button( __( 'Install Now', 'agentbuilder' ), 'primary', 'install-agent-submit', false ); ?>
+				</form>
+			<?php else : ?>
+				<p class="install-help"><?php esc_html_e( 'A license is required to upload agents.', 'agentbuilder' ); ?></p>
+				<p style="text-align: center; margin-top: 20px;">
+					<a href="https://agentic-plugin.com/pricing/" target="_blank" class="button button-primary button-hero">
+						<?php esc_html_e( 'Get a License', 'agentbuilder' ); ?>
+					</a>
+				</p>
+			<?php endif; ?>
 		</div>
 	</div>
 

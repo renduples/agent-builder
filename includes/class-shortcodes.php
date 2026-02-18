@@ -215,6 +215,11 @@ class Shortcodes {
 
 			<div class="agentic-chat-footer">
 				<span id="agentic-stats" class="agentic-stats"></span>
+				<?php if ( class_exists( '\Agentic\License_Client' ) && ! \Agentic\License_Client::get_instance()->is_premium() ) : ?>
+				<a href="https://agentic-plugin.com" target="_blank" rel="noopener" style="color: rgba(0,0,0,0.3); font-size: 11px; text-decoration: none;">
+					Powered by agentic-plugin.com
+				</a>
+				<?php endif; ?>
 			</div>
 		</div>
 

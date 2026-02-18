@@ -389,15 +389,14 @@ class License_Client {
 			return true;
 		}
 
-		// Free agents always run.
-		$agent_licenses = get_option( 'agentic_licenses', array() );
-		if ( empty( $agent_licenses[ $slug ] ) ) {
-			// No license stored = either free agent or pre-license install.
-			// Allow it to run — we can't retroactively lock out free agents.
+		// User-created agents (no .uploaded marker) always run.
+		// Only agents uploaded via zip have a .uploaded stamp file.
+		$agents_dir = WP_CONTENT_DIR . '/agents/' . $slug;
+		if ( is_dir( $agents_dir ) && ! file_exists( $agents_dir . '/.uploaded' ) ) {
 			return true;
 		}
 
-		// Premium agent — check plugin license.
+		// Uploaded (premium) agent — requires a valid plugin license.
 		return $this->is_premium();
 	}
 

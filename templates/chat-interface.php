@@ -252,6 +252,11 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 		<span class="agentic-footer-info">
 			Powered by Agent Builder v<?php echo esc_html( AGENT_BUILDER_VERSION ); ?>
 		</span>
+		<?php if ( class_exists( '\Agentic\License_Client' ) && ! \Agentic\License_Client::get_instance()->is_premium() ) : ?>
+		<a href="https://agentic-plugin.com" target="_blank" rel="noopener" class="agentic-footer-branding" style="color: rgba(255,255,255,0.35); font-size: 11px; text-decoration: none;">
+			Powered by agentic-plugin.com
+		</a>
+		<?php endif; ?>
 		<span class="agentic-footer-stats" id="agentic-stats"></span>
 	</div>
 </div>

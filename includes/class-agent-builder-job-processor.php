@@ -100,6 +100,7 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 		// Handle tool calls iteratively.
 		$max_iterations = 5;
 		$iteration      = 0;
+		$created_agent_slug = null;
 
 		while ( isset( $choice['tool_calls'] ) && ! empty( $choice['tool_calls'] ) && $iteration < $max_iterations ) {
 			++$iteration;
@@ -121,6 +122,11 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 
 				// Execute tool through the agent.
 				$tool_result = $agent->execute_tool( $tool_name, $tool_args );
+
+				// Track if an agent was created successfully.
+				if ( 'create_agent_files' === $tool_name && is_array( $tool_result ) && ! empty( $tool_result['success'] ) ) {
+					$created_agent_slug = $tool_result['slug'] ?? null;
+				}
 
 				// Add tool result.
 				$messages[] = array(
@@ -147,10 +153,17 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 
 		$progress_callback( 100, 'Completed' );
 
-		return array(
+		$result = array(
 			'response'   => $response_content,
 			'agent_id'   => 'agent-builder',
 			'iterations' => $iteration,
 		);
+
+		// Include created agent slug if an agent was built.
+		if ( $created_agent_slug ) {
+			$result['created_agent_slug'] = $created_agent_slug;
+		}
+
+		return $result;
 	}
 }

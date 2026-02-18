@@ -5,7 +5,7 @@ Tags: ai, llm, ai-agent, chatbot, openai, anthropic, xai
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -136,6 +136,14 @@ This plugin connects to third-party AI services to process chat messages and exe
 You provide your own API key for each cloud provider. The plugin does not collect, store, or transmit API keys to any third party. API usage costs are billed directly by each provider according to their pricing.
 
 == Changelog ==
+
+= 1.8.1 - 2026-02-17 =
+* Added: License-gated agent upload — unlicensed users see "Get a License" CTA instead of file chooser.
+* Added: Uploaded agent marker (.uploaded stamp file) to distinguish uploaded agents from user-created ones.
+* Changed: can_agent_run() rewritten — bundled and user-created agents always run; only uploaded agents require a valid license.
+* Added: "Powered by agentic-plugin.com" discrete branding in chat footer (admin + shortcode), hidden for licensed users (white-label).
+* Added: Agent Builder job processor now tracks created_agent_slug on successful agent creation.
+* Tests: 428 tests, 1,072 assertions — added tests for uploaded agent blocking and user-created agent pass-through.
 
 = 1.8.0 - 2026-02-17 =
 * Changed: Core tools rebuilt — replaced 23 general-purpose tools with 11 focused database tools (db_get_option, db_update_option, db_get_posts, db_get_post, db_create_post, db_update_post, db_delete_post, db_get_users, db_get_terms, db_get_post_meta, db_get_comments).

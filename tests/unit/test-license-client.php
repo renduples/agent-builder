@@ -254,9 +254,33 @@ class Test_License_Client extends WP_UnitTestCase {
 	}
 
 	public function test_unknown_agent_without_license_record_allowed(): void {
-		// Agents without a license record (e.g. free agents) should run.
+		// User-created agents (no .uploaded marker) should always run.
+		// Create a fake agent directory to simulate a user-created agent.
+		$agent_dir = WP_CONTENT_DIR . '/agents/some-free-agent';
+		wp_mkdir_p( $agent_dir );
+
 		$client = License_Client::get_instance();
 		$this->assertTrue( $client->can_agent_run( 'some-free-agent' ) );
+
+		// Clean up.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+		@rmdir( $agent_dir );
+	}
+
+	public function test_uploaded_agent_blocked_without_license(): void {
+		// Uploaded agents (.uploaded marker) should be blocked without license.
+		$agent_dir = WP_CONTENT_DIR . '/agents/uploaded-agent';
+		wp_mkdir_p( $agent_dir );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		file_put_contents( $agent_dir . '/.uploaded', gmdate( 'c' ) );
+
+		$client = License_Client::get_instance();
+		$this->assertFalse( $client->can_agent_run( 'uploaded-agent' ) );
+
+		// Clean up.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+		@unlink( $agent_dir . '/.uploaded' );
+		@rmdir( $agent_dir );
 	}
 
 	// =========================================================================

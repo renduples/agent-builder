@@ -18,7 +18,7 @@ $request->set_body(
 	wp_json_encode(
 		array(
 			'message'    => 'What color is this image? Reply in one word only.',
-			'agent_id'   => 'content-builder',
+			'agent_id'   => 'content-assistant',
 			'session_id' => wp_generate_uuid4(),
 			'history'    => array(),
 			'image'      => $img,
@@ -45,7 +45,7 @@ foreach ( $vision_models as $model_name ) {
 		wp_json_encode(
 			array(
 				'message'    => 'What color is this image? Reply in one word only.',
-				'agent_id'   => 'content-builder',
+				'agent_id'   => 'content-assistant',
 				'session_id' => wp_generate_uuid4(),
 				'history'    => array(),
 				'image'      => $img,

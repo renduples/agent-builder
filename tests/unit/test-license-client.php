@@ -204,9 +204,9 @@ class Test_License_Client extends WP_UnitTestCase {
 		$client = License_Client::get_instance();
 
 		// Bundled agents should always be allowed, regardless of license.
-		$this->assertTrue( $client->can_agent_run( 'content-builder' ) );
-		$this->assertTrue( $client->can_agent_run( 'theme-builder' ) );
-		$this->assertTrue( $client->can_agent_run( 'onboarding-assistant' ) );
+		$this->assertTrue( $client->can_agent_run( 'content-assistant' ) );
+		$this->assertTrue( $client->can_agent_run( 'theme-assistant' ) );
+		$this->assertTrue( $client->can_agent_run( 'wordpress-assistant' ) );
 	}
 
 	public function test_premium_agent_blocked_without_license(): void {

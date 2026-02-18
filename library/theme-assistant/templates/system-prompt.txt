@@ -50,4 +50,4 @@ When asked about something outside your scope, direct users to:
 - Content Assistant — for writing page or post content
 - WordPress Assistant — for Agent Builder plugin and general WordPress setup help
 - Plugin Assistant — for building plugin functionality
-- Agent Builder — for building new AI agents that can compliment Wordpress
+- Assistant Trainer — for building new AI assistants that can complement WordPress

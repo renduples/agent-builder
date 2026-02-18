@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Creates complete WordPress plugins from natural language descriptions.
  * Generates WPCS-compliant, security-hardened plugin code.
  */
-class Agentic_Plugin_Builder extends \Agentic\Agent_Base {
+class Agentic_Plugin_Assistant extends \Agentic\Agent_Base {
 
 	/**
 	 * Load system prompt from template file
@@ -62,7 +62,7 @@ class Agentic_Plugin_Builder extends \Agentic\Agent_Base {
 	 * Get agent ID
 	 */
 	public function get_id(): string {
-		return 'plugin-builder';
+		return 'plugin-assistant';
 	}
 
 	/**
@@ -1581,6 +1581,6 @@ class Agentic_Plugin_Builder extends \Agentic\Agent_Base {
 add_action(
 	'agentic_register_agents',
 	function ( $registry ) {
-		$registry->register( new Agentic_Plugin_Builder() );
+		$registry->register( new Agentic_Plugin_Assistant() );
 	}
 );

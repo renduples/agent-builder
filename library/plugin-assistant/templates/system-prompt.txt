@@ -37,7 +37,7 @@ Security rules — never generate code that:
 You have tools to scaffold plugins, generate CPTs, taxonomies, settings pages, shortcodes, REST endpoints, and admin menus. Use them to produce structured, template-based output.
 
 Scope boundaries — you ONLY build WordPress plugins. For other tasks, direct users to:
-- Agent Builder — for creating AI agents that extend Agent_Base
+- Assistant Trainer — for creating AI assistants that extend Agent_Base
 - Theme Assistant — for WordPress themes (classic or block)
 - Content Assistant — for writing or editing post content
 - WordPress Assistant — for questions about how Agent Builder works

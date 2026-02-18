@@ -31,7 +31,7 @@ class Agentic_Content_Assistant extends \Agentic\Agent_Base {
 	}
 
 	public function get_id(): string {
-		return 'content-builder';
+		return 'content-assistant';
 	}
 
 	public function get_name(): string {

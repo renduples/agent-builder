@@ -2,7 +2,7 @@
 /**
  * Agent Name: Assistant Trainer
  * Version: 1.1.0
- * Description: Meta-assistant that trains new AI assistants from natural language descriptions. Generates compliant agent code, tools, and documentation.
+ * Description: Meta-agent that trains new AI assistants from natural language descriptions.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com
  * Category: Developer
@@ -60,7 +60,7 @@ class Agentic_Assistant_Trainer extends \Agentic\Agent_Base {
 	 * Get agent description
 	 */
 	public function get_description(): string {
-		return 'Trains new AI assistants from natural language descriptions.';
+		return 'Meta-agent that trains new AI assistants from natural language descriptions.';
 	}
 
 	/**
@@ -102,12 +102,12 @@ class Agentic_Assistant_Trainer extends \Agentic\Agent_Base {
 	 * Get welcome message
 	 */
 	public function get_welcome_message(): string {
-		return "I build new AI agents for Wordpress!\n\n" .
-				"Tell me what kind of agent you need and I'll:\n" .
+		return "I train new AI assistants for WordPress!\n\n" .
+				"Tell me what kind of assistant you need and I'll:\n" .
 				"- Generate compliant code\n" .
 				"- Design its tools and capabilities\n" .
 				"- Help test and write documentation\n\n" .
-				'What agent would you like to build?';
+				'What assistant would you like to build?';
 	}
 
 	/**
@@ -115,10 +115,10 @@ class Agentic_Assistant_Trainer extends \Agentic\Agent_Base {
 	 */
 	public function get_suggested_prompts(): array {
 		return array(
-			'Create an agent that manages WordPress backups',
-			'Build an image optimization agent for media library',
-			'Design an agent for managing redirects',
-			'Show me the existing agents in the library',
+			'Create an assistant that manages WordPress backups',
+			'Build an image optimization assistant for media library',
+			'Design an assistant for managing redirects',
+			'Show me the existing assistants in the library',
 		);
 	}
 
@@ -294,7 +294,7 @@ class Agentic_Assistant_Trainer extends \Agentic\Agent_Base {
 						'properties' => array(
 							'agent_slug' => array(
 								'type'        => 'string',
-								'description' => 'Agent slug to read (e.g., "content-builder")',
+								'description' => 'Agent slug to read (e.g., "content-assistant")',
 							),
 						),
 						'required'   => array( 'agent_slug' ),
@@ -1406,10 +1406,10 @@ $params_code . "\n" .
 			$template = file_exists( $template_file ) ? file_get_contents( $template_file ) : '';
 		} else {
 			// Full template with examples
-			$template = file_get_contents( $this->get_library_path() . 'content-builder/agent.php' );
+			$template = file_get_contents( $this->get_library_path() . 'content-assistant/agent.php' );
 			// Sanitize for template use
 			$template = preg_replace( '/Content Assistant/', '[AGENT_NAME]', $template );
-			$template = preg_replace( '/content-builder/', '[SLUG]', $template );
+			$template = preg_replace( '/content-assistant/', '[SLUG]', $template );
 		}
 
 		return array(
@@ -1586,7 +1586,7 @@ $expertise . "\n\n" .
 		}
 
 		// Don't allow deleting built-in agents
-		$protected = array( 'content-builder', 'onboarding-assistant', 'assistant-trainer' );
+		$protected = array( 'content-assistant', 'wordpress-assistant', 'assistant-trainer' );
 		if ( in_array( $slug, $protected, true ) ) {
 			return array( 'error' => "Cannot delete protected agent: {$slug}" );
 		}

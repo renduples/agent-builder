@@ -1,127 +1,73 @@
-# 🎁 Agentic Agent Library – 5 Pre-Built Agents to Get Started
+# 🎁 Agentic Library – 5 Pre-Built Assistants
 
-> **Ready-to-install agents that solve real WordPress problems. Get inspired, customize, and start earning.**
+> **Ready-to-use AI assistants that solve real WordPress problems. Get inspired, customize, and start earning.**
 
 ---
 
 ## 📦 What's Inside
 
-We've built and open-sourced **5 fully functional agents** to help you get started instantly. Each agent is production-tested, documented, and can be customized for your needs.
-
-**Total value if sold individually: $49,000+/year**
+We've built and open-sourced **5 fully functional assistants** to help you get started instantly. Each assistant is production-tested, documented, and can be customized for your needs.
 
 ---
 
-## 🎯 Agents by Category
+## 🎯 Assistants
 
-### 📝 Content & Writing
+### 🧭 **[WordPress Assistant](wordpress-assistant/agent.php)**
+Your guide to WordPress and the AI ecosystem. Answers questions about the plugin and helps new users get started.
+- ✅ Answers questions about the platform
+- ✅ Helps debug issues
+- ✅ Explains concepts and best practices
+- ✅ Provides code examples
 
-#### **[Content Assistant](content-builder/agent.php)** ✍️
-**What it does:** AI-powered writing and editing partner
+**Category:** Starter
+
+---
+
+### ✍️ **[Content Assistant](content-assistant/agent.php)**
+Helps draft, edit, and optimize blog posts and pages. Suggests improvements, fixes grammar, and enhances readability.
 - ✅ Drafts blog posts from outlines
 - ✅ Improves tone and readability
 - ✅ Generates multiple title options
 - ✅ Creates compelling excerpts
 - ✅ Optimizes for target keywords
 
-**Revenue potential:** $39-59/month  
-**Ideal for:** Content agencies, bloggers, publishers  
-**Real-world demand:** 80% of content creators spend 5+ hours writing per post
-
-**Customization ideas:**
-- Industry-specific templates
-- Multi-language support
-- Plagiarism checking
-- Citation generator
-- Medium/LinkedIn optimization
+**Category:** Content
 
 ---
 
-### 🛍️ E-Commerce
-
-#### **[Product Describer](product-describer/agent.php)** 📦
-**What it does:** Generates compelling WooCommerce product descriptions
-- ✅ Creates SEO-optimized descriptions
-- ✅ Highlights key features and benefits
-- ✅ Bulk generates for 100+ products
-- ✅ Formats for multiple markets
-- ✅ A/B test variations
-
-**Revenue potential:** $29-39/month  
-**Ideal for:** WooCommerce stores, dropshippers, marketplaces  
-**Real-world demand:** Average WooCommerce store has 200+ products needing descriptions
-
-**Customization ideas:**
-- Size/variant-specific descriptions
-- Inventory integration
-- Dynamic pricing recommendations
-- Bulk CSV import/export
-- Multi-channel publishing (Amazon, eBay)
-
----
-
-###  Development & Design
-
-#### **[Theme Assistant](theme-builder/agent.php)** 🎨
-**What it does:** Assists with WordPress theme creation and customization
+### 🎨 **[Theme Assistant](theme-assistant/agent.php)**
+Helps beginners choose and customise WordPress themes using the Site Editor. Detects your active theme, recommends themes, and guides you through visual customisation.
 - ✅ Creates child themes
 - ✅ Generates CSS from requirements
 - ✅ Updates theme.json
-- ✅ Creates theme files
-- ✅ Clones theme templates
+- ✅ Recommends themes based on your needs
+- ✅ Guides visual customisation via Site Editor
 
-**Revenue potential:** $39-69/month  
-**Ideal for:** Theme developers, designers, agencies  
-**Real-world demand:** 8M+ WordPress sites need theme customization
-
-**Customization ideas:**
-- Block pattern generator
-- Accessibility checker
-- Performance optimizer
-- Multi-variant theme builder
-- Design system generator
+**Category:** Developer
 
 ---
 
-#### **[WordPress Assistant](onboarding-agent/agent.php)** 👨‍💻
-**What it does:** Your personal AI guide to the Agent Builder ecosystem
-- ✅ Answers questions about the platform
-- ✅ Helps debug issues
-- ✅ Explains concepts
-- ✅ Suggests best practices
-- ✅ Provides code examples
-
-**Revenue potential:** Free (internal tool)  
-**Use case:** Onboarding, support, learning  
-**Impact:** Reduces support tickets by 60%+
-
-**Customization ideas:**
-- Company-specific documentation
-- Custom training programs
-- Knowledge base integration
-- Multi-language support
-- Video tutorial linking
-
----
-
-#### **[Agent Builder](agent-builder/agent.php)** 🤖
-**What it does:** Meta-agent that creates new agents from natural language
+### 🔌 **[Plugin Assistant](plugin-assistant/agent.php)**
+Creates complete WordPress plugins from natural language descriptions. Generates WPCS-compliant code with security best practices.
 - ✅ Analyzes requirements
-- ✅ Generates agent scaffolding
-- ✅ Creates tool stubs
-- ✅ Validates agent code
+- ✅ Generates plugin scaffolding
+- ✅ Creates WPCS-compliant code
+- ✅ Follows security best practices
 - ✅ Generates documentation
 
-**Revenue potential:** $99-199/month  
-**Ideal for:** Agencies, developer platforms, enterprises  
-**Impact:** Reduce agent development time from days to hours
+**Category:** Developer
 
-**Customization ideas:**
-- Visual agent designer
-- Agent template integration
-- Performance benchmarking
-- Security scanning
-- Version control integration
+---
+
+### 🤖 **[Assistant Trainer](assistant-trainer/agent.php)**
+Meta-agent that trains new AI assistants from natural language descriptions.
+- ✅ Analyzes requirements
+- ✅ Generates assistant scaffolding
+- ✅ Creates tool definitions
+- ✅ Validates assistant code
+- ✅ Generates system prompts
+
+**Category:** Developer
 
 ---
 
@@ -136,12 +82,12 @@ We've built and open-sourced **5 fully functional agents** to help you get start
    ```
 
 2. **Activate in WordPress:**
-   - Go to **Agentic → Agents**
-   - All 5 agents should appear
-   - Click **Activate** on any agent
+   - Go to **Agentic → Assistants**
+   - All 5 assistants should appear
+   - Click **Activate** on any assistant
 
 3. **Start using:**
-   - Go to **Agentic → Agent Chat**
+   - Go to **Agentic → Chat**
    - Start typing commands!
 
 ### Example Usage
@@ -150,18 +96,18 @@ We've built and open-sourced **5 fully functional agents** to help you get start
 > "Draft a blog post outline about WordPress security, targeting developers"
 
 **Theme Assistant:**
-> "Create a child theme with custom header and footer styles"
+> "Help me choose a theme for my photography portfolio"
 
 ---
 
-## 🔧 Customizing Agents
+## 🔧 Customizing Assistants
 
-Each agent is open-source and fully customizable. Here's how:
+Each assistant is open-source and fully customizable:
 
 ### 1. **Clone & Modify**
 ```bash
-cp -r content-builder/ content-builder-pro/
-cd content-builder-pro/
+cp -r content-assistant/ content-assistant-pro/
+cd content-assistant-pro/
 # Edit agent.php to add features
 ```
 
@@ -178,8 +124,8 @@ public function get_tools(): array {
 ```
 
 ### 3. **Test Locally**
-- Upload modified agent to WordPress
-- Test in Admin → Agentic → Agent Chat
+- Upload modified assistant to WordPress
+- Test in Admin → Agentic → Chat
 - Check audit logs for any issues
 
 ### 4. **Deploy & Earn**
@@ -189,106 +135,41 @@ public function get_tools(): array {
 
 ---
 
-## 📊 Agent Statistics
+## 🌟 Assistant Combinations
 
-| Metric | Value |
-|--------|-------|
-| **Total agents** | 5 |
-| **Total lines of code** | 5000+ |
-| **Test coverage** | 85%+ |
-| **Documentation pages** | 20+ |
-| **Code examples** | 100+ |
-
----
-
-## 🌟 Agent Combinations
-
-Combine agents for powerful workflows:
+Combine assistants for powerful workflows:
 
 ### **Content Creation Pipeline**
 1. Content Assistant (writes post)
 2. Plugin Assistant (creates custom functionality)
 
-**Result:** Complete content strategy on autopilot
-
 ### **Development Workflow**
 1. Theme Assistant (creates themes)
 2. Plugin Assistant (generates plugins)
-3. Agent Builder (builds custom agents)
-
-**Result:** Full-stack WordPress development with AI assistance
+3. Assistant Trainer (builds custom assistants)
 
 ---
 
 ## 🤝 Contributing
 
-Want to improve a pre-built agent or create a new one?
+Want to improve a pre-built assistant or create a new one?
 
-1. **Make a fork** of the repo
+1. **Fork** the repo
 2. **Create a new folder** under `library/` or edit existing
 3. **Follow our standards** (WordPress coding standards, GPL v2+)
 4. **Test thoroughly** in WordPress
 5. **Submit a PR** with description and features
-6. **We'll review** and merge within 14 days
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## 📚 Documentation
-
-Each agent has its own README with:
-- Feature list
-- Installation steps
-- Usage examples
-- Customization guide
-- Tool reference
-- Troubleshooting
-
-Browse them in each agent folder.
-
----
-
-## 💰 Revenue Potential
-
-If you customize and publish all 5 agents:
-
-```
-5 agents × $40/month average × 50 customers each
-= $10,000 revenue
-× 70% commission = $7,000/month = $84,000/year
-```
-
-**This is achievable in Year 2 for active developers.**
-
-Real examples:
-- **Content Assistant**: 1,200+ sites = $291,600/year
-
----
-
-## ⭐ What's Next?
-
-1. **Pick an agent** that solves a problem you understand
-2. **Install it** and test the functionality
-3. **Customize it** with your own ideas
-4. **Add features** that competitors don't have
-5. **Share your agent** with the community
-
-[Learn More →](https://github.com/renduples/agent-builder/wiki/Contributing)
-
----
-
 ## 🆘 Need Help?
 
-- **Docs** – [agentic-plugin.com/roadmap](https://agentic-plugin.com/documentation/)
+- **Docs** – [agentic-plugin.com/documentation](https://agentic-plugin.com/documentation/)
 - **GitHub Issues** – [github.com/renduples/agent-builder/issues](https://github.com/renduples/agent-builder/issues)
 - **GitHub Discussions** – [github.com/renduples/agent-builder/discussions](https://github.com/renduples/agent-builder/discussions)
-- **Ask Agent (Product Q&A)** – [agentic-plugin.com/agent-chat](https://agentic-plugin.com/agent-chat/)
-- **Discord** – Chat with developers
-- **Twitter** – @agenticplugin
 
 ---
 
 **Built with ❤️ by the Agentic community**
-
-Let's build the future of WordPress together. 🚀

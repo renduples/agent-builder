@@ -2,13 +2,13 @@
 /**
  * Agent Name: WordPress Assistant
  * Version: 1.1.0
- * Description: Your guide to the Agent Builder ecosystem. Answers questions about the plugin and helps new users get started.
+ * Description: Your guide to WordPress and the AI ecosystem. Answers questions about the plugin and helps new users get started.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com
- * Category: Developer
- * Tags: onboarding, documentation, getting-started
+ * Category: Starter
+ * Tags: onboarding, documentation, getting-started, wordpress, guide
  * Capabilities: read
- * Icon: 💻
+ * Icon: 🧭
  * Requires PHP: 8.1
  * Requires at least: 6.4
  * License: GPL v2
@@ -21,10 +21,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * WordPress Assistant
  *
- * A Q&A assistant that helps users get started with Agent Builder.
+ * Your guide to WordPress and the AI ecosystem.
  * Read-only — does not execute code or make changes.
  */
-class Agentic_Onboarding_Assistant extends \Agentic\Agent_Base {
+class Agentic_WordPress_Assistant extends \Agentic\Agent_Base {
 
 	/**
 	 * Load system prompt from template file
@@ -38,7 +38,7 @@ class Agentic_Onboarding_Assistant extends \Agentic\Agent_Base {
 	 * Get agent ID
 	 */
 	public function get_id(): string {
-		return 'onboarding-assistant';
+		return 'wordpress-assistant';
 	}
 
 	/**
@@ -52,7 +52,7 @@ class Agentic_Onboarding_Assistant extends \Agentic\Agent_Base {
 	 * Get agent description
 	 */
 	public function get_description(): string {
-		return 'Your guide to the Agentic ecosystem. Answers questions and helps you get started.';
+		return 'Your guide to WordPress and the AI ecosystem. Answers questions about the plugin and helps new users get started.';
 	}
 
 	/**
@@ -66,14 +66,14 @@ class Agentic_Onboarding_Assistant extends \Agentic\Agent_Base {
 	 * Get agent icon
 	 */
 	public function get_icon(): string {
-		return '💻';
+		return '🧭';
 	}
 
 	/**
 	 * Get agent category
 	 */
 	public function get_category(): string {
-		return 'developer';
+		return 'Starter';
 	}
 
 	/**
@@ -101,12 +101,13 @@ class Agentic_Onboarding_Assistant extends \Agentic\Agent_Base {
 	 * Get welcome message
 	 */
 	public function get_welcome_message(): string {
-		return "Hi there! I'm the WordPress Assistant — here to help you get started.\n\n" .
+		return "🧭 **WordPress Assistant**\n\n" .
+				"Hi! I'm your guide to WordPress and the AI assistant ecosystem.\n\n" .
 				"Here's what I can help you with:\n\n" .
-				"- **Agent Builder** — Build your first AI Agent right now\n" .
-				"- **Content Assistant** — Create pages and posts to get you started\n" .
+				"- **Assistant Trainer** — Train your first AI assistant right now\n" .
+				"- **Content Assistant** — Draft, edit, and optimise your posts and pages\n" .
 				"- **Plugin Assistant** — Build your first custom plugin for WordPress\n" .
-				"- **Theme Assistant** — Get help choosing and installing a Theme\n\n" .
+				"- **Theme Assistant** — Choose and customise your WordPress theme\n\n" .
 				'Just type your question below or choose an option.';
 	}
 
@@ -218,6 +219,6 @@ class Agentic_Onboarding_Assistant extends \Agentic\Agent_Base {
 add_action(
 	'agentic_register_agents',
 	function ( $registry ) {
-		$registry->register( new Agentic_Onboarding_Assistant() );
+		$registry->register( new Agentic_WordPress_Assistant() );
 	}
 );

@@ -32,7 +32,7 @@ abstract class Agent_Base {
 	/**
 	 * Get the agent's unique identifier (slug)
 	 *
-	 * @return string Agent ID (e.g., 'content-builder', 'onboarding-assistant')
+	 * @return string Agent ID (e.g., 'content-assistant', 'wordpress-assistant')
 	 */
 	abstract public function get_id(): string;
 

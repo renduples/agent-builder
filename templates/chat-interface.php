@@ -146,14 +146,14 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 				echo wp_kses_post( $agentic_welcome );
 				?>
 				
-				<?php if ( 'onboarding-assistant' === $agentic_current_agent->get_id() ) : ?>
+				<?php if ( 'wordpress-assistant' === $agentic_current_agent->get_id() ) : ?>
 				<div class="agentic-quick-actions">
 					<?php
 					$agentic_quick_agents = array(
-						'agentbuilder'    => __( 'Assistant Trainer', 'agentbuilder' ),
-						'content-builder' => __( 'Content Builder', 'agentbuilder' ),
-						'plugin-builder'  => __( 'Plugin Builder', 'agentbuilder' ),
-						'theme-builder'   => __( 'Theme Builder', 'agentbuilder' ),
+						'assistant-trainer'    => __( 'Assistant Trainer', 'agentbuilder' ),
+						'content-assistant' => __( 'Content Assistant', 'agentbuilder' ),
+						'plugin-assistant'  => __( 'Plugin Assistant', 'agentbuilder' ),
+						'theme-assistant'   => __( 'Theme Assistant', 'agentbuilder' ),
 					);
 					foreach ( $agentic_quick_agents as $agentic_slug => $agentic_label ) :
 						$agentic_agent_url = admin_url( 'admin.php?page=agentic-chat&agent=' . $agentic_slug );

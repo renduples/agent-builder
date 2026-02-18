@@ -58,7 +58,7 @@ class Test_Audit_Log extends TestCase {
 			'content' => 'Hello world',
 		);
 		$id      = $this->log->log(
-			'content-builder',
+			'content-assistant',
 			'draft_post',
 			'post',
 			$details,
@@ -75,7 +75,7 @@ class Test_Audit_Log extends TestCase {
 			ARRAY_A
 		);
 
-		$this->assertEquals( 'content-builder', $row['agent_id'] );
+		$this->assertEquals( 'content-assistant', $row['agent_id'] );
 		$this->assertEquals( 'draft_post', $row['action'] );
 		$this->assertEquals( 'post', $row['target_type'] );
 		$this->assertEquals( '42', $row['target_id'] );
@@ -133,7 +133,7 @@ class Test_Audit_Log extends TestCase {
 			'file'    => 'style.css',
 			'changes' => 3,
 		);
-		$id      = $this->log->log( 'onboarding-assistant', 'code_change', 'file', $details );
+		$id      = $this->log->log( 'wordpress-assistant', 'code_change', 'file', $details );
 
 		global $wpdb;
 		$row = $wpdb->get_row(

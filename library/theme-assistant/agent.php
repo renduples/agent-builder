@@ -2,7 +2,7 @@
 /**
  * Agent Name: Theme Assistant
  * Version: 2.0.0
- * Description: Helps beginners choose and customise WordPress themes using the Site Editor. Detects your active theme, recommends free FSE block themes, and guides you through visual customisation — no code needed.
+ * Description: Helps beginners choose and customise WordPress themes using the Site Editor. Detects your active theme, recommends themes, and guides you through visual customisation.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com
  * Category: Starter
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WordPress themes using the Site Editor. Does not install, download,
  * or modify any files — guidance only.
  */
-class Agentic_Theme_Builder extends \Agentic\Agent_Base {
+class Agentic_Theme_Assistant extends \Agentic\Agent_Base {
 
 	/**
 	 * Curated list of recommended free FSE block themes.
@@ -86,7 +86,7 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 * Get agent ID
 	 */
 	public function get_id(): string {
-		return 'theme-builder';
+		return 'theme-assistant';
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 	 * Get agent description
 	 */
 	public function get_description(): string {
-		return 'Helps you choose and customise your WordPress theme. Detects your active theme, recommends free block themes, and guides you through the Site Editor — no code needed.';
+		return 'Helps beginners choose and customise WordPress themes using the Site Editor. Detects your active theme, recommends themes, and guides you through visual customisation.';
 	}
 
 	/**
@@ -506,6 +506,6 @@ class Agentic_Theme_Builder extends \Agentic\Agent_Base {
 add_action(
 	'agentic_register_agents',
 	function ( $registry ) {
-		$registry->register( new Agentic_Theme_Builder() );
+		$registry->register( new Agentic_Theme_Assistant() );
 	}
 );

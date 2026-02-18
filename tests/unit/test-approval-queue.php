@@ -45,7 +45,7 @@ class Test_Approval_Queue extends TestCase {
 	 */
 	public function test_add_returns_id() {
 		$id = $this->queue->add(
-			'onboarding-assistant',
+			'wordpress-assistant',
 			'code_change',
 			array(
 				'path'    => 'style.css',
@@ -67,7 +67,7 @@ class Test_Approval_Queue extends TestCase {
 			'content' => '<?php echo "hi";',
 		);
 		$id     = $this->queue->add(
-			'content-builder',
+			'content-assistant',
 			'create_file',
 			$params,
 			'Generated new file',
@@ -80,7 +80,7 @@ class Test_Approval_Queue extends TestCase {
 			ARRAY_A
 		);
 
-		$this->assertEquals( 'content-builder', $row['agent_id'] );
+		$this->assertEquals( 'content-assistant', $row['agent_id'] );
 		$this->assertEquals( 'create_file', $row['action'] );
 		$this->assertEquals( 'pending', $row['status'] );
 		$this->assertEquals( 'Generated new file', $row['reasoning'] );

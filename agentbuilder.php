@@ -794,6 +794,7 @@ final class Plugin {
 		include_once AGENT_BUILDER_DIR . 'includes/class-agent-permissions.php';
 		include_once AGENT_BUILDER_DIR . 'includes/class-agent-proposals.php';
 		include_once AGENT_BUILDER_DIR . 'includes/class-agent-tools.php';
+		include_once AGENT_BUILDER_DIR . 'includes/class-abilities-bridge.php';
 		include_once AGENT_BUILDER_DIR . 'includes/class-agent-controller.php';
 		include_once AGENT_BUILDER_DIR . 'includes/class-rest-api.php';
 		include_once AGENT_BUILDER_DIR . 'includes/class-approval-queue.php';
@@ -813,6 +814,12 @@ final class Plugin {
 		new REST_API();
 		new Approval_Queue();
 		new \Agentic\Shortcodes();
+
+		// Bridge to WordPress Abilities API (WP 6.9+).
+		if ( function_exists( 'wp_register_ability' ) ) {
+			$abilities_bridge = new Abilities_Bridge( new Agent_Tools() );
+			$abilities_bridge->register_hooks();
+		}
 
 		// Initialize Social Auth (for custom login/register with OAuth).
 

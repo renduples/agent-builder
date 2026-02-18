@@ -38,6 +38,13 @@ class Agent_Controller {
 	private Agent_Tools $core_tools;
 
 	/**
+	 * Abilities bridge for WP 6.9+ integration
+	 *
+	 * @var Abilities_Bridge|null
+	 */
+	private ?Abilities_Bridge $abilities_bridge = null;
+
+	/**
 	 * Audit log
 	 *
 	 * @var Audit_Log
@@ -63,6 +70,11 @@ class Agent_Controller {
 		$this->llm        = new LLM_Client();
 		$this->core_tools = new Agent_Tools();
 		$this->audit      = new Audit_Log();
+
+		// Initialize abilities bridge on WP 6.9+.
+		if ( function_exists( 'wp_register_ability' ) ) {
+			$this->abilities_bridge = new Abilities_Bridge( $this->core_tools );
+		}
 	}
 
 	/**
@@ -139,6 +151,27 @@ class Agent_Controller {
 			}
 		}
 
+		// Collect tool names so far for deduplication.
+		$all_tool_names = array();
+		foreach ( $tools as $t ) {
+			$n = $t['function']['name'] ?? $t['name'] ?? '';
+			if ( $n ) {
+				$all_tool_names[] = $n;
+			}
+		}
+
+		// Merge third-party abilities as tools (WP 6.9+).
+		if ( $this->abilities_bridge ) {
+			$ability_tools = $this->abilities_bridge->get_third_party_abilities_as_tools();
+			foreach ( $ability_tools as $ability_tool ) {
+				$ability_fn = $ability_tool['function']['name'] ?? '';
+				if ( $ability_fn && ! in_array( $ability_fn, $all_tool_names, true ) ) {
+					$tools[]          = $ability_tool;
+					$all_tool_names[] = $ability_fn;
+				}
+			}
+		}
+
 		return $tools;
 	}
 
@@ -170,6 +203,14 @@ class Agent_Controller {
 
 			if ( null !== $result ) {
 				return $result;
+			}
+		}
+
+		// Try third-party abilities (WP 6.9+).
+		if ( $this->abilities_bridge ) {
+			$ability_result = $this->abilities_bridge->execute_ability( $tool_name, $arguments );
+			if ( null !== $ability_result ) {
+				return $ability_result;
 			}
 		}
 

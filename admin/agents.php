@@ -358,39 +358,39 @@ if ( 'active' === $agentic_filter ) {
 									<span class="agent-version">
 									<?php
 									/* translators: %s: agent version number */
-									printf( esc_html__( 'Version %s', 'agentbuilder' ), esc_html( $agent['version'] ) );
+									printf( esc_html__( 'Version %s', 'agentbuilder' ), esc_html( $agentic_agent['version'] ) );
 									?>
 									</span>
 									<span class="separator">|</span>
 								<?php endif; ?>
 
-								<?php if ( ! empty( $agent['author'] ) ) : ?>
+								<?php if ( ! empty( $agentic_agent['author'] ) ) : ?>
 									<span class="agent-author">
 										<?php esc_html_e( 'By', 'agentbuilder' ); ?>
-										<?php if ( ! empty( $agent['author_uri'] ) ) : ?>
-											<a href="<?php echo esc_url( $agent['author_uri'] ); ?>" target="_blank">
-												<?php echo esc_html( $agent['author'] ); ?>
+										<?php if ( ! empty( $agentic_agent['author_uri'] ) ) : ?>
+											<a href="<?php echo esc_url( $agentic_agent['author_uri'] ); ?>" target="_blank">
+												<?php echo esc_html( $agentic_agent['author'] ); ?>
 											</a>
 										<?php else : ?>
-											<?php echo esc_html( $agent['author'] ); ?>
+											<?php echo esc_html( $agentic_agent['author'] ); ?>
 										<?php endif; ?>
 									</span>
 									<span class="separator">|</span>
 								<?php endif; ?>
 
-								<?php if ( ! empty( $agent['category'] ) ) : ?>
+								<?php if ( ! empty( $agentic_agent['category'] ) ) : ?>
 									<span class="agent-category">
-										<?php echo esc_html( $agent['category'] ); ?>
+										<?php echo esc_html( $agentic_agent['category'] ); ?>
 									</span>
 									<span class="separator">|</span>
 								<?php endif; ?>
 
-								<?php if ( ! empty( $agent['capabilities'] ) ) : ?>
+								<?php if ( ! empty( $agentic_agent['capabilities'] ) ) : ?>
 									<span class="agent-capabilities">
 										<?php
 										/* translators: %s: comma-separated list of agent capabilities */                                       printf(
 											esc_html__( 'Capabilities: %s', 'agentbuilder' ),
-											esc_html( implode( ', ', $agent['capabilities'] ) )
+											esc_html( implode( ', ', $agentic_agent['capabilities'] ) )
 										);
 										?>
 									</span>

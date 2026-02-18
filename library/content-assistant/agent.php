@@ -23,9 +23,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * A true AI agent specialized in content creation and optimization.
  */
-if ( class_exists( 'Agentic_Content_Assistant' ) ) {
-	return;
-}
 class Agentic_Content_Assistant extends \Agentic\Agent_Base {
 
 	private function load_system_prompt(): string {

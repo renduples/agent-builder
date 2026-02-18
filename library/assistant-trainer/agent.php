@@ -28,9 +28,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Tool definitions
  * - README documentation
  */
-if ( class_exists( 'Agentic_Assistant_Trainer' ) ) {
-	return;
-}
 class Agentic_Assistant_Trainer extends \Agentic\Agent_Base {
 
 	/**

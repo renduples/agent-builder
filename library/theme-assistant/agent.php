@@ -25,9 +25,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WordPress themes using the Site Editor. Does not install, download,
  * or modify any files — guidance only.
  */
-if ( class_exists( 'Agentic_Theme_Assistant' ) ) {
-	return;
-}
 class Agentic_Theme_Assistant extends \Agentic\Agent_Base {
 
 	/**

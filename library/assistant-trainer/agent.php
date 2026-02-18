@@ -1,12 +1,12 @@
 <?php
 /**
- * Agent Name: Agent Builder
+ * Agent Name: Assistant Trainer
  * Version: 1.1.0
- * Description: Meta-agent that creates new Agents from natural language descriptions. Generates compliant agent code, tools, and documentation.
+ * Description: Meta-assistant that trains new AI assistants from natural language descriptions. Generates compliant agent code, tools, and documentation.
  * Author: Agentic Community
  * Author URI: https://agentic-plugin.com
  * Category: Developer
- * Tags: meta, generator, scaffold, builder, development, agent-creation
+ * Tags: meta, generator, scaffold, trainer, development, assistant-creation
  * Capabilities: manage_options
  * Icon: 🏗️
  * Requires PHP: 8.1
@@ -19,16 +19,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Agent Builder - The Meta-Agent
+ * Assistant Trainer - The Meta-Assistant
  *
- * Creates new agents that comply with the Agent Builder architecture.
- * Given a description of what an agent should do, it generates:
+ * Trains new AI assistants that comply with the Agentic Plugin architecture.
+ * Given a description of what an assistant should do, it generates:
  * - Complete agent.php file
  * - System prompt
  * - Tool definitions
  * - README documentation
  */
-class Agentic_Agent_Builder extends \Agentic\Agent_Base {
+class Agentic_Assistant_Trainer extends \Agentic\Agent_Base {
 
 	/**
 	 * Get system prompt from template file
@@ -39,28 +39,28 @@ class Agentic_Agent_Builder extends \Agentic\Agent_Base {
 			return file_get_contents( $template_file );
 		}
 		// Fallback if template file not found
-		return 'You are the Agent Builder agent.';
+		return 'You are the Assistant Trainer — an AI assistant trainer for WordPress.';
 	}
 
 	/**
 	 * Get agent ID
 	 */
 	public function get_id(): string {
-		return 'agent-builder';
+		return 'assistant-trainer';
 	}
 
 	/**
 	 * Get agent name
 	 */
 	public function get_name(): string {
-		return 'Agent Builder';
+		return 'Assistant Trainer';
 	}
 
 	/**
 	 * Get agent description
 	 */
 	public function get_description(): string {
-		return 'Creates new Agents from natural language descriptions.';
+		return 'Trains new AI assistants from natural language descriptions.';
 	}
 
 	/**
@@ -1586,7 +1586,7 @@ $expertise . "\n\n" .
 		}
 
 		// Don't allow deleting built-in agents
-		$protected = array( 'content-builder', 'onboarding-agent', 'agent-builder' );
+		$protected = array( 'content-builder', 'onboarding-assistant', 'assistant-trainer' );
 		if ( in_array( $slug, $protected, true ) ) {
 			return array( 'error' => "Cannot delete protected agent: {$slug}" );
 		}
@@ -1726,6 +1726,6 @@ $expertise . "\n\n" .
 add_action(
 	'agentic_register_agents',
 	function ( $registry ) {
-		$registry->register( new Agentic_Agent_Builder() );
+		$registry->register( new Agentic_Assistant_Trainer() );
 	}
 );

@@ -21,10 +21,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * WordPress Assistant
  *
- * A Q&A agent that helps users get started with Agent Builder.
+ * A Q&A assistant that helps users get started with Agent Builder.
  * Read-only — does not execute code or make changes.
  */
-class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
+class Agentic_Onboarding_Assistant extends \Agentic\Agent_Base {
 
 	/**
 	 * Load system prompt from template file
@@ -38,7 +38,7 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 	 * Get agent ID
 	 */
 	public function get_id(): string {
-		return 'onboarding-agent';
+		return 'onboarding-assistant';
 	}
 
 	/**
@@ -218,6 +218,6 @@ class Agentic_Onboarding_Agent extends \Agentic\Agent_Base {
 add_action(
 	'agentic_register_agents',
 	function ( $registry ) {
-		$registry->register( new Agentic_Onboarding_Agent() );
+		$registry->register( new Agentic_Onboarding_Assistant() );
 	}
 );

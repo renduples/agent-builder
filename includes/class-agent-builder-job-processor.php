@@ -36,10 +36,10 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 
 		// Get the agent builder agent.
 		$registry = \Agentic_Agent_Registry::get_instance();
-		$agent    = $registry->get_agent_instance( 'agent-builder' );
+		$agent    = $registry->get_agent_instance( 'assistant-trainer' );
 
 		if ( ! $agent ) {
-			throw new \Exception( 'Agent Builder agent not found' );
+			throw new \Exception( 'Assistant Trainer agent not found' );
 		}
 
 		$progress_callback( 10, 'Loading conversation history...' );
@@ -155,7 +155,7 @@ class Agent_Builder_Job_Processor implements Job_Processor_Interface {
 
 		$result = array(
 			'response'   => $response_content,
-			'agent_id'   => 'agent-builder',
+			'agent_id'   => 'assistant-trainer',
 			'iterations' => $iteration,
 		);
 

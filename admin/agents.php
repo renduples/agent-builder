@@ -41,7 +41,7 @@ if ( $agentic_agent_action && $agentic_slug && isset( $_GET['_wpnonce'] ) && wp_
 			} else {
 				$agentic_agents_data = $agentic_registry->get_installed_agents( true );
 				$agentic_agent_name  = $agentic_agents_data[ $agentic_slug ]['name'] ?? $agentic_slug;
-				$agentic_page_slug   = 'agent-builder' === $agentic_slug ? 'agentbuilder' : 'agentic-chat';
+				$agentic_page_slug   = 'assistant-trainer' === $agentic_slug ? 'agentbuilder' : 'agentic-chat';
 				$agentic_chat_url    = admin_url( 'admin.php?page=' . $agentic_page_slug . '&agent=' . $agentic_slug );
 				$agentic_message     = sprintf(
 				/* translators: 1: agent name, 2: chat URL */
@@ -321,7 +321,7 @@ if ( 'active' === $agentic_filter ) {
 
 								<?php if ( $agentic_agent['active'] ) : ?>
 									<?php
-									$agentic_page_slug = 'agent-builder' === $agentic_slug ? 'agentbuilder' : 'agentic-chat';
+									$agentic_page_slug = 'assistant-trainer' === $agentic_slug ? 'agentbuilder' : 'agentic-chat';
 									?>
 						<span class="chat">
 								<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . $agentic_page_slug . '&agent=' . $agentic_slug ) ); ?>" style="font-weight: 600;">

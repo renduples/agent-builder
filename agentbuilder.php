@@ -693,15 +693,15 @@ final class Plugin {
 			)
 		);
 
-		// Sort so onboarding-agent appears first (as "Helper").
+		// Sort so onboarding-assistant appears first (as "Helper").
 		$sorted_slugs = $active_slugs;
 		usort(
 			$sorted_slugs,
 			function ( $a, $b ) {
-				if ( 'onboarding-agent' === $a ) {
+				if ( 'onboarding-assistant' === $a ) {
 					return -1;
 				}
-				if ( 'onboarding-agent' === $b ) {
+				if ( 'onboarding-assistant' === $b ) {
 					return 1;
 				}
 				return 0;
@@ -715,8 +715,8 @@ final class Plugin {
 			$agent_info = $all_agents[ $slug ];
 			$icon       = $agent_info['icon'] ?? '🤖';
 
-			// Show onboarding-agent as "Helper" for a friendlier label.
-			if ( 'onboarding-agent' === $slug ) {
+			// Show onboarding-assistant as "Helper" for a friendlier label.
+			if ( 'onboarding-assistant' === $slug ) {
 				$name = __( 'Helper', 'agentbuilder' );
 			} else {
 				$name = $agent_info['name'] ?? ucwords( str_replace( '-', ' ', $slug ) );

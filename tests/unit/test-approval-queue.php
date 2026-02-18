@@ -45,7 +45,7 @@ class Test_Approval_Queue extends TestCase {
 	 */
 	public function test_add_returns_id() {
 		$id = $this->queue->add(
-			'onboarding-agent',
+			'onboarding-assistant',
 			'code_change',
 			array(
 				'path'    => 'style.css',

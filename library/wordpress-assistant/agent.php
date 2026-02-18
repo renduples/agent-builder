@@ -24,6 +24,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Your guide to WordPress and the AI ecosystem.
  * Read-only — does not execute code or make changes.
  */
+if ( class_exists( 'Agentic_WordPress_Assistant' ) ) {
+	return;
+}
 class Agentic_WordPress_Assistant extends \Agentic\Agent_Base {
 
 	/**

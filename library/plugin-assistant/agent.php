@@ -24,6 +24,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Creates complete WordPress plugins from natural language descriptions.
  * Generates WPCS-compliant, security-hardened plugin code.
  */
+if ( class_exists( 'Agentic_Plugin_Assistant' ) ) {
+	return;
+}
 class Agentic_Plugin_Assistant extends \Agentic\Agent_Base {
 
 	/**

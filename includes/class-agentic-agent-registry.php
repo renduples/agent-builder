@@ -451,6 +451,29 @@ class Agentic_Agent_Registry {
 			return new WP_Error( 'file_not_found', __( 'Agent file not found.', 'agentbuilder' ) );
 		}
 
+		// Pre-check for class name conflicts to prevent fatal errors.
+		$class_name = $this->extract_class_name( $agent['path'] );
+		if ( $class_name && class_exists( $class_name, false ) ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled.
+				error_log(
+					sprintf(
+						'Agentic: Skipping agent %s — class %s already declared.',
+						$agent['slug'] ?? basename( $agent['path'] ),
+						$class_name
+					)
+				);
+			}
+			return new WP_Error(
+				'class_exists',
+				sprintf(
+					/* translators: %s: Class name */
+					__( 'Cannot load agent: class %s is already declared by another agent.', 'agentbuilder' ),
+					$class_name
+				)
+			);
+		}
+
 		try {
 			include_once $agent['path'];
 			return true;
@@ -460,6 +483,29 @@ class Agentic_Agent_Registry {
 				sprintf( __( 'Error loading agent: %s', 'agentbuilder' ), $e->getMessage() )
 			);
 		}
+	}
+
+	/**
+	 * Extract the main class name from an agent file without loading it
+	 *
+	 * Scans for "class ClassName extends" pattern in the file.
+	 *
+	 * @param string $file Path to agent file.
+	 * @return string|null Class name or null if not found.
+	 */
+	private function extract_class_name( string $file ): ?string {
+		// Read first 4KB — class declaration is always near the top.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file for class name extraction.
+		$contents = file_get_contents( $file, false, null, 0, 4096 );
+		if ( ! $contents ) {
+			return null;
+		}
+
+		if ( preg_match( '/^\s*class\s+(\w+)\s+extends\s/m', $contents, $matches ) ) {
+			return $matches[1];
+		}
+
+		return null;
 	}
 
 	/**

@@ -655,7 +655,7 @@ class Agentic_Agent_Registry {
 	 * @return bool
 	 */
 	public function is_agent_installed( string $slug ): bool {
-		return is_dir( $this->agents_dir . '/' . $slug );
+		return is_dir( $this->agents_dir . '/' . $slug ) || is_dir( $this->library_dir . '/' . $slug );
 	}
 
 	/**
@@ -742,7 +742,19 @@ class Agentic_Agent_Registry {
 
 		$agents     = $this->get_installed_agents();
 		$agent      = $agents[ $slug ] ?? null;
-		$agent_path = $this->agents_dir . '/' . $slug;
+
+		// Use the actual directory stored on the agent record (covers both agents_dir and library_dir).
+		$agent_path = $agent['directory'] ?? ( $this->agents_dir . '/' . $slug );
+
+		// Prevent deleting core bundled library agents (those without a .uploaded or agent-trainer marker).
+		// Allow deleting trainer-generated agents that happen to live in library/.
+		if ( str_starts_with( $agent_path, $this->library_dir ) ) {
+			$is_user_created = file_exists( $agent_path . '/.uploaded' ) ||
+			                   ! in_array( $slug, [ 'content-writer', 'seo-assistant', 'security-assistant', 'site-doctor', 'ai-radar', 'assistant-trainer', 'wordpress-assistant' ], true );
+			if ( ! $is_user_created ) {
+				return new \WP_Error( 'delete_bundled', __( 'Bundled library agents cannot be deleted.', 'agentbuilder' ) );
+			}
+		}
 
 		// Call uninstall hook if exists.
 		$uninstall_hook = 'agentic_agent_' . $slug . '_uninstall';

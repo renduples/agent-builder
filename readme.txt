@@ -1,48 +1,42 @@
 === Agent Builder ===
-AI Powered Automation for WordPress Without Writing Code. Now you can actually talk to WordPress and see AI do the work.
+AI assistants that write content, fix SEO, monitor security, and keep your WordPress site healthy — no code required.
 Contributors: agenticplugin
 Tags: ai, llm, ai-agent, chatbot, openai, anthropic, xai
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.8.1
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Create, install, and manage AI agents in WordPress. Supports OpenAI, Anthropic, xAI, Google, Mistral, and local Ollama models.
-
 == Description ==
 
-Agent Builder adds an AI agent system to WordPress. Agents are modular units of AI functionality that can be installed, activated, and deactivated through the admin interface — similar to how plugins work.
+Agent Builder gives your WordPress site a team of AI assistants. 
+Tell them what you need in plain English — they handle the rest.
 
-Each agent defines a set of tools (PHP functions the AI model can call), a system prompt, and optional scheduled tasks or event listeners. The plugin handles LLM communication, tool execution, conversation history, security scanning, and audit logging.
+= Your AI Team (included free) =
 
-= What It Does =
+✍️ **Content Writer** — Creates, edits, and publishes your posts and
+pages. Describe what you want, review the draft, and publish.
 
-* **Chat interface** — An admin chat screen and optional frontend shortcode (`[agentic_chat]`) for interacting with agents.
-* **Agent management** — Activate, deactivate, or remove agents from the Agents admin screen. Custom agents are stored in `wp-content/agents/` and survive plugin updates.
-* **Multi-provider LLM support** — Connect to OpenAI, Anthropic (Claude), xAI (Grok), Google (Gemini), Mistral, or local Ollama models. Configure your provider and API key in Settings.
-* **Tool execution** — Agents can read files, query WordPress data, read posts, make suggestions and more. All tool calls go through a permission system.
-* **Permissions and approvals** — Six granular permission scopes (all disabled by default). A confirmation mode creates proposals with diffs instead of executing changes directly.
-* **Scheduled tasks** — Agents can define recurring tasks that run via wp_cron, with optional LLM-powered execution.
-* **Event listeners** — Agents can react to WordPress action hooks (e.g., user registration, failed logins) synchronously or asynchronously.
-* **Audit logging** — All agent actions, tool calls, and chat sessions are logged with timestamps and details.
-* **Security** — Input scanning, rate limiting, PII detection, and a security event log.
-* **Image and voice input** — Upload images for vision-capable models; use voice input via the Web Speech API.
+🔍 **SEO Assistant** — Audits every post for title length, meta
+description, keyword density, headings, and links. Applies fixes directly.
 
-= Bundled Agents =
+🔒 **Security Assistant** — Monitors failed logins, flags outdated
+plugins, audits admin accounts, and checks for modified files.
 
-The plugin ships with five agents:
+🩺 **Site Doctor** — Finds database bloat, broken internal links,
+orphaned content, inactive plugins, and PHP errors. Scores your site.
 
-1. **WordPress Assistant** — Guides new users through setup and introduces the other agents.
-2. **Content Assistant** — Drafts and edits WordPress posts and pages.
-3. **Agent Builder** — Creates new AI agents from natural language descriptions.
-4. **Plugin Assistant** — Generates WordPress plugin scaffolding from requirements.
-5. **Theme Assistant** — Helps implement WordPress themes with accessibility and modern CSS practices.
+📡 **AI Radar** — Scans your site's visibility to AI search engines.
+Checks robots.txt, schema markup, content structure, and technical
+readiness. Scores 0–100 with a weekly monitoring option.
 
-= Creating Custom Agents =
+🧭 **WordPress Assistant** — Your guide to WordPress and Agent Builder.
+Ask questions, get help with settings, and find the right assistant.
 
-Place an `agent.php` file in `wp-content/agents/your-agent-name/`. The file must contain a class extending `Agent_Base` with methods for `get_id()`, `get_name()`, `get_description()`, `get_system_prompt()`, and optionally `get_tools()` and `execute_tool()`. Register it via the `agentic_register_agents` action hook. Custom agents are sandboxed with permission checks and proposal workflows.
+🏗️ **Assistant Trainer** — A meta-agent that creates and train new AI assistants
+from a plain job description. Tell it what you need, to deploy new assistants — without writing code.
 
 = Requirements =
 
@@ -60,27 +54,69 @@ Place an `agent.php` file in `wp-content/agents/your-agent-name/`. The file must
 5. Go to **Agentic → Agents** to see the bundled agents. Activate the ones you want to use.
 6. Visit **Agentic → Chat** to start interacting with your active agents.
 
-To display a chat interface on the frontend, add the `[agentic_chat]` shortcode to any page or post.
+= You Choose your own AI provider =
 
-== Frequently Asked Questions ==
+Works with the AI services you already know:
+- OpenAI (ChatGPT)
+- Anthropic (Claude)  
+- xAI (Grok)
+- Google (Gemini)
+- Mistral
+- Ollama (100% local — your data never leaves your server)
 
-= Which AI providers are supported? =
-OpenAI (GPT-4o, GPT-4, etc.), Anthropic (Claude), xAI (Grok), Google (Gemini), Mistral, and local models via Ollama. You choose your provider and model in Settings.
+= Your Data Stays Yours =
 
-= Is my data sent to external services? =
-Only when you use a cloud-based AI provider. Chat messages and tool context are sent to the provider's API endpoint to generate responses. No data is sent without your configuration — you must enter an API key and initiate a conversation. If you want to keep all data local, use Ollama. See the "External Services" section below for full details.
+- API keys stored on YOUR server, never sent to us
+- All write permissions off by default
+- Confirmation mode shows you exactly what will change before 
+  anything happens
+- Complete audit log of every action
+
+= Want More? =
+
+Browse the free AI Marketplace at agentic-plugin.com for additional
+assistants — Theme Assistant, Plugin Assistant, Assistant Trainer,
+content refreshers, speed optimizers, e-commerce helpers, and more.
+Or build your own with our developer framework.
+
+= For Developers =
+
+Agent Builder is also a full agent framework. Create custom agents 
+by extending Agent_Base, define tools as PHP functions the AI can 
+call, add scheduled tasks and event listeners, and publish to the 
+marketplace. See our developer documentation at 
+agentic-plugin.com/documentation.
+
+== FAQ ==
+
+= How much does the AI cost? =
+The plugin is free. You provide your own API key from your preferred 
+AI provider. Typical usage costs $1-5/month depending on how active 
+your assistants are. You can monitor costs in your provider's 
+dashboard. If you want zero cost, run Ollama locally with free 
+open-source models.
+
+= Is my data sent anywhere? =
+Only to the AI provider you choose, and only when you actively use 
+the chat. No data is sent to us. If you use Ollama, nothing leaves 
+your machine.
+
+= Will this break my site? =
+No. All write permissions are off by default. When enabled, a 
+confirmation mode shows you proposed changes as a diff — you approve 
+or reject before anything executes. The plugin includes automatic 
+file backups before any changes.
+
+= Which AI provider should I pick? =
+If you're not sure, start with OpenAI — it's the most widely used 
+and you can get an API key in about 5 minutes at openai.com. All 
+providers work well with Agent Builder.
 
 = Can I use this without an API key? =
 Yes, if you run Ollama locally. For cloud providers (OpenAI, Anthropic, xAI, Google, Mistral), you need an API key from that provider. API usage is billed directly by the provider, not by this plugin.
 
 = Can I create my own agents? =
 Yes. Create an `agent.php` file in `wp-content/agents/your-agent-name/`, extend the `Agent_Base` class, and register via the `agentic_register_agents` hook. The plugin auto-discovers agents in that directory. Custom agents are kept separate from the plugin and survive updates.
-
-= What permissions do agents have? =
-All write permissions are disabled by default. You can enable six granular scopes (file writes, option modifications, post meta, etc.) in **Agentic → Settings → Permissions**. A "confirmation mode" shows proposed changes as diffs for you to approve or reject before execution.
-
-= Does uninstalling remove all data? =
-Yes. Uninstalling (not just deactivating) removes all plugin options, custom database tables, transients, user meta, and scheduled cron jobs. Custom agents in `wp-content/agents/` are not deleted.
 
 == Screenshots ==
 
@@ -137,28 +173,35 @@ You provide your own API key for each cloud provider. The plugin does not collec
 
 == Changelog ==
 
+= 1.9.0 - 2026-02-19 =
+* Added: Per-agent `.license` file injected into premium agent ZIP downloads — contains token, agent slug, version, email, issued_at, expires_at.
+* Added: `.activation` file written on install — domain-binds the agent to the installing site using HMAC-SHA256(scheme://host, token).
+* Changed: `can_agent_run()` — uploaded agents now checked against `.license` + `.activation`; legacy uploads (no `.license`) fall back to plugin license check; incomplete installs (`.license` without `.activation`) blocked.
+* Changed: Upload handler in admin/agents.php — calls `activate-token` REST endpoint on zip install; writes `.activation` on success; rolls back installation on failure with a clear error message.
+* Changed: `Agent_Registry::is_agent_installed()` now checks both `agents_dir` and `library_dir`.
+* Changed: `Agent_Registry::delete_agent()` — prevents deletion of core bundled library agents; uses stored directory path to handle both zones correctly.
+* Removed: `content-assistant`, `plugin-assistant`, `theme-assistant` bundled agents (moved to marketplace or retired).
+* Added: `content-writer`, `seo-assistant`, `security-assistant`, `site-auditor`, `site-doctor`, `ai-radar` as bundled library agents.
+* Improved: `wordpress-assistant` system prompt expanded with full ecosystem context.
+* Improved: `assistant-trainer` prompt and agent refined.
+
 = 1.8.1 - 2026-02-17 =
-* Added: License-gated agent upload — unlicensed users see "Get a License" CTA instead of file chooser.
 * Added: Uploaded agent marker (.uploaded stamp file) to distinguish uploaded agents from user-created ones.
 * Changed: can_agent_run() rewritten — bundled and user-created agents always run; only uploaded agents require a valid license.
-* Added: "Powered by agentic-plugin.com" discrete branding in chat footer (admin + shortcode), hidden for licensed users (white-label).
 * Added: Agent Builder job processor now tracks created_agent_slug on successful agent creation.
 * Tests: 428 tests, 1,072 assertions — added tests for uploaded agent blocking and user-created agent pass-through.
 
 = 1.8.0 - 2026-02-17 =
-* Changed: Core tools rebuilt — replaced 23 general-purpose tools with 11 focused database tools (db_get_option, db_update_option, db_get_posts, db_get_post, db_create_post, db_update_post, db_delete_post, db_get_users, db_get_terms, db_get_post_meta, db_get_comments).
+* Changed: Core tools rebuilt — added 11 focused database tools (db_get_option, db_update_option, db_get_posts, db_get_post, db_create_post, db_update_post, db_delete_post, db_get_users, db_get_terms, db_get_post_meta, db_get_comments).
 * Changed: Agent Tools page simplified to 6 tabs (All, Plugins, Themes, Agents, WordPress, Database).
-* Changed: Renamed bundled agents for friendlier display names — Content Assistant, Plugin Assistant, Theme Assistant, WordPress Assistant (Agent Builder unchanged).
 * Added: Agent mode enum sanitizer — validates mode values against an allow-list (ALLOWED_AGENT_MODES constant).
 * Added: Audit log retention cron — daily cleanup of entries older than 90 days (filterable via agentic_audit_retention_days).
 * Added: DB schema versioning — version-gated migrations with agentic_db_schema_version option.
 * Added: Composite database indexes for audit_log, approval_queue, and memory tables (6 new indexes).
 * Changed: Admin-only hooks (admin_init, admin_menu, admin_bar_menu, admin_enqueue_scripts, AJAX handlers) now load behind is_admin() guard.
-* Removed: Marketplace functionality — Marketplace_Client class, marketplace UI, revenue page, Stripe integration, and all related assets removed for WordPress.org compliance.
 * Removed: Per-directory scope toggle system (UI panel, AJAX handler, and JS).
 * Removed: Onboarding Agent evaluate_feature_request tool.
 * Improved: Agent_Tools class reduced from 2,616 to ~310 lines.
-* Improved: License_Client no longer depends on Marketplace_Client for agent license checks.
 * Tests: 427 tests, 1,071 assertions — 22 new tests for schema versioning, indexes, audit retention, hook splitting, and enum sanitizer.
 
 = 1.7.5 - 2026-02-15 =
@@ -173,19 +216,14 @@ You provide your own API key for each cloud provider. The plugin does not collec
 = 1.7.4 - 2026-02-15 =
 * Added: Bundled agents auto-activate on plugin activation.
 * Added: Welcome messages in admin bar chat overlay for all agents.
-* Added: Onboarding Agent quick-action buttons to launch Agent Builder, Content Builder, Plugin Builder, and Theme Builder directly.
-* Added: "Helper" label for Onboarding Agent in admin bar menu (friendlier for new users).
 * Added: Agent names map for overlay window titles (shows real agent name, not menu label).
 * Fixed: Duplicate tool definition error — agent-specific tools now take priority over core tools with the same name.
 * Removed: Tool tags from chat overlay (tokens/cost still visible for admins).
 * Removed: Redundant read_file, list_directory, search_code tools from Onboarding Agent (uses core tools instead).
-* Improved: Onboarding Agent welcome message rewritten for beginners.
 * Improved: Tool deduplication in Agent Controller prevents LLM API errors.
 
 = 1.7.3 - 2026-02-15 =
-* Streamlined: Removed 6 non-essential bundled agents (Comment Moderator, Product Describer, SEO Analyzer, Security Monitor, Social Media Manager, Code Generator) to focus on the 5 most impactful agents.
-* Changed: Renamed Content Assistant agent to Content Builder for clarity.
-* Final bundled agents: Content Assistant, Theme Assistant, Agent Builder, WordPress Assistant, Plugin Assistant.
+* Streamlined: Removed non-essential agents 
 
 = 1.7.2 - 2026-02-15 =
 * Added: Admin bar "AI Agents" quick-chat overlay — chat with any active agent from any page.
@@ -206,41 +244,26 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Security: Temp image uploads auto-cleaned after 1 hour; base64 validation on REST endpoint.
 
 = 1.7.1 - 2026-02-15 =
-* Improved: All API calls now send site identification headers (X-Agentic-Site-URL, Site-Name, Plugin-Version, WP-Version, PHP-Version, User-Agent).
-* Improved: License activation error messages now include HTTP status code and server error detail.
-* Fixed: License tab JS timing — changed from IIFE to DOMContentLoaded to prevent button race condition.
-* Fixed: License_Client uses AGENTIC_API_BASE instead of hardcoded URL.
+* Improved: All API calls now send improved headers (X-Agentic-Site-URL, Site-Name, Plugin-Version, WP-Version, PHP-Version, User-Agent).
 
 = 1.7.0 - 2026-02-14 =
-* Added: License_Client class for client-side license enforcement.
-* Added: Periodic license revalidation via wp_cron (every 12 hours).
-* Added: 72-hour cached fallback when license server is unreachable.
-* Added: Update gating — blocks plugin updates without a valid license.
-* Added: Feature degradation — user-space agents disabled when license is invalid or expired.
-* Added: Admin notices for expired, revoked, or missing licenses with renewal links.
-* Added: License tab in Settings with activate/deactivate UI and status display.
 * Added: HMAC-signed API requests with site_hash for tamper resistance.
-* Improved: Dashboard uses License_Client for status display.
-* Improved: Agent Registry skips non-bundled agents when license invalid (with debug logging).
 * Security: Fail-open design — cached last-known-good state, never breaks customer sites.
 * Tests: 457 tests, 1,211 assertions (23 new License_Client tests).
 
 = 1.6.3 - 2026-02-14 =
-* Improved: All 11 bundled agent system prompts rewritten with ecosystem context and scope boundaries.
+* Improved: All bundled agent system prompts rewritten with ecosystem context and scope boundaries.
 * Improved: Each agent now defers out-of-scope tasks to the appropriate sibling agent.
 * Improved: Prompts reference actual available tools and instruct agents to use real data.
 * Improved: Removed vague personality sections; replaced with concrete behavioural instructions.
 * Improved: Onboarding Agent prompt now lists all key classes, files, and bundled agents.
-* Improved: SEO Analyzer prompt adds specific meta length targets and schema markup guidance.
 * Improved: Theme Builder prompt adds accessibility (WCAG 2.1) and modern CSS layout guidance.
 * Improved: Dashboard stats now derived from /agents endpoint (fixes N/A display).
-* Changed: All bundled agents bumped from v1.0.0 to v1.1.0.
 
 = 1.6.2 - 2026-02-14 =
-* Fixed: 3 risky tests now include unconditional assertions (search_code_result_fields, get_error_log_line_limit, get_error_log_max_cap).
 * Fixed: Added missing v1.2.0 changelog entry.
 * Fixed: Added missing git tags for v1.4.0 and v1.5.0 releases.
-* Tests: 434 tests, 1,167 assertions, 0 failures, 0 risky.
+* Tests: 434 tests, 1,172 assertions, 0 failures, 0 risky.
 
 = 1.6.1 - 2026-02-12 =
 * Fixed: Added missing require_once for Agent_Builder_Job_Processor class (caused "invalid or missing job processor" error).
@@ -297,7 +320,6 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Added: Security Log system with database-backed event tracking (Security_Log class).
 * Added: Security Log admin page for viewing blocked messages, rate limits, PII warnings.
 * Added: Security statistics and analytics (top patterns, top IPs).
-* Added: Plugin Builder agent with full template system for generating WordPress plugins.
 * Added: Security log cleanup functionality (30-day retention).
 * Improved: Centralized security logging — replaced error_log() calls with Security_Log class.
 * Improved: Full PHPCS compliance for WordPress.org standards.
@@ -308,7 +330,6 @@ You provide your own API key for each cloud provider. The plugin does not collec
 
 = 1.1.1 - 2026-02-02 =
 * Added: Dashboard stats widget.
-* Added: Plugin license validation system.
 * Added: Developer API key management in Settings.
 * Updated: Dashboard with improved UI and proper timestamps.
 * Fixed: Active agent count accuracy.
@@ -326,17 +347,21 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Improved documentation and inline comments.
 
 = 1.0.0 - 2026-01-28 =
-* Added full i18n support (Spanish, French, German .po/.mo files).
 * Achieved full WordPress Coding Standards compliance (7,246 auto-fixes).
 * Security: Removed all exec() and potential vulnerabilities.
 * Simplified namespace to "Agentic".
 * Added System Requirements Checker.
-* Brand consistency updates ("Agent Builder").
 
 == Upgrade Notice ==
 
+= 1.9.0 =
+Per-agent license activation system. New bundled agents added (content-writer, seo-assistant, security-assistant, site-auditor, site-doctor, ai-radar). No breaking changes for existing free agents.
+
+= 1.8.1 =
+Uploaded agent licensing enforcement. No breaking changes.
+
 = 1.8.0 =
-Core tools rebuilt — 23 general-purpose tools replaced with 11 focused database tools. Marketplace removed for WordPress.org compliance. Agent display names updated to friendlier Assistant names. No breaking changes for bundled agents.
+Core tools rebuilt — 11 focused database tools added.
 
 = 1.7.5 =
 PHPCS compliance fixes and minor bug fixes. No breaking changes.

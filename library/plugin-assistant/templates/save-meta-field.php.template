@@ -1,8 +1,0 @@
-
-	if ( isset( $_POST['{{prefix}}_{{key}}'] ) ) {
-		update_post_meta(
-			$post_id,
-			'_{{prefix}}_{{key}}',
-			{{sanitizer}}( wp_unslash( $_POST['{{prefix}}_{{key}}'] ) )
-		);
-	}

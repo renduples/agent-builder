@@ -102,13 +102,16 @@ class Agentic_WordPress_Assistant extends \Agentic\Agent_Base {
 	 */
 	public function get_welcome_message(): string {
 		return "🧭 **WordPress Assistant**\n\n" .
-				"Hi! I'm your guide to WordPress and the AI assistant ecosystem.\n\n" .
-				"Here's what I can help you with:\n\n" .
-				"- **Assistant Trainer** — Train your first AI assistant right now\n" .
-				"- **Content Assistant** — Draft, edit, and optimise your posts and pages\n" .
-				"- **Plugin Assistant** — Build your first custom plugin for WordPress\n" .
-				"- **Theme Assistant** — Choose and customise your WordPress theme\n\n" .
-				'Just type your question below or choose an option.';
+			"Hi! I'm your guide to WordPress and Agent Builder. Ask me anything or pick an assistant below.\n\n" .
+			"**Your bundled AI team:**\n" .
+			"- ✍️ **Content Writer** — Create, edit, and publish posts and pages\n" .
+			"- 🔍 **SEO Assistant** — Audit and fix titles, meta descriptions, and keywords\n" .
+			"- 🔒 **Security Assistant** — Monitor logins, plugins, and suspicious activity\n" .
+			"- 🩺 **Site Doctor** — Database health, broken links, errors, and bloat\n" .
+			"- 📡 **AI Radar** — Check which AI search engines can see your site and fix what's blocking them\n" .
+			"- 🏗️ **Assistant Trainer** — Train new AI assistants from a plain-English description\n" .
+			"- 🧭 **WordPress Assistant** (me) — Questions, guidance, and getting started\n\n" .
+			'What can I help you with today?';
 	}
 
 	/**
@@ -116,10 +119,10 @@ class Agentic_WordPress_Assistant extends \Agentic\Agent_Base {
 	 */
 	public function get_suggested_prompts(): array {
 		return array(
-			'How do I create a new agent?',
-			'What agents are available?',
-			'Help me build a plugin',
-			'How do I change my theme?',
+			'What can Agent Builder do?',
+			'Which assistant should I use for [task]?',
+			'Can AI search engines find my website?',
+			'How do I schedule an assistant to run automatically?',
 		);
 	}
 

@@ -1,5 +1,0 @@
-
-	// Check user capability.
-	if ( ! current_user_can( '{{capability}}' ) ) {
-		wp_send_json_error( array( 'message' => __( 'Permission denied.', '{{prefix}}' ) ) );
-	}

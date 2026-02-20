@@ -396,8 +396,43 @@ class License_Client {
 			return true;
 		}
 
-		// Uploaded (premium) agent — requires a valid plugin license.
-		return $this->is_premium();
+		// Uploaded agent — check for per-agent licensing first.
+		$license_file    = $agents_dir . '/.license';
+		$activation_file = $agents_dir . '/.activation';
+
+		if ( ! file_exists( $license_file ) ) {
+			// Legacy upload (before per-agent licensing) — fall back to plugin license.
+			return $this->is_premium();
+		}
+
+		// Premium agent — activation file must exist.
+		if ( ! file_exists( $activation_file ) ) {
+			return false; // Incomplete install / activation not attempted.
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$lic = json_decode( file_get_contents( $license_file ), true );
+		if ( empty( $lic['token'] ) ) {
+			return false;
+		}
+
+		// Check expiry with 7-day grace period.
+		if ( ! empty( $lic['expires_at'] ) ) {
+			$grace_end = strtotime( $lic['expires_at'] ) + ( 7 * DAY_IN_SECONDS );
+			if ( time() > $grace_end ) {
+				return false;
+			}
+		}
+
+		// Verify domain-binding: re-derive activation hash from site URL + token.
+		$parsed   = wp_parse_url( home_url() );
+		$site_key = ( $parsed['scheme'] ?? 'https' ) . '://' . ( $parsed['host'] ?? '' );
+		$expected = hash_hmac( 'sha256', $site_key, $lic['token'] );
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$stored = trim( file_get_contents( $activation_file ) );
+
+		return hash_equals( $expected, $stored );
 	}
 
 	/**

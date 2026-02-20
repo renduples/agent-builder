@@ -1,9 +1,0 @@
-
-	add_settings_section(
-		'{{section_id}}',
-		__( '{{section_title}}', '{{prefix}}' ),
-		function() {
-			echo '<p>' . esc_html__( '{{section_desc}}', '{{prefix}}' ) . '</p>';
-		},
-		'{{menu_slug}}'
-	);

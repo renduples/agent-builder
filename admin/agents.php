@@ -72,6 +72,47 @@ if ( $agentic_agent_action && $agentic_slug && isset( $_GET['_wpnonce'] ) && wp_
 	}
 }
 
+// Handle bulk actions.
+if (
+	isset( $_POST['bulk_action'], $_POST['checked'], $_POST['_wpnonce_bulk'] ) &&
+	wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce_bulk'] ) ), 'agentic_bulk_action' ) &&
+	current_user_can( 'manage_options' )
+) {
+	$agentic_bulk_action  = sanitize_text_field( wp_unslash( $_POST['bulk_action'] ) );
+	$agentic_bulk_slugs  = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['checked'] ) );
+	$agentic_bulk_registry = Agentic_Agent_Registry::get_instance();
+	$agentic_bulk_done   = 0;
+
+	foreach ( $agentic_bulk_slugs as $agentic_bulk_slug ) {
+		switch ( $agentic_bulk_action ) {
+			case 'activate':
+				if ( ! is_wp_error( $agentic_bulk_registry->activate_agent( $agentic_bulk_slug ) ) ) {
+					++$agentic_bulk_done;
+				}
+				break;
+			case 'deactivate':
+				if ( ! is_wp_error( $agentic_bulk_registry->deactivate_agent( $agentic_bulk_slug ) ) ) {
+					++$agentic_bulk_done;
+				}
+				break;
+			case 'delete':
+				if ( ! is_wp_error( $agentic_bulk_registry->delete_agent( $agentic_bulk_slug ) ) ) {
+					++$agentic_bulk_done;
+				}
+				break;
+		}
+	}
+
+	if ( $agentic_bulk_done ) {
+		$agentic_message = sprintf(
+			/* translators: 1: number of agents, 2: action label */
+			_n( '%1$d agent %2$s.', '%1$d agents %2$s.', $agentic_bulk_done, 'agentbuilder' ),
+			$agentic_bulk_done,
+			$agentic_bulk_action . 'd'
+		);
+	}
+}
+
 // Handle agent zip upload.
 $agentic_upload_message = '';
 $agentic_upload_error   = '';
@@ -168,11 +209,80 @@ if ( isset( $_FILES['agentzip'] ) && ! empty( $_FILES['agentzip']['name'] ) && i
 						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 						file_put_contents( $agentic_dest . '/.uploaded', gmdate( 'c' ) );
 
-						$agentic_upload_message = sprintf(
-							/* translators: %s: Agent name */
-							__( 'Agent "%s" has been installed successfully. You can now activate it below.', 'agentbuilder' ),
-							$agentic_parsed_headers['name']
-						);
+						// --- Premium agent activation via .license file ---
+						$agentic_license_file = $agentic_dest . '/.license';
+						$agentic_activation_ok = true; // default: free agent, no activation needed
+
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+						if ( file_exists( $agentic_license_file ) ) {
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+							$agentic_lic_data = json_decode( file_get_contents( $agentic_license_file ), true );
+
+							if ( ! empty( $agentic_lic_data['token'] ) && ! empty( $agentic_lic_data['agent'] ) ) {
+								$agentic_activate_response = wp_remote_post(
+									'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/agents/activate-token',
+									array(
+										'body'      => array(
+											'token'      => $agentic_lic_data['token'],
+											'agent_slug' => $agentic_lic_data['agent'],
+											'site_url'   => home_url(),
+										),
+										'timeout'   => 15,
+										'sslverify' => true,
+									)
+								);
+
+								if ( is_wp_error( $agentic_activate_response ) ) {
+									$agentic_activation_ok = false;
+									$agentic_upload_error  = sprintf(
+										/* translators: %s: error message */
+										__( 'Assistant installed but license activation failed: %s. Please re-install or contact support.', 'agentbuilder' ),
+										$agentic_activate_response->get_error_message()
+									);
+								} else {
+									$agentic_activate_http = wp_remote_retrieve_response_code( $agentic_activate_response );
+									$agentic_activate_body = json_decode( wp_remote_retrieve_body( $agentic_activate_response ), true );
+
+									if ( 200 === $agentic_activate_http && ! empty( $agentic_activate_body['success'] ) && ! empty( $agentic_activate_body['activation_hash'] ) ) {
+										// Write .activation hash — domain-binds this install
+										// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+										file_put_contents( $agentic_dest . '/.activation', $agentic_activate_body['activation_hash'] );
+									} else {
+										$agentic_activation_ok = false;
+										$agentic_err_code      = $agentic_activate_body['code'] ?? 'unknown';
+										$agentic_err_msgs      = array(
+											'token_invalid' => __( 'License token is invalid. Please re-download from your agentic-plugin.com account.', 'agentbuilder' ),
+											'token_expired' => __( 'Your agent license has expired. Please renew at agentic-plugin.com.', 'agentbuilder' ),
+											'token_used'    => __( 'This license has already been activated on a different domain. Use your account to transfer it.', 'agentbuilder' ),
+											'agent_mismatch' => __( 'The license token is for a different assistant.', 'agentbuilder' ),
+										);
+										$agentic_upload_error = $agentic_err_msgs[ $agentic_err_code ] ?? sprintf(
+											/* translators: %s: error code */
+											__( 'Activation error: %s. Please contact support.', 'agentbuilder' ),
+											esc_html( $agentic_err_code )
+										);
+									}
+								}
+							} else {
+								// Malformed .license file
+								$agentic_activation_ok = false;
+								$agentic_upload_error  = __( 'The .license file in this archive is malformed. Please re-download from your account.', 'agentbuilder' );
+							}
+
+							// If activation failed, remove the installed directory so a broken agent is not left behind.
+							if ( ! $agentic_activation_ok ) {
+								global $wp_filesystem;
+								$wp_filesystem->delete( $agentic_dest, true );
+							}
+						}
+
+						if ( $agentic_activation_ok ) {
+							$agentic_upload_message = sprintf(
+								/* translators: %s: Agent name */
+								__( 'Agent "%s" has been installed successfully. You can now activate it below.', 'agentbuilder' ),
+								$agentic_parsed_headers['name']
+							);
+						}
 					}
 				}
 			}
@@ -206,7 +316,7 @@ if ( 'active' === $agentic_filter ) {
 
 <div class="wrap agentic-agents-page">
 	<h1 class="wp-heading-inline"><?php esc_html_e( 'Agents', 'agentbuilder' ); ?></h1>
-	<a href="#" class="upload-view-toggle page-title-action" id="agentic-upload-toggle"><?php esc_html_e( 'Upload Agent', 'agentbuilder' ); ?></a>
+	<a href="#" class="upload-view-toggle page-title-action" id="agentic-upload-toggle"><?php esc_html_e( 'Upload Assistant', 'agentbuilder' ); ?></a>
 	<hr class="wp-header-end">
 
 	<?php if ( $agentic_upload_message ) : ?>
@@ -278,9 +388,44 @@ if ( 'active' === $agentic_filter ) {
 				class="<?php echo 'inactive' === $agentic_filter ? 'current' : ''; ?>">
 				<?php esc_html_e( 'Inactive', 'agentbuilder' ); ?>
 				<span class="count">(<?php echo esc_html( $agentic_inactive_count ); ?>)</span>
+			</a> |
+		</li>
+		<li class="available">
+			<a href="https://agentic-plugin.com/marketplace/" target="_blank">
+				<?php
+				$agentic_marketplace_count = get_transient( 'agentic_marketplace_agent_count' );
+				if ( false === $agentic_marketplace_count ) {
+					$agentic_marketplace_response = wp_remote_get( 'https://agentic-plugin.com/wp-json/agentic-marketplace/v1/agents?per_page=1', array( 'timeout' => 3, 'sslverify' => true ) );
+					if ( ! is_wp_error( $agentic_marketplace_response ) ) {
+						$agentic_marketplace_body = json_decode( wp_remote_retrieve_body( $agentic_marketplace_response ), true );
+						$agentic_marketplace_count = isset( $agentic_marketplace_body['total'] ) ? (int) $agentic_marketplace_body['total'] : 0;
+					}
+					set_transient( 'agentic_marketplace_agent_count', $agentic_marketplace_count ?: 9, HOUR_IN_SECONDS );
+				}
+				?>
+				<?php esc_html_e( 'Available', 'agentbuilder' ); ?>
+				<span class="count">(<?php echo esc_html( $agentic_marketplace_count ?: 9 ); ?>)</span>
 			</a>
 		</li>
 	</ul>
+
+	<form method="post" id="bulk-action-form">
+	<?php wp_nonce_field( 'agentic_bulk_action', '_wpnonce_bulk' ); ?>
+
+	<!-- Tablenav Top -->
+	<div class="tablenav top">
+		<div class="alignleft actions bulkactions">
+			<label for="bulk-action-selector-top" class="screen-reader-text"><?php esc_html_e( 'Select bulk action', 'agentbuilder' ); ?></label>
+			<select name="bulk_action" id="bulk-action-selector-top">
+				<option value="-1"><?php esc_html_e( 'Bulk actions', 'agentbuilder' ); ?></option>
+				<option value="activate"><?php esc_html_e( 'Activate', 'agentbuilder' ); ?></option>
+				<option value="deactivate"><?php esc_html_e( 'Deactivate', 'agentbuilder' ); ?></option>
+				<option value="delete"><?php esc_html_e( 'Delete', 'agentbuilder' ); ?></option>
+			</select>
+			<input type="submit" id="doaction" class="button action" value="<?php esc_attr_e( 'Apply', 'agentbuilder' ); ?>" onclick="return agentic_confirm_bulk();">
+		</div>
+		<br class="clear">
+	</div>
 
 	<!-- Agents Table -->
 	<table class="wp-list-table widefat plugins">
@@ -415,6 +560,23 @@ if ( 'active' === $agentic_filter ) {
 			</tr>
 		</tfoot>
 	</table>
+
+	<!-- Tablenav Bottom -->
+	<div class="tablenav bottom">
+		<div class="alignleft actions bulkactions">
+			<label for="bulk-action-selector-bottom" class="screen-reader-text"><?php esc_html_e( 'Select bulk action', 'agentbuilder' ); ?></label>
+			<select name="bulk_action" id="bulk-action-selector-bottom">
+				<option value="-1"><?php esc_html_e( 'Bulk actions', 'agentbuilder' ); ?></option>
+				<option value="activate"><?php esc_html_e( 'Activate', 'agentbuilder' ); ?></option>
+				<option value="deactivate"><?php esc_html_e( 'Deactivate', 'agentbuilder' ); ?></option>
+				<option value="delete"><?php esc_html_e( 'Delete', 'agentbuilder' ); ?></option>
+			</select>
+			<input type="submit" id="doaction2" class="button action" value="<?php esc_attr_e( 'Apply', 'agentbuilder' ); ?>" onclick="return agentic_confirm_bulk();">
+		</div>
+		<br class="clear">
+	</div>
+
+	</form><!-- end bulk-action-form -->
 </div>
 
 <script>
@@ -434,7 +596,48 @@ if ( 'active' === $agentic_filter ) {
 		wrap.style.display = 'block';
 		<?php endif; ?>
 	}
+
+	// Keep top/bottom bulk selects in sync.
+	var selTop    = document.getElementById( 'bulk-action-selector-top' );
+	var selBottom = document.getElementById( 'bulk-action-selector-bottom' );
+	if ( selTop && selBottom ) {
+		selTop.addEventListener( 'change', function () { selBottom.value = selTop.value; } );
+		selBottom.addEventListener( 'change', function () { selTop.value = selBottom.value; } );
+	}
+
+	// Keep top/bottom checkboxes in sync.
+	var cbAll1 = document.getElementById( 'cb-select-all-1' );
+	var cbAll2 = document.getElementById( 'cb-select-all-2' );
+	function syncCheckAll( from, to ) {
+		if ( from && to ) {
+			from.addEventListener( 'change', function () {
+				to.checked = from.checked;
+				document.querySelectorAll( '#the-list input[type="checkbox"]' ).forEach( function ( cb ) {
+					cb.checked = from.checked;
+				} );
+			} );
+		}
+	}
+	syncCheckAll( cbAll1, cbAll2 );
+	syncCheckAll( cbAll2, cbAll1 );
 })();
+
+function agentic_confirm_bulk() {
+	var sel = document.getElementById( 'bulk-action-selector-top' );
+	if ( ! sel || sel.value === '-1' ) {
+		alert( '<?php echo esc_js( __( 'Please select a bulk action.', 'agentbuilder' ) ); ?>' );
+		return false;
+	}
+	var checked = document.querySelectorAll( '#the-list input[type="checkbox"]:checked' );
+	if ( ! checked.length ) {
+		alert( '<?php echo esc_js( __( 'Please select at least one agent.', 'agentbuilder' ) ); ?>' );
+		return false;
+	}
+	if ( sel.value === 'delete' ) {
+		return confirm( '<?php echo esc_js( __( 'Are you sure you want to delete the selected agents?', 'agentbuilder' ) ); ?>' );
+	}
+	return true;
+}
 </script>
 
 <style>

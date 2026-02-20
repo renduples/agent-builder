@@ -1406,10 +1406,10 @@ $params_code . "\n" .
 			$template = file_exists( $template_file ) ? file_get_contents( $template_file ) : '';
 		} else {
 			// Full template with examples
-			$template = file_get_contents( $this->get_library_path() . 'content-assistant/agent.php' );
+			$template = file_get_contents( $this->get_library_path() . 'content-writer/agent.php' );
 			// Sanitize for template use
-			$template = preg_replace( '/Content Assistant/', '[AGENT_NAME]', $template );
-			$template = preg_replace( '/content-assistant/', '[SLUG]', $template );
+			$template = preg_replace( '/Content Writer/', '[AGENT_NAME]', $template );
+			$template = preg_replace( '/content-writer/', '[SLUG]', $template );
 		}
 
 		return array(
@@ -1586,7 +1586,7 @@ $expertise . "\n\n" .
 		}
 
 		// Don't allow deleting built-in agents
-		$protected = array( 'content-assistant', 'wordpress-assistant', 'assistant-trainer' );
+		$protected = array( 'content-writer', 'wordpress-assistant', 'assistant-trainer' );
 		if ( in_array( $slug, $protected, true ) ) {
 			return array( 'error' => "Cannot delete protected agent: {$slug}" );
 		}

@@ -1,9 +1,0 @@
-
-/**
- * Render {{field_id}} field.
- */
-function {{prefix}}_render_{{field_id}}_field(): void {
-	$options = get_option( '{{prefix}}_settings' );
-	$value   = isset( $options['{{field_id}}'] ) ? $options['{{field_id}}'] : '';
-	echo '<textarea name="{{prefix}}_settings[{{field_id}}]" class="large-text" rows="5">' . esc_textarea( $value ) . '</textarea>';{{desc_html}}
-}

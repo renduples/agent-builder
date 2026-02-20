@@ -1,9 +1,0 @@
-
-/**
- * Render {{field_id}} field.
- */
-function {{prefix}}_render_{{field_id}}_field(): void {
-	$options = get_option( '{{prefix}}_settings' );
-	$value   = isset( $options['{{field_id}}'] ) ? $options['{{field_id}}'] : '';
-	echo '<input type="{{type}}" name="{{prefix}}_settings[{{field_id}}]" value="' . esc_attr( $value ) . '" class="regular-text">';{{desc_html}}
-}

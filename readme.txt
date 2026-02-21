@@ -5,7 +5,7 @@ Tags: ai, llm, ai-agent, chatbot, openai, anthropic, xai
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -173,30 +173,33 @@ You provide your own API key for each cloud provider. The plugin does not collec
 
 == Changelog ==
 
+= 1.9.1 - 2026-02-20 =
+* Added: First-run onboarding wizard — guides new users through AI provider selection, account creation, and API key setup with step-by-step instructions and screenshots.
+* Changed: Admin menu item "Code Proposals" renamed to "Approval Queue".
+* Fixed: Fatal error on activation — `Site_Auditor::execute_tool()` return type incompatible with `Agent_Base` signature (`mixed` → `?array`).
+
 = 1.9.0 - 2026-02-19 =
-* Added: Per-agent `.license` file injected into premium agent ZIP downloads — contains token, agent slug, version, email, issued_at, expires_at.
-* Added: `.activation` file written on install — domain-binds the agent to the installing site using HMAC-SHA256(scheme://host, token).
-* Changed: `can_agent_run()` — uploaded agents now checked against `.license` + `.activation`; legacy uploads (no `.license`) fall back to plugin license check; incomplete installs (`.license` without `.activation`) blocked.
-* Changed: Upload handler in admin/agents.php — calls `activate-token` REST endpoint on zip install; writes `.activation` on success; rolls back installation on failure with a clear error message.
-* Changed: `Agent_Registry::is_agent_installed()` now checks both `agents_dir` and `library_dir`.
-* Changed: `Agent_Registry::delete_agent()` — prevents deletion of core bundled library agents; uses stored directory path to handle both zones correctly.
+* Added: License verification for downloaded marketplace agents — agents are domain-bound to the installing site and verify their license on each run.
+* Added: Automatic license activation during ZIP install — clear error message and rollback if activation fails.
+* Changed: License enforcement updated — bundled and user-created agents always run; marketplace agents require a valid license tied to the site.
+* Changed: Core bundled agents are now protected from accidental deletion via the admin UI.
 * Removed: `content-assistant`, `plugin-assistant`, `theme-assistant` bundled agents (moved to marketplace or retired).
 * Added: `content-writer`, `seo-assistant`, `security-assistant`, `site-auditor`, `site-doctor`, `ai-radar` as bundled library agents.
 * Improved: `wordpress-assistant` system prompt expanded with full ecosystem context.
 * Improved: `assistant-trainer` prompt and agent refined.
 
 = 1.8.1 - 2026-02-17 =
-* Added: Uploaded agent marker (.uploaded stamp file) to distinguish uploaded agents from user-created ones.
-* Changed: can_agent_run() rewritten — bundled and user-created agents always run; only uploaded agents require a valid license.
-* Added: Agent Builder job processor now tracks created_agent_slug on successful agent creation.
-* Tests: 428 tests, 1,072 assertions — added tests for uploaded agent blocking and user-created agent pass-through.
+* Added: Agent origin tracking to distinguish uploaded marketplace agents from user-created ones.
+* Changed: License enforcement updated — bundled and user-created agents always run; only uploaded marketplace agents require a valid license.
+* Added: Agent Builder job processor now tracks created agent slug on successful agent creation.
+* Tests: 428 tests, 1,072 assertions.
 
 = 1.8.0 - 2026-02-17 =
 * Changed: Core tools rebuilt — added 11 focused database tools (db_get_option, db_update_option, db_get_posts, db_get_post, db_create_post, db_update_post, db_delete_post, db_get_users, db_get_terms, db_get_post_meta, db_get_comments).
 * Changed: Agent Tools page simplified to 6 tabs (All, Plugins, Themes, Agents, WordPress, Database).
-* Added: Agent mode enum sanitizer — validates mode values against an allow-list (ALLOWED_AGENT_MODES constant).
-* Added: Audit log retention cron — daily cleanup of entries older than 90 days (filterable via agentic_audit_retention_days).
-* Added: DB schema versioning — version-gated migrations with agentic_db_schema_version option.
+* Added: Agent mode validation — mode values are validated against an allow-list.
+* Added: Audit log retention cron — daily cleanup of entries older than 90 days (filterable).
+* Added: DB schema versioning — version-gated migrations for safer upgrades.
 * Added: Composite database indexes for audit_log, approval_queue, and memory tables (6 new indexes).
 * Changed: Admin-only hooks (admin_init, admin_menu, admin_bar_menu, admin_enqueue_scripts, AJAX handlers) now load behind is_admin() guard.
 * Removed: Per-directory scope toggle system (UI panel, AJAX handler, and JS).
@@ -247,7 +250,7 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Improved: All API calls now send improved headers (X-Agentic-Site-URL, Site-Name, Plugin-Version, WP-Version, PHP-Version, User-Agent).
 
 = 1.7.0 - 2026-02-14 =
-* Added: HMAC-signed API requests with site_hash for tamper resistance.
+* Added: Tamper-resistant signed API requests for license validation.
 * Security: Fail-open design — cached last-known-good state, never breaks customer sites.
 * Tests: 457 tests, 1,211 assertions (23 new License_Client tests).
 
@@ -374,3 +377,7 @@ User-space permissions and proposals added. All write permissions disabled by de
 
 = 1.0.0 =
 First stable release. Full WordPress Coding Standards compliance and security hardening.
+
+== Legal ==
+
+By using this plugin you agree to our Terms of Service: https://agentic-plugin.com/terms-of-service/

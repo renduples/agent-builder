@@ -102,7 +102,7 @@ if ( class_exists( '\Agentic\License_Client' ) ) {
 		Agent Builder
 	</h1>
 	<p style="margin-bottom: 20px;">
-		Need help? Visit our <a href="https://agentic-plugin.com/support/" target="_blank">Support Center</a> | <a href="https://agentic-plugin.com/documentation/" target="_blank">Documentation</a>
+			Need help? Visit our <a href="https://agentic-plugin.com/support/" target="_blank">Support Center</a> | <a href="https://agentic-plugin.com/documentation/" target="_blank">Documentation</a> | <a href="https://agentic-plugin.com/terms-of-service/" target="_blank">Terms of Service</a> | <a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-setup' ) ); ?>">Setup Wizard</a>
 	</p>
 
 	<div class="agentic-dashboard-grid">

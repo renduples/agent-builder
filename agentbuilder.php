@@ -118,6 +118,7 @@ final class Plugin {
 		// AJAX handlers (wp_ajax_ hooks only fire in admin context).
 		add_action( 'wp_ajax_agentic_toggle_tool', array( $this, 'ajax_toggle_tool' ) );
 		add_action( 'wp_ajax_agentic_run_task', array( $this, 'ajax_run_task' ) );
+		add_action( 'wp_ajax_agentic_test_connection', array( $this, 'ajax_test_connection' ) );
 	}
 
 	/**
@@ -193,6 +194,15 @@ final class Plugin {
 	 * @return void
 	 */
 	public function admin_init(): void {
+		// Redirect to onboarding wizard on first activation.
+		if ( get_option( 'agentic_activation_redirect' ) && ! get_option( 'agentic_onboarding_complete' ) ) {
+			delete_option( 'agentic_activation_redirect' );
+			if ( ! isset( $_GET['activate-multi'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				wp_safe_redirect( admin_url( 'admin.php?page=agentic-setup' ) );
+				exit;
+			}
+		}
+
 		// Register settings.
 		register_setting(
 			'agentic_core_settings',
@@ -645,8 +655,8 @@ final class Plugin {
 
 		add_submenu_page(
 			'agentbuilder',
-			__( 'Code Proposals', 'agentbuilder' ),
-			__( 'Code Proposals', 'agentbuilder' ),
+			__( 'Approval Queue', 'agentbuilder' ),
+			__( 'Approval Queue', 'agentbuilder' ),
 			'manage_options',
 			'agentic-approvals',
 			array( $this, 'render_approvals_page' )
@@ -659,6 +669,16 @@ final class Plugin {
 			'manage_options',
 			'agentic-settings',
 			array( $this, 'render_settings_page' )
+		);
+
+		// Setup wizard — hidden from nav, accessible at admin.php?page=agentic-setup.
+		add_submenu_page(
+			null,
+			__( 'Setup Wizard', 'agentbuilder' ),
+			__( 'Setup Wizard', 'agentbuilder' ),
+			'manage_options',
+			'agentic-setup',
+			array( $this, 'render_setup_page' )
 		);
 	}
 
@@ -1369,6 +1389,95 @@ final class Plugin {
 	}
 
 	/**
+	 * Render setup wizard page
+	 *
+	 * @return void
+	 */
+	public function render_setup_page(): void {
+		include AGENT_BUILDER_DIR . 'admin/setup.php';
+	}
+
+	/**
+	 * AJAX: test AI provider connection during onboarding
+	 *
+	 * @return void
+	 */
+	public function ajax_test_connection(): void {
+		check_ajax_referer( 'agentic_test_connection', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'agentbuilder' ) ) );
+		}
+
+		$provider = sanitize_text_field( wp_unslash( $_POST['provider'] ?? '' ) );
+		$api_key  = sanitize_text_field( wp_unslash( $_POST['api_key'] ?? '' ) );
+
+		$allowed = array( 'xai', 'openai', 'google', 'anthropic', 'mistral', 'ollama' );
+		if ( ! in_array( $provider, $allowed, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid provider.', 'agentbuilder' ) ) );
+		}
+
+		// Build a minimal test request for each provider.
+		$endpoints = array(
+			'openai'    => array(
+				'url'     => 'https://api.openai.com/v1/chat/completions',
+				'headers' => array( 'Authorization' => 'Bearer ' . $api_key, 'Content-Type' => 'application/json' ),
+				'body'    => wp_json_encode( array( 'model' => 'gpt-4o-mini', 'messages' => array( array( 'role' => 'user', 'content' => 'Reply with: ready' ) ), 'max_tokens' => 5 ) ),
+			),
+			'anthropic' => array(
+				'url'     => 'https://api.anthropic.com/v1/messages',
+				'headers' => array( 'x-api-key' => $api_key, 'anthropic-version' => '2023-06-01', 'content-type' => 'application/json' ),
+				'body'    => wp_json_encode( array( 'model' => 'claude-3-haiku-20240307', 'max_tokens' => 5, 'messages' => array( array( 'role' => 'user', 'content' => 'Reply with: ready' ) ) ) ),
+			),
+			'xai'       => array(
+				'url'     => 'https://api.x.ai/v1/chat/completions',
+				'headers' => array( 'Authorization' => 'Bearer ' . $api_key, 'Content-Type' => 'application/json' ),
+				'body'    => wp_json_encode( array( 'model' => 'grok-3', 'messages' => array( array( 'role' => 'user', 'content' => 'Reply with: ready' ) ), 'max_tokens' => 5 ) ),
+			),
+			'google'    => array(
+				'url'     => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' . rawurlencode( $api_key ),
+				'headers' => array( 'Content-Type' => 'application/json' ),
+				'body'    => wp_json_encode( array( 'contents' => array( array( 'parts' => array( array( 'text' => 'Reply with: ready' ) ) ) ) ) ),
+			),
+			'mistral'   => array(
+				'url'     => 'https://api.mistral.ai/v1/chat/completions',
+				'headers' => array( 'Authorization' => 'Bearer ' . $api_key, 'Content-Type' => 'application/json' ),
+				'body'    => wp_json_encode( array( 'model' => 'mistral-small-latest', 'messages' => array( array( 'role' => 'user', 'content' => 'Reply with: ready' ) ), 'max_tokens' => 5 ) ),
+			),
+			'ollama'    => array(
+				'url'     => rtrim( $api_key, '/' ) . '/api/tags',
+				'headers' => array( 'Content-Type' => 'application/json' ),
+				'body'    => null,
+			),
+		);
+
+		$cfg      = $endpoints[ $provider ];
+		$response = wp_remote_post(
+			$cfg['url'],
+			array(
+				'headers' => $cfg['headers'],
+				'body'    => $cfg['body'],
+				'timeout' => 15,
+				'method'  => 'ollama' === $provider ? 'GET' : 'POST',
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => $response->get_error_message() ) );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		if ( $code >= 200 && $code < 300 ) {
+			wp_send_json_success( array( 'message' => __( 'Connected successfully!', 'agentbuilder' ) ) );
+		} else {
+			$body = wp_remote_retrieve_body( $response );
+			$data = json_decode( $body, true );
+			$msg  = $data['error']['message'] ?? $data['error'] ?? __( 'Connection failed (HTTP ' . $code . '). Check your API key.', 'agentbuilder' );
+			wp_send_json_error( array( 'message' => $msg ) );
+		}
+	}
+
+	/**
 	 * Enqueue frontend assets for chat interface
 	 *
 	 * @return void
@@ -1497,6 +1606,9 @@ final class Plugin {
 	 * @return void
 	 */
 	public function activate(): void {
+		// Flag for onboarding redirect (handled in admin_init to avoid headers-sent issues).
+		add_option( 'agentic_activation_redirect', true );
+
 		// Set default options.
 		add_option( 'agentic_agent_mode', 'supervised' );
 		add_option( 'agentic_audit_enabled', true );

@@ -323,7 +323,7 @@ class Agentic_Site_Auditor extends \Agentic\Agent_Base {
 	// Tool execution
 	// -------------------------------------------------------------------------
 
-	public function execute_tool( string $tool_name, array $params ): mixed {
+	public function execute_tool( string $tool_name, array $params ): ?array {
 		switch ( $tool_name ) {
 			case 'run_full_audit':
 				return $this->run_full_audit();

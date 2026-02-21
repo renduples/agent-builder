@@ -5,7 +5,7 @@ Tags: ai, llm, ai-agent, chatbot, openai, anthropic, xai
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -172,6 +172,9 @@ This plugin connects to third-party AI services to process chat messages and exe
 You provide your own API key for each cloud provider. The plugin does not collect, store, or transmit API keys to any third party. API usage costs are billed directly by each provider according to their pricing.
 
 == Changelog ==
+
+= 1.9.2 - 2026-02-20 =
+* Fixed: Release workflow corrected to use proper plugin filename.
 
 = 1.9.1 - 2026-02-20 =
 * Added: First-run onboarding wizard — guides new users through AI provider selection, account creation, and API key setup with step-by-step instructions and screenshots.

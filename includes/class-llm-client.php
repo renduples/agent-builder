@@ -62,15 +62,20 @@ class LLM_Client {
 	 */
 	public function __construct() {
 		$this->provider = get_option( 'agentic_llm_provider', 'openai' );
-		$this->api_key  = get_option( 'agentic_llm_api_key', '' );
 		$this->model    = get_option( 'agentic_model', 'gpt-4o' );
+
+		// Resolve API key: prefer per-provider store, fall back to legacy single key.
+		$keys          = get_option( 'agentic_llm_api_keys', array() );
+		$this->api_key = $keys[ $this->provider ] ?? get_option( 'agentic_llm_api_key', '' );
 
 		// Backward compatibility: migrate legacy xAI options.
 		$legacy_key = get_option( 'agentic_xai_api_key', '' );
 		if ( empty( $this->api_key ) && ! empty( $legacy_key ) ) {
 			$this->api_key  = $legacy_key;
 			$this->provider = 'xai';
-			update_option( 'agentic_llm_api_key', $legacy_key );
+			// Migrate into new per-provider store.
+			$keys['xai'] = $legacy_key;
+			update_option( 'agentic_llm_api_keys', $keys );
 			update_option( 'agentic_llm_provider', 'xai' );
 		}
 	}
@@ -127,7 +132,20 @@ class LLM_Client {
 		// Get endpoint and headers for the provider.
 		$endpoint = $this->get_endpoint();
 		$headers  = $this->get_headers();
-		$body     = $this->format_request( $messages, $tools );
+
+		// Strip any internal metadata keys (e.g. _ability_name) before sending to the LLM.
+		$clean_tools = array_map(
+			static function ( array $tool ): array {
+				return array_filter(
+					$tool,
+					static fn( $key ) => ! str_starts_with( $key, '_' ),
+					ARRAY_FILTER_USE_KEY
+				);
+			},
+			(array) $tools
+		);
+
+		$body = $this->format_request( $messages, $clean_tools );
 
 		if ( is_wp_error( $endpoint ) ) {
 			return $endpoint;
@@ -150,6 +168,7 @@ class LLM_Client {
 		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( 200 !== $status ) {
+			$raw_body      = wp_remote_retrieve_body( $response );
 			$error_message = 'Unknown API error';
 
 			// Try to extract error message from various provider formats.
@@ -167,6 +186,10 @@ class LLM_Client {
 			} elseif ( 429 === $status ) {
 				$error_message = 'Rate limit exceeded. Please try again later.';
 			}
+
+			// Log the full response for debugging.
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( sprintf( 'Agentic LLM error [%s/%s] HTTP %d: %s', $this->provider, $this->model, $status, $raw_body ) );
 
 			return new \WP_Error(
 				'api_error',
@@ -224,7 +247,9 @@ class LLM_Client {
 
 		// Google uses model-specific endpoints.
 		if ( 'google' === $provider ) {
-			$endpoint .= 'gemini-2.0-flash-exp:generateContent?key=' . get_option( 'agentic_llm_api_key', '' );
+			$keys     = get_option( 'agentic_llm_api_keys', array() );
+			$goog_key = $keys['google'] ?? get_option( 'agentic_llm_api_key', '' );
+			$endpoint .= 'gemini-2.0-flash-exp:generateContent?key=' . $goog_key;
 		}
 
 		return $endpoint;

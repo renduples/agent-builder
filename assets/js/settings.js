@@ -96,7 +96,39 @@ const llmProviders = {
 	}
 };
 
-function updateLLMFields() {
+// Per-session cache to avoid repeated API calls for the same provider.
+const modelCache = {};
+
+/**
+ * Fetch the available models for a provider from the server.
+ * Returns null on failure so callers can fall back to the hardcoded list.
+ */
+async function fetchProviderModels(provider) {
+	if (modelCache[provider]) {
+		return modelCache[provider];
+	}
+	try {
+		const restUrl = (typeof agenticSettings !== 'undefined' && agenticSettings.restUrl)
+			? agenticSettings.restUrl : '/wp-json/agentic/v1/';
+		const nonce = (typeof agenticSettings !== 'undefined' && agenticSettings.nonce)
+			? agenticSettings.nonce : '';
+		const response = await fetch(restUrl + 'models?provider=' + encodeURIComponent(provider), {
+			headers: { 'X-WP-Nonce': nonce }
+		});
+		if (response.ok) {
+			const data = await response.json();
+			if (data.success && data.models && data.models.length > 0) {
+				modelCache[provider] = data.models;
+				return data.models;
+			}
+		}
+	} catch (e) {
+		// Fall through to hardcoded fallback.
+	}
+	return null;
+}
+
+async function updateLLMFields() {
 	const providerSelect = document.getElementById('agentic_llm_provider');
 	const modelSelect = document.getElementById('agentic_model');
 	const apiHelp = document.getElementById('agentic-api-key-help');
@@ -126,16 +158,6 @@ function updateLLMFields() {
 		stepsOl.innerHTML = config.steps.map(step => `<li style="margin-bottom: 4px;">${step}</li>`).join('');
 	}
 
-	// Update model dropdown
-	modelSelect.innerHTML = '';
-	for (const [value, info] of Object.entries(config.models)) {
-		const option = document.createElement('option');
-		option.value = value;
-		option.textContent = info.vision ? info.label + ' 👁' : info.label;
-		option.selected = (value === currentModel || value === config.default);
-		modelSelect.appendChild(option);
-	}
-
 	// Update model help text
 	modelHelp.innerHTML = '👁 = supports image/vision';
 
@@ -151,6 +173,37 @@ function updateLLMFields() {
 			});
 		}
 	}, 0);
+
+	// Show a loading placeholder while fetching from the provider API.
+	modelSelect.innerHTML = '<option disabled>Loading models…</option>';
+	modelSelect.disabled = true;
+
+	const fetched = await fetchProviderModels(provider);
+	modelSelect.disabled = false;
+	modelSelect.innerHTML = '';
+
+	// Use live API results when available; otherwise fall back to the hardcoded list.
+	const modelsToRender = fetched
+		? fetched.map(m => ({ id: m.id, label: m.label || m.id, vision: !!m.vision }))
+		: Object.entries(config.models || {}).map(([id, info]) => ({ id, label: info.label, vision: info.vision }));
+
+	for (const model of modelsToRender) {
+		const option = document.createElement('option');
+		option.value = model.id;
+		option.textContent = model.vision ? model.label + ' 👁' : model.label;
+		option.selected = (model.id === currentModel);
+		modelSelect.appendChild(option);
+	}
+
+	// If the previously saved model is not in the list, add it so the saved value is preserved.
+	const isCurrentInList = [...modelSelect.options].some(o => o.value === currentModel);
+	if (currentModel && !isCurrentInList) {
+		const option = document.createElement('option');
+		option.value = currentModel;
+		option.textContent = currentModel + ' (saved)';
+		option.selected = true;
+		modelSelect.insertBefore(option, modelSelect.firstChild);
+	}
 }
 
 // Initialize on page load
@@ -158,7 +211,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	updateLLMFields();
 	const providerSelect = document.getElementById('agentic_llm_provider');
 	if (providerSelect) {
-		providerSelect.addEventListener('change', updateLLMFields);
+		providerSelect.addEventListener('change', function() {
+			// Clear the saved model so we don't try to select a different-provider model.
+			const ms = document.getElementById('agentic_model');
+			if (ms) ms.dataset.currentModel = '';
+			updateLLMFields();
+		});
 	}
 
 	// Update agent mode help text

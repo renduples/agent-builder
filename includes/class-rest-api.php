@@ -96,6 +96,24 @@ class REST_API {
 			)
 		);
 
+		// List available models for a provider.
+		register_rest_route(
+			'agentic/v1',
+			'/models',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_provider_models' ),
+				'permission_callback' => array( $this, 'check_admin' ),
+				'args'                => array(
+					'provider' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
 		// Test API key.
 		register_rest_route(
 			'agentic/v1',
@@ -639,6 +657,299 @@ class REST_API {
 		}
 
 		return $tmp_url . '/' . $filename;
+	}
+
+	/**
+	 * Fetch available models for a given provider using its stored API key.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response
+	 */
+	public function get_provider_models( \WP_REST_Request $request ): \WP_REST_Response {
+		$provider = sanitize_text_field( $request->get_param( 'provider' ) );
+		$keys     = get_option( 'agentic_llm_api_keys', array() );
+		$api_key  = $keys[ $provider ] ?? get_option( 'agentic_llm_api_key', '' );
+
+		if ( empty( $api_key ) && 'ollama' !== $provider ) {
+			return new \WP_REST_Response( array( 'success' => false, 'models' => array() ), 200 );
+		}
+
+		switch ( $provider ) {
+			case 'openai':
+				return $this->fetch_openai_models( $api_key );
+			case 'anthropic':
+				return $this->fetch_anthropic_models( $api_key );
+			case 'xai':
+				return $this->fetch_xai_models( $api_key );
+			case 'mistral':
+				return $this->fetch_mistral_models( $api_key );
+			case 'google':
+				return $this->fetch_google_models( $api_key );
+			case 'ollama':
+				return $this->fetch_ollama_models();
+			default:
+				return new \WP_REST_Response( array( 'success' => false, 'models' => array() ), 200 );
+		}
+	}
+
+	/**
+	 * Fetch models from Anthropic.
+	 */
+	private function fetch_anthropic_models( string $api_key ): \WP_REST_Response {
+		$response = wp_remote_get(
+			'https://api.anthropic.com/v1/models',
+			array(
+				'timeout' => 15,
+				'headers' => array(
+					'x-api-key'         => $api_key,
+					'anthropic-version' => '2023-06-01',
+					'Content-Type'      => 'application/json',
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return new \WP_REST_Response( array( 'success' => false, 'models' => array() ), 200 );
+		}
+
+		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
+		$models = array();
+
+		foreach ( $data['data'] ?? array() as $model ) {
+			$id = $model['id'] ?? '';
+			if ( empty( $id ) ) {
+				continue;
+			}
+			$models[] = array(
+				'id'     => $id,
+				'label'  => $model['display_name'] ?? $id,
+				'vision' => str_contains( $id, 'claude-3' ) || str_contains( $id, 'claude-opus' ) || str_contains( $id, 'claude-sonnet' ) || str_contains( $id, 'claude-haiku' ),
+			);
+		}
+
+		return new \WP_REST_Response( array( 'success' => true, 'models' => $models ), 200 );
+	}
+
+	/**
+	 * Fetch models from OpenAI.
+	 */
+	private function fetch_openai_models( string $api_key ): \WP_REST_Response {
+		$response = wp_remote_get(
+			'https://api.openai.com/v1/models',
+			array(
+				'timeout' => 15,
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $api_key,
+					'Content-Type'  => 'application/json',
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return new \WP_REST_Response( array( 'success' => false, 'models' => array() ), 200 );
+		}
+
+		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
+		$models = array();
+		$skip   = array( 'dall-e', 'whisper', 'tts', 'text-embedding', 'text-moderation', 'audio', 'realtime', 'transcribe', 'babbage', 'davinci', 'curie', 'ada-', 'computer-use', 'omni-mini', 'search' );
+
+		foreach ( $data['data'] ?? array() as $model ) {
+			$id = $model['id'] ?? '';
+			if ( empty( $id ) || str_starts_with( $id, 'ft:' ) ) {
+				continue;
+			}
+			$excluded = false;
+			foreach ( $skip as $pattern ) {
+				if ( str_contains( $id, $pattern ) ) {
+					$excluded = true;
+					break;
+				}
+			}
+			if ( $excluded ) {
+				continue;
+			}
+			$models[] = array(
+				'id'     => $id,
+				'label'  => $id,
+				'vision' => $this->model_supports_vision( $id ),
+			);
+		}
+
+		usort(
+			$models,
+			function ( $a, $b ) {
+				// Sort: undated aliases before dated snapshots, then reverse-alpha.
+				$a_dated = (bool) preg_match( '/\d{4}-\d{2}-\d{2}/', $a['id'] );
+				$b_dated = (bool) preg_match( '/\d{4}-\d{2}-\d{2}/', $b['id'] );
+				if ( $a_dated !== $b_dated ) {
+					return $a_dated ? 1 : -1;
+				}
+				return strcmp( $b['id'], $a['id'] );
+			}
+		);
+
+		return new \WP_REST_Response( array( 'success' => true, 'models' => $models ), 200 );
+	}
+
+	/**
+	 * Fetch models from xAI.
+	 */
+	private function fetch_xai_models( string $api_key ): \WP_REST_Response {
+		$response = wp_remote_get(
+			'https://api.x.ai/v1/models',
+			array(
+				'timeout' => 15,
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $api_key,
+					'Content-Type'  => 'application/json',
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return new \WP_REST_Response( array( 'success' => false, 'models' => array() ), 200 );
+		}
+
+		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
+		$models = array();
+
+		foreach ( $data['data'] ?? array() as $model ) {
+			$id = $model['id'] ?? '';
+			if ( empty( $id ) ) {
+				continue;
+			}
+			$models[] = array(
+				'id'     => $id,
+				'label'  => $id,
+				'vision' => str_contains( $id, 'vision' ),
+			);
+		}
+
+		usort( $models, fn( $a, $b ) => strcmp( $b['id'], $a['id'] ) );
+
+		return new \WP_REST_Response( array( 'success' => true, 'models' => $models ), 200 );
+	}
+
+	/**
+	 * Fetch models from Mistral AI.
+	 */
+	private function fetch_mistral_models( string $api_key ): \WP_REST_Response {
+		$response = wp_remote_get(
+			'https://api.mistral.ai/v1/models',
+			array(
+				'timeout' => 15,
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $api_key,
+					'Content-Type'  => 'application/json',
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return new \WP_REST_Response( array( 'success' => false, 'models' => array() ), 200 );
+		}
+
+		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
+		$models = array();
+
+		foreach ( $data['data'] ?? array() as $model ) {
+			$id = $model['id'] ?? '';
+			if ( empty( $id ) || str_contains( $id, 'embed' ) ) {
+				continue;
+			}
+			$models[] = array(
+				'id'     => $id,
+				'label'  => $id,
+				'vision' => str_contains( $id, 'pixtral' ) || str_contains( $id, 'vision' ),
+			);
+		}
+
+		usort( $models, fn( $a, $b ) => strcmp( $b['id'], $a['id'] ) );
+
+		return new \WP_REST_Response( array( 'success' => true, 'models' => $models ), 200 );
+	}
+
+	/**
+	 * Fetch models from Google Gemini.
+	 */
+	private function fetch_google_models( string $api_key ): \WP_REST_Response {
+		$response = wp_remote_get(
+			'https://generativelanguage.googleapis.com/v1beta/models?key=' . urlencode( $api_key ),
+			array( 'timeout' => 15 )
+		);
+
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return new \WP_REST_Response( array( 'success' => false, 'models' => array() ), 200 );
+		}
+
+		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
+		$models = array();
+
+		foreach ( $data['models'] ?? array() as $model ) {
+			$name    = $model['name'] ?? '';
+			$methods = $model['supportedGenerationMethods'] ?? array();
+			if ( ! in_array( 'generateContent', $methods, true ) ) {
+				continue;
+			}
+			$id = str_replace( 'models/', '', $name );
+			if ( ! str_starts_with( $id, 'gemini-' ) ) {
+				continue;
+			}
+			$models[] = array(
+				'id'     => $id,
+				'label'  => $id,
+				'vision' => true, // All recent Gemini models support vision
+			);
+		}
+
+		usort( $models, fn( $a, $b ) => strcmp( $b['id'], $a['id'] ) );
+
+		return new \WP_REST_Response( array( 'success' => true, 'models' => $models ), 200 );
+	}
+
+	/**
+	 * Fetch locally running Ollama models.
+	 */
+	private function fetch_ollama_models(): \WP_REST_Response {
+		$response = wp_remote_get(
+			'http://localhost:11434/api/tags',
+			array( 'timeout' => 5 )
+		);
+
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return new \WP_REST_Response( array( 'success' => false, 'models' => array() ), 200 );
+		}
+
+		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
+		$models = array();
+
+		foreach ( $data['models'] ?? array() as $model ) {
+			$id = $model['name'] ?? '';
+			if ( empty( $id ) ) {
+				continue;
+			}
+			$models[] = array( 'id' => $id, 'label' => $id, 'vision' => false );
+		}
+
+		return new \WP_REST_Response(
+			empty( $models )
+				? array( 'success' => false, 'models' => array() )
+				: array( 'success' => true, 'models' => $models ),
+			200
+		);
+	}
+
+	/**
+	 * Determine if a model supports vision/image input based on its ID.
+	 */
+	private function model_supports_vision( string $id ): bool {
+		$patterns = array( 'vision', 'gpt-4o', 'gpt-4-turbo', 'claude-3', 'gemini', 'pixtral', 'grok-2-vision' );
+		foreach ( $patterns as $pattern ) {
+			if ( str_contains( $id, $pattern ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

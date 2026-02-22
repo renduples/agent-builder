@@ -5,7 +5,7 @@
  * Plugin Name:       Agent Builder
  * Plugin URI:        https://agentic-plugin.com
  * Description:       Build AI agents for WordPress using natural language descriptions.
- * Version:           1.9.2
+ * Version:           1.9.3
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agent Builder Team
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'AGENT_BUILDER_VERSION', '1.8.1' );
+define( 'AGENT_BUILDER_VERSION', '1.9.3' );
 define( 'AGENT_BUILDER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AGENT_BUILDER_URL', plugin_dir_url( __FILE__ ) );
 define( 'AGENT_BUILDER_BASENAME', plugin_basename( __FILE__ ) );
@@ -119,6 +119,8 @@ final class Plugin {
 		add_action( 'wp_ajax_agentic_toggle_tool', array( $this, 'ajax_toggle_tool' ) );
 		add_action( 'wp_ajax_agentic_run_task', array( $this, 'ajax_run_task' ) );
 		add_action( 'wp_ajax_agentic_test_connection', array( $this, 'ajax_test_connection' ) );
+		add_action( 'wp_ajax_agentic_wizard_save_key', array( $this, 'ajax_wizard_save_key' ) );
+		add_action( 'wp_ajax_agentic_wizard_save_preferences', array( $this, 'ajax_wizard_save_preferences' ) );
 	}
 
 	/**
@@ -1385,6 +1387,15 @@ final class Plugin {
 			true
 		);
 
+		wp_localize_script(
+			'agentic-settings',
+			'agenticSettings',
+			array(
+				'restUrl' => rest_url( 'agentic/v1/' ),
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
+			)
+		);
+
 		include AGENT_BUILDER_DIR . 'admin/settings.php';
 	}
 
@@ -1475,6 +1486,84 @@ final class Plugin {
 			$msg  = $data['error']['message'] ?? $data['error'] ?? __( 'Connection failed (HTTP ' . $code . '). Check your API key.', 'agentbuilder' );
 			wp_send_json_error( array( 'message' => $msg ) );
 		}
+	}
+
+	/**
+	 * AJAX: save provider key during setup wizard (no page redirect)
+	 *
+	 * @return void
+	 */
+	public function ajax_wizard_save_key(): void {
+		check_ajax_referer( 'agentic_test_connection', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'agentbuilder' ) ) );
+		}
+
+		$provider = sanitize_text_field( wp_unslash( $_POST['provider'] ?? '' ) );
+		$api_key  = sanitize_text_field( wp_unslash( $_POST['api_key'] ?? '' ) );
+
+		$allowed = array( 'xai', 'openai', 'google', 'anthropic', 'mistral', 'ollama' );
+		if ( ! in_array( $provider, $allowed, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid provider.', 'agentbuilder' ) ) );
+		}
+
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'API key is required.', 'agentbuilder' ) ) );
+		}
+
+		$provider_defaults = array(
+			'openai'    => 'gpt-4o',
+			'anthropic' => 'claude-3-5-sonnet-20241022',
+			'xai'       => 'grok-3',
+			'google'    => 'gemini-2.0-flash-exp',
+			'mistral'   => 'mistral-large-latest',
+			'ollama'    => 'llama3.2',
+		);
+
+		$all_keys              = get_option( 'agentic_llm_api_keys', array() );
+		$all_keys[ $provider ] = $api_key;
+		update_option( 'agentic_llm_api_keys', $all_keys );
+		update_option( 'agentic_llm_provider', $provider );
+		update_option( 'agentic_llm_api_key', $api_key );
+		update_option( 'agentic_model', $provider_defaults[ $provider ] ?? '' );
+		update_option( 'agentic_onboarding_complete', true );
+
+		// Activate the WordPress Assistant so it's available immediately in the wizard chat.
+		$active_agents = get_option( 'agentic_active_agents', array() );
+		if ( ! in_array( 'wordpress-assistant', $active_agents, true ) ) {
+			$active_agents[] = 'wordpress-assistant';
+			update_option( 'agentic_active_agents', array_unique( $active_agents ) );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Settings saved.', 'agentbuilder' ) ) );
+	}
+
+	/**
+	 * AJAX: save model and agent mode preference from setup wizard.
+	 *
+	 * @return void
+	 */
+	public function ajax_wizard_save_preferences(): void {
+		check_ajax_referer( 'agentic_test_connection', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'agentbuilder' ) ) );
+		}
+
+		$model         = sanitize_text_field( wp_unslash( $_POST['model'] ?? '' ) );
+		$mode          = sanitize_text_field( wp_unslash( $_POST['mode'] ?? 'supervised' ) );
+		$allowed_modes = array( 'supervised', 'autonomous', 'disabled' );
+		if ( ! in_array( $mode, $allowed_modes, true ) ) {
+			$mode = 'supervised';
+		}
+
+		if ( $model ) {
+			update_option( 'agentic_model', $model );
+		}
+		update_option( 'agentic_agent_mode', $mode );
+
+		wp_send_json_success();
 	}
 
 	/**
@@ -1614,6 +1703,7 @@ final class Plugin {
 		add_option( 'agentic_audit_enabled', true );
 		add_option( 'agentic_llm_provider', 'openai' );
 		add_option( 'agentic_llm_api_key', '' );
+		add_option( 'agentic_llm_api_keys', array() );
 		add_option( 'agentic_model', 'gpt-4o' );
 
 		// Activate all bundled library agents.

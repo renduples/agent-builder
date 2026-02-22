@@ -102,7 +102,7 @@ if ( class_exists( '\Agentic\License_Client' ) ) {
 		Agent Builder
 	</h1>
 	<p style="margin-bottom: 20px;">
-			Need help? Visit our <a href="https://agentic-plugin.com/support/" target="_blank">Support Center</a> | <a href="https://agentic-plugin.com/documentation/" target="_blank">Documentation</a> | <a href="https://agentic-plugin.com/terms-of-service/" target="_blank">Terms of Service</a> | <a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-setup' ) ); ?>">Setup Wizard</a>
+			Need help? Visit our <a href="https://agentic-plugin.com/support/" target="_blank">Support Center</a> | <a href="https://agentic-plugin.com/documentation/" target="_blank">Documentation</a> | <a href="https://agentic-plugin.com/terms-of-service/" target="_blank">Terms of Service</a>
 	</p>
 
 	<div class="agentic-dashboard-grid">
@@ -158,25 +158,19 @@ if ( class_exists( '\Agentic\License_Client' ) ) {
 		<div class="agentic-card">
 			<h2>Quick Actions</h2>
 			<?php if ( ! $agentic_is_configured ) : ?>
-				<p>
-					<span class="dashicons dashicons-no-alt" style="color: #b91c1c; vertical-align: -2px;" title="Set up an AI provider and API key to enable the chatbot."></span>
-					Chatbot offline
-					<span class="dashicons dashicons-editor-help" title="Go to Settings to configure your AI provider and API key." style="vertical-align: -2px; margin-left: 6px;"></span>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-settings' ) ); ?>" style="margin-left: 6px;">Configure now</a>
+				<p style="margin-bottom: 12px;">
+					<span class="dashicons dashicons-no-alt" style="color: #b91c1c; vertical-align: -2px;"></span>
+					Chatbot offline &mdash; <a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-settings' ) ); ?>">Configure now</a>
 				</p>
 			<?php endif; ?>
-			<p>
-				<?php if ( $agentic_is_configured ) : ?>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-chat' ) ); ?>" class="button button-primary">
-						Open Chat Interface
-					</a>
-				<?php endif; ?>
-			</p>
-			<p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-approvals' ) ); ?>" class="button">
-					View Approval Queue
-				</a>
-			</p>
+			<div class="agentic-quick-actions">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-chat' ) ); ?>" class="button<?php echo $agentic_is_configured ? ' button-primary' : ''; ?>">Agent Chat</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-deployment' ) ); ?>" class="button">Deployment</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-approvals' ) ); ?>" class="button">Approval Queue</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-tools' ) ); ?>" class="button">Tools</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-setup' ) ); ?>" class="button">Setup Wizard</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-settings' ) ); ?>" class="button">Settings</a>
+			</div>
 		</div>
 
 		<div class="agentic-card agentic-card-wide">
@@ -249,5 +243,17 @@ if ( class_exists( '\Agentic\License_Client' ) ) {
 
 .agentic-card .button {
 	margin-bottom: 5px;
+}
+
+.agentic-quick-actions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.agentic-quick-actions .button {
+	margin: 0;
+	text-align: center;
+	justify-content: center;
 }
 </style>

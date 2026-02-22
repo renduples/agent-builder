@@ -102,15 +102,14 @@ class Agentic_WordPress_Assistant extends \Agentic\Agent_Base {
 	 */
 	public function get_welcome_message(): string {
 		return "🧭 **WordPress Assistant**\n\n" .
-			"Hi! I'm your guide to WordPress and Agent Builder. Ask me anything or pick an assistant below.\n\n" .
+			"Hi! I'm your guide to AI in WordPress. Ask me anything or pick a specialist below.\n\n" .
 			"**Your bundled AI team:**\n" .
 			"- ✍️ **Content Writer** — Create, edit, and publish posts and pages\n" .
 			"- 🔍 **SEO Assistant** — Audit and fix titles, meta descriptions, and keywords\n" .
 			"- 🔒 **Security Assistant** — Monitor logins, plugins, and suspicious activity\n" .
-			"- 🩺 **Site Doctor** — Database health, broken links, errors, and bloat\n" .
-			"- 📡 **AI Radar** — Check which AI search engines can see your site and fix what's blocking them\n" .
-			"- 🏗️ **Assistant Trainer** — Train new AI assistants from a plain-English description\n" .
-			"- 🧭 **WordPress Assistant** (me) — Questions, guidance, and getting started\n\n" .
+			"- 🩺 **Site Doctor** — Check database health, broken links, errors, and bloat\n" .
+			"- 📡 **AI Radar** — Check your website's AI search engine visibillity and fix problems\n" .
+			"- 🏗️ **Assistant Trainer** — Train a new AI assistant by giving it a job description\n" .
 			'What can I help you with today?';
 	}
 
@@ -123,6 +122,21 @@ class Agentic_WordPress_Assistant extends \Agentic\Agent_Base {
 			'Which assistant should I use for [task]?',
 			'Can AI search engines find my website?',
 			'How do I schedule an assistant to run automatically?',
+		);
+	}
+
+	/**
+	 * Get agent shortcuts — used by the setup wizard to render "load this agent" navigation pills.
+	 * Each entry: ['icon' => string, 'label' => string, 'agent_id' => string]
+	 */
+	public function get_agent_shortcuts(): array {
+		return array(
+			array( 'icon' => '✍️', 'label' => 'Content Writer',   'agent_id' => 'content-writer' ),
+			array( 'icon' => '🔍', 'label' => 'SEO Assistant',    'agent_id' => 'seo-assistant' ),
+			array( 'icon' => '🔒', 'label' => 'Security Assistant', 'agent_id' => 'security-assistant' ),
+			array( 'icon' => '🩺', 'label' => 'Site Doctor',      'agent_id' => 'site-doctor' ),
+			array( 'icon' => '📡', 'label' => 'AI Radar',         'agent_id' => 'ai-radar' ),
+			array( 'icon' => '🏗️', 'label' => 'Assistant Trainer', 'agent_id' => 'assistant-trainer' ),
 		);
 	}
 

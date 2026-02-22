@@ -185,24 +185,8 @@ if ( $agentic_default_agent_id && isset( $agentic_agents[ $agentic_default_agent
 			<h2>No Agents Activated</h2>
 			<p>Activate an AI agent to start chatting. Agents can help you with content, SEO, security, and more.</p>
 			
-			<div class="available-agents-preview">
-				<h4>Available Agents</h4>
-				<div class="agent-grid">
-					<div class="agent-preview-card">
-						<span class="agent-icon">👨‍💻</span>
-						<span class="agent-name">WordPress Assistant</span>
-						<span class="agent-desc">Getting started & guidance</span>
-					</div>
-					<div class="agent-preview-card">
-						<span class="agent-icon">✍️</span>
-						<span class="agent-name">Content Assistant</span>
-						<span class="agent-desc">Write blog posts & pages</span>
-					</div>
-				</div>
-			</div>
-			
 			<?php if ( current_user_can( 'manage_options' ) ) : ?>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-add-agent' ) ); ?>" class="activate-agents-btn">
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=agentic-agents' ) ); ?>" class="activate-agents-btn">
 				Activate Agents in Dashboard
 			</a>
 			<?php else : ?>

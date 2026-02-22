@@ -1,18 +1,18 @@
 === Agent Builder ===
-AI assistants that write content, fix SEO, monitor security, and keep your WordPress site healthy — no code required.
+AI assistants that save you time and make your WordPress site smarter — no code required.
 Contributors: agenticplugin
 Tags: ai, llm, ai-agent, chatbot, openai, anthropic, xai
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.9.2
+Stable tag: 1.9.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-Agent Builder gives your WordPress site a team of AI assistants. 
-Tell them what you need in plain English — they handle the rest.
+Agent Builder lets you create and employ AI assistants in WordPress. 
+Talk to them and tell them what to do — they will handle the rest.
 
 = Your AI Team (included free) =
 
@@ -172,6 +172,24 @@ This plugin connects to third-party AI services to process chat messages and exe
 You provide your own API key for each cloud provider. The plugin does not collect, store, or transmit API keys to any third party. API usage costs are billed directly by each provider according to their pricing.
 
 == Changelog ==
+
+= 1.9.3 - 2026-02-22 =
+* Added: Per-provider API key storage — each provider's key is stored independently; switching providers in Settings now auto-fills the saved key for that provider.
+* Added: Live model fetching — Settings page queries each provider's API to populate the model dropdown with the current available models (falls back to built-in list if unavailable).
+* Added: New REST endpoint `GET /agentic/v1/models?provider=X` (admin-only) for fetching provider model lists.
+* Added: Setup wizard chat restyled as a dark macOS-style app window — gradient background, traffic-light window controls, taller message area.
+* Added: Setup wizard chat now shows agent shortcut pills — clicking a specialist agent (Content Writer, SEO Assistant, etc.) navigates directly to that agent in the chat page.
+* Added: `get_agent_shortcuts()` method on WordPress Assistant — returns icon, label, and agent slug for all bundled agents.
+* Added: Setup wizard model-card picker and agent-mode selector (Supervised / Autonomous / Chat only) — saved automatically on successful connection test.
+* Fixed: Mistral API calls rejected with HTTP 422 — `_ability_name` metadata injected by the Abilities Bridge is now stripped before sending tool definitions to any LLM provider.
+* Fixed: Setup wizard welcome message is now dynamic — reads from `WordPress Assistant::get_welcome_message()` instead of hardcoded text.
+* Fixed: Setup wizard voice input (mic button) added — matches the chat interface on the home page.
+* Fixed: Setup wizard Exit Wizard button now links correctly to the Agent Builder dashboard.
+* Fixed: Mistral wizard step 1 text updated to reference `console.mistral.ai` specifically.
+* Improved: Setup wizard — provider selection cards enriched with tagline, pricing detail, rate limits, "best for" guidance, and tagged model cards.
+* Improved: Dashboard quick-action grid — six direct-access buttons (Agent Chat, Deployment, Approval Queue, Tools, Setup Wizard, Settings) and an offline indicator when no provider is configured.
+* Improved: Chat interface — removed static "Available Agents" preview; no-agent state now links directly to the Agents page.
+* Improved: Chat page supports `?agent={slug}` URL parameter for direct deep-linking to a specific agent.
 
 = 1.9.2 - 2026-02-20 =
 * Fixed: Release workflow corrected to use proper plugin filename.
@@ -359,6 +377,9 @@ You provide your own API key for each cloud provider. The plugin does not collec
 * Added System Requirements Checker.
 
 == Upgrade Notice ==
+
+= 1.9.3 =
+Per-provider API key storage and live model fetching. No breaking changes — existing API keys are migrated automatically.
 
 = 1.9.0 =
 Per-agent license activation system. New bundled agents added (content-writer, seo-assistant, security-assistant, site-auditor, site-doctor, ai-radar). No breaking changes for existing free agents.

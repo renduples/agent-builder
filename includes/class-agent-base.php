@@ -123,6 +123,11 @@ abstract class Agent_Base {
 	 * Get welcome message for chat interface
 	 *
 	 * @return string Welcome message shown when chat opens
+	 *
+	 * TODO: Replace hardcoded welcome messages and suggested prompts with JSON files per agent
+	 * (e.g. `library/{slug}/agent.json` with `welcome_message` and `suggested_prompts` keys).
+	 * This allows non-developers to edit copy without touching PHP.
+	 * The base class should auto-load from JSON if present, falling back to the PHP method.
 	 */
 	public function get_welcome_message(): string {
 		return sprintf(

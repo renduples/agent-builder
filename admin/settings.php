@@ -43,7 +43,21 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 		}
 
 		update_option( 'agentic_llm_provider', $agentic_new_provider );
-		update_option( 'agentic_llm_api_key', sanitize_text_field( wp_unslash( $_POST['agentic_llm_api_key'] ?? '' ) ) );
+
+		// Save key into per-provider store.
+		$agentic_submitted_key = sanitize_text_field( wp_unslash( $_POST['agentic_llm_api_key'] ?? '' ) );
+		if ( ! empty( $agentic_submitted_key ) ) {
+			$agentic_all_keys                       = get_option( 'agentic_llm_api_keys', array() );
+			$agentic_all_keys[ $agentic_new_provider ] = $agentic_submitted_key;
+			update_option( 'agentic_llm_api_keys', $agentic_all_keys );
+			// Keep legacy single-key option in sync for backward compatibility.
+			update_option( 'agentic_llm_api_key', $agentic_submitted_key );
+		} else {
+			// When switching providers, load existing key for the new provider.
+			$agentic_all_keys = get_option( 'agentic_llm_api_keys', array() );
+			$agentic_active_key = $agentic_all_keys[ $agentic_new_provider ] ?? '';
+			update_option( 'agentic_llm_api_key', $agentic_active_key );
+		}
 		update_option( 'agentic_model', $agentic_new_model );
 		update_option( 'agentic_agent_mode', sanitize_text_field( wp_unslash( $_POST['agentic_agent_mode'] ?? 'supervised' ) ) );
 	}
@@ -86,7 +100,8 @@ if ( isset( $_POST['agentic_save_settings'] ) && check_admin_referer( 'agentic_s
 
 // Get current values.
 $agentic_llm_provider_val = get_option( 'agentic_llm_provider', 'openai' );
-$agentic_api_key_val      = get_option( 'agentic_llm_api_key', '' );
+$agentic_all_keys_val     = get_option( 'agentic_llm_api_keys', array() );
+$agentic_api_key_val      = $agentic_all_keys_val[ $agentic_llm_provider_val ] ?? get_option( 'agentic_llm_api_key', '' );
 $agentic_model_val        = get_option( 'agentic_model', 'gpt-4o' );
 $agentic_agent_mode_val   = get_option( 'agentic_agent_mode', 'supervised' );
 
@@ -685,6 +700,15 @@ $agentic_allow_anon_chat  = get_option( 'agentic_allow_anonymous_chat', false );
 			btn.disabled = false;
 			btn.innerHTML = originalText;
 		}
+	});
+
+	// Per-provider key store — swap key input when provider changes.
+	var agenticProviderKeys = <?php echo wp_json_encode( array_map( 'strval', (array) get_option( 'agentic_llm_api_keys', array() ) ) ); ?>;
+	document.getElementById('agentic_llm_provider').addEventListener('change', function() {
+		var keyInput = document.getElementById('agentic_llm_api_key');
+		keyInput.value = agenticProviderKeys[this.value] || '';
+		// Clear any stale test result when switching provider.
+		document.getElementById('agentic-test-result').innerHTML = '';
 	});
 	</script>
 </div>
